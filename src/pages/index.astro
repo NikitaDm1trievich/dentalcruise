@@ -458,6 +458,12 @@ const clinicPhotos = Array.from(
     grid-auto-rows: 1fr;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   }
+  /* Соседние карточки гаснут при наведении — приём из kokonut ui spotlight cards */
+  @media (hover: hover) and (pointer: fine) {
+    .dc-catalog-grid:hover :global(.dc-catalog-card:not(:hover)) {
+      opacity: 0.62;
+    }
+  }
 
   /* Ровная сетка: 2 колонки на планшете, 4 на десктопе — без «хвоста»
      из одной карточки, который давал auto-fit при четырёх врачах. */

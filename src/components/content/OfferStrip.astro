@@ -3,6 +3,11 @@
  * Полублок-перебивка между крупными секциями — та же роль, что у ленты
  * поставщиков: невысокая полоса, которая даёт странице «выдохнуть» между
  * двумя большими блоками. Не секция с заголовком: только короткие факты.
+ *
+ * Сетка и подача карточек — по мотивам kokonut ui (spotlight cards):
+ * белая карточка на тонированном фоне секции, иконка в бейдже с
+ * внутренней обводкой, мягкий радиальный подсвет в углу, соседи гаснут
+ * при наведении. Цвет один, фирменный: радуги из оригинала не берём.
  */
 import Icon from '../core/Icon.astro';
 
@@ -16,9 +21,9 @@ const { items } = Astro.props;
 <ul class="dc-strip" role="list">
   {
     items.map((item) => (
-      <li class="dc-strip__item">
+      <li class="dc-strip__card">
         <span class="dc-strip__icon">
-          <Icon name={item.icon} size={24} strokeWidth={1.75} color="var(--text-accent)" />
+          <Icon name={item.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
         </span>
         <span class="dc-strip__body">
           <span class="dc-strip__title">{item.title}</span>
@@ -35,37 +40,70 @@ const { items } = Astro.props;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: var(--space-6);
+    gap: var(--space-5);
     grid-template-columns: 1fr;
   }
   @media (min-width: 760px) {
     .dc-strip {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--space-8);
-    }
-    /* Тонкая линия между колонками — полоса читается как одна перебивка */
-    .dc-strip__item + .dc-strip__item {
-      padding-left: var(--space-8);
-      border-left: 1px solid var(--line-hairline);
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
     }
   }
 
-  .dc-strip__item {
+  .dc-strip__card {
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
     display: flex;
     align-items: flex-start;
     gap: var(--space-4);
-    min-width: 0;
+    padding: var(--space-5) var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+    transition:
+      box-shadow var(--dur-mid) var(--ease-out),
+      transform var(--dur-mid) var(--ease-out),
+      opacity var(--dur-mid) var(--ease-out),
+      border-color var(--dur-mid) var(--ease-out);
   }
+  /* Мягкий фирменный подсвет в углу — вместо цветного градиента оригинала */
+  .dc-strip__card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 12% 0%, var(--dc-turquoise-soft), transparent 62%);
+    opacity: 0.5;
+  }
+
+  .dc-strip__card:hover {
+    transform: translateY(-3px);
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-md);
+  }
+  /* Соседи гаснут — приём фокуса из kokonut ui, здесь на чистом CSS */
+  @media (hover: hover) and (pointer: fine) {
+    .dc-strip:hover .dc-strip__card:not(:hover) {
+      opacity: 0.6;
+    }
+  }
+
   .dc-strip__icon {
+    position: relative;
+    z-index: 1;
     flex: 0 0 auto;
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: var(--radius-md);
     background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
   }
   .dc-strip__body {
+    position: relative;
+    z-index: 1;
     display: grid;
     gap: 6px;
     min-width: 0;
@@ -80,5 +118,12 @@ const { items } = Astro.props;
     font-size: var(--type-small);
     color: var(--text-muted);
     max-width: min(var(--measure), 100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dc-strip__card,
+    .dc-strip__card:hover {
+      transform: none;
+    }
   }
 </style>
