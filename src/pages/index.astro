@@ -17,6 +17,7 @@ import PromoBoard from '../components/content/PromoBoard.astro';
 import AdvantageCarousel from '../components/content/AdvantageCarousel.astro';
 import ServiceCatalogCard from '../components/content/ServiceCatalogCard.astro';
 import BrandsMarquee from '../components/content/BrandsMarquee.astro';
+import OfferStrip from '../components/content/OfferStrip.astro';
 import ComparisonColumns from '../components/content/ComparisonColumns.astro';
 import PriceCompare from '../components/content/PriceCompare.astro';
 import PriceChart from '../components/content/PriceChart.astro';
@@ -98,7 +99,7 @@ const clinicPhotos = Array.from(
   </section>
 
   <!-- Акции -->
-  <section id="promo" class="dc-section--tight dc-bg-white">
+  <section id="promo" class="dc-section dc-bg-white">
     <div class="dc-container">
       <Reveal>
         <PromoBoard
@@ -136,6 +137,28 @@ const clinicPhotos = Array.from(
           ))
         }
       </div>
+    </div>
+  </section>
+
+  <!-- Полублок-перебивка между каталогом и врачами -->
+  <section id="terms" class="dc-section--tight dc-bg-warm">
+    <div class="dc-container">
+      <Reveal>
+        <OfferStrip
+          items={[
+            {
+              icon: 'calendar-check',
+              title: 'Консультация бесплатно',
+              text: 'Осмотр, снимок и план лечения с итоговой суммой — без оплаты и без обязательства лечиться у нас.',
+            },
+            {
+              icon: 'wallet',
+              title: 'Рассрочка без переплат',
+              text: 'Протезирование и имплантацию можно разбить на платежи. Условия обсуждаем до начала лечения.',
+            },
+          ]}
+        />
+      </Reveal>
     </div>
   </section>
 
@@ -180,19 +203,10 @@ const clinicPhotos = Array.from(
   <section id="advantages" class="dc-section dc-bg-warm">
     <div class="dc-container">
       <Reveal>
-        <SectionHeading
-          eyebrow="Условия"
-          title="Консультация бесплатно, лечение — в рассрочку"
-          lead="Прежде чем что-то делать, мы смотрим и считаем. Без оплаты за осмотр и без обязательств."
-        />
+        <SectionHeading eyebrow="Дентал Круиз" title="Почему пациенты выбирают нас" />
       </Reveal>
       <Reveal delay={90}>
         <AdvantageCarousel slides={slides.map((s) => s.data)} />
-      </Reveal>
-      <Reveal delay={140}>
-        <div class="dc-actions">
-          <Button variant="primary" size="lg" data-open="dc-book">Записаться на консультацию</Button>
-        </div>
       </Reveal>
     </div>
   </section>
@@ -202,7 +216,7 @@ const clinicPhotos = Array.from(
     <div class="dc-container">
       <Reveal>
         <SectionHeading
-          eyebrow="Почему выбирают нас"
+          eyebrow="Почему мы"
           title="Своя лаборатория — своя цена"
           lead="Большинство клиник заказывают коронки и виниры на стороне. Мы делаем их сами — поэтому нет наценки посредника и долгого ожидания."
         />
@@ -220,6 +234,15 @@ const clinicPhotos = Array.from(
           ourPrice="25 000 ₽"
           note="Дешевле не за счёт качества, а потому что между вами и техником никого нет. Импланты Osstem и Astra Tech — сертифицированные системы сторонних производителей, цена на уровне рынка, без накруток."
         />
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Полоса доверия: полублок между аргументом о цене и рассказом о клинике -->
+  <section id="trust" class="dc-section--tight dc-bg-cool">
+    <div class="dc-container">
+      <Reveal>
+        <TrustBar items={trust.map((t) => t.data)} />
       </Reveal>
     </div>
   </section>
@@ -319,15 +342,6 @@ const clinicPhotos = Array.from(
           />
         </Reveal>
       </div>
-    </div>
-  </section>
-
-  <!-- Полоса доверия -->
-  <section id="trust" class="dc-section--tight dc-bg-warm">
-    <div class="dc-container">
-      <Reveal>
-        <TrustBar items={trust.map((t) => t.data)} />
-      </Reveal>
     </div>
   </section>
 

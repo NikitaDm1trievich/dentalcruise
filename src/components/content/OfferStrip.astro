@@ -1,0 +1,84 @@
+---
+/**
+ * Полублок-перебивка между крупными секциями — та же роль, что у ленты
+ * поставщиков: невысокая полоса, которая даёт странице «выдохнуть» между
+ * двумя большими блоками. Не секция с заголовком: только короткие факты.
+ */
+import Icon from '../core/Icon.astro';
+
+interface Props {
+  items: { icon: string; title: string; text: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<ul class="dc-strip" role="list">
+  {
+    items.map((item) => (
+      <li class="dc-strip__item">
+        <span class="dc-strip__icon">
+          <Icon name={item.icon} size={24} strokeWidth={1.75} color="var(--text-accent)" />
+        </span>
+        <span class="dc-strip__body">
+          <span class="dc-strip__title">{item.title}</span>
+          <span class="dc-strip__text">{item.text}</span>
+        </span>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .dc-strip {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 760px) {
+    .dc-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-8);
+    }
+    /* Тонкая линия между колонками — полоса читается как одна перебивка */
+    .dc-strip__item + .dc-strip__item {
+      padding-left: var(--space-8);
+      border-left: 1px solid var(--line-hairline);
+    }
+  }
+
+  .dc-strip__item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+  .dc-strip__icon {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--surface-quiet);
+  }
+  .dc-strip__body {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+  .dc-strip__title {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: var(--fw-black);
+    color: var(--text-strong);
+  }
+  .dc-strip__text {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+    max-width: min(var(--measure), 100%);
+  }
+</style>
