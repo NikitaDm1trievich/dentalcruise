@@ -12,5 +12,6 @@
   "photoLabel": "Здесь фото работы: виниры E-max",
   "category": "veneers",
   "featured": true,
-  "order": 10
+  "order": 10,
+  "photo": "/images/services/veneers.jpg"
 }

@@ -13,5 +13,6 @@
   "photoLabel": "Здесь фото работы: циркониевая коронка",
   "category": "crowns",
   "featured": true,
-  "order": 20
+  "order": 20,
+  "photo": "/images/services/crowns.jpg"
 }

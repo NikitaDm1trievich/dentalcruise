@@ -8,8 +8,10 @@ import Button from '../components/core/Button.astro';
 import Badge from '../components/core/Badge.astro';
 import Icon from '../components/core/Icon.astro';
 
+import CountUp from '../components/core/CountUp.astro';
+
 import OceanHero from '../components/media/OceanHero.astro';
-import PhotoPlaceholder from '../components/media/PhotoPlaceholder.astro';
+import PhotoGallery from '../components/media/PhotoGallery.astro';
 
 import PromoBoard from '../components/content/PromoBoard.astro';
 import AdvantageCarousel from '../components/content/AdvantageCarousel.astro';
@@ -17,6 +19,7 @@ import ServiceFlipCard from '../components/content/ServiceFlipCard.astro';
 import BrandsMarquee from '../components/content/BrandsMarquee.astro';
 import ComparisonColumns from '../components/content/ComparisonColumns.astro';
 import PriceCompare from '../components/content/PriceCompare.astro';
+import PriceChart from '../components/content/PriceChart.astro';
 import DoctorFlipCard from '../components/content/DoctorFlipCard.astro';
 import FaqAccordion from '../components/content/FaqAccordion.astro';
 import ReviewsCard from '../components/content/ReviewsCard.astro';
@@ -44,6 +47,12 @@ const trust = (await getCollection('trust')).sort(byOrder);
 const them = comparison.filter((c) => c.data.side === 'them').map((c) => c.data.text);
 const us = comparison.filter((c) => c.data.side === 'us').map((c) => c.data.text);
 const faqItems = faq.map((f) => ({ id: f.data.id, q: f.data.q, a: f.data.a }));
+
+/** Интерьеры клиники для тизера «О клинике» */
+const clinicPhotos = Array.from(
+  { length: 8 },
+  (_, i) => asset(`images/clinic/clinic-0${i + 1}.jpg`),
+);
 ---
 
 <BaseLayout
@@ -154,6 +163,9 @@ const faqItems = faq.map((f) => ({ id: f.data.id, q: f.data.q, a: f.data.a }));
       <Reveal delay={90}>
         <ComparisonColumns theirItems={them} ourItems={us} />
       </Reveal>
+      <Reveal delay={140}>
+        <PriceChart />
+      </Reveal>
       <Reveal delay={180}>
         <PriceCompare
           label="Виниры E-max, за зуб"
@@ -180,7 +192,13 @@ const faqItems = faq.map((f) => ({ id: f.data.id, q: f.data.q, a: f.data.a }));
         </div>
       </Reveal>
       <Reveal delay={120}>
-        <PhotoPlaceholder label="Здесь фото зуботехнического цеха" ratio="4 / 3" />
+        <PhotoGallery
+          photos={clinicPhotos}
+          alt="Клиника «Дентал Круиз» изнутри"
+          label="Здесь фото зуботехнического цеха"
+          ratio="4 / 3"
+          interval={4000}
+        />
       </Reveal>
     </div>
   </section>
@@ -247,15 +265,22 @@ const faqItems = faq.map((f) => ({ id: f.data.id, q: f.data.q, a: f.data.a }));
             <ReviewsCard />
             <div class="dc-facts">
               <div>
-                <span class="dc-facts__value">4,9</span>
+                <span class="dc-facts__value">
+                  <CountUp value={4.9} decimals={1} />
+                </span>
                 <span class="dc-facts__cap">Средняя оценка на Яндекс Картах</span>
               </div>
               <div>
-                <span class="dc-facts__value">120+</span>
+                <span class="dc-facts__value">
+                  <CountUp value={120} suffix="+" />
+                </span>
                 <span class="dc-facts__cap">Отзывов пациентов района</span>
               </div>
               <div>
-                <span class="dc-facts__value">с 2013</span>
+                <span class="dc-facts__value">
+                  {/* Счёт с 2000, а не с нуля: год, бегущий от нуля, читается как ошибка */}
+                  <CountUp value={2013} from={2000} prefix="с " grouping={false} />
+                </span>
                 <span class="dc-facts__cap">Года принимаем в этом же здании</span>
               </div>
               <p>

@@ -152,6 +152,141 @@ a:hover {
   color: var(--text-muted);
 }
 
+/* ── График сравнения цен ────────────────────────────────────
+   Живёт здесь, а не в компоненте: scoped-стили Astro не проникают
+   внутрь React-острова. */
+.dc-chart {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-md);
+}
+.dc-chart__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: baseline;
+  justify-content: space-between;
+}
+.dc-chart__eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--type-eyebrow);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.dc-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  font-size: var(--type-small);
+  font-weight: var(--fw-semibold);
+  color: var(--text-body);
+}
+.dc-chart__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.dc-chart__swatch {
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+}
+.dc-chart__swatch--market {
+  background: var(--dc-white-caps);
+}
+.dc-chart__swatch--clinic {
+  background: var(--dc-turquoise-ink);
+}
+
+.dc-chart__plot {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 660 / 320;
+  max-height: 360px;
+}
+.dc-chart__plot svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  /* Появление слева направо: маска едет по всей области графика */
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1100ms cubic-bezier(0.85, 0, 0.15, 1);
+}
+/* Класс ставит общий механизм появления секций (src/lib/reveal.ts):
+   график проявляется вместе с блоком, а не сам по себе. */
+.dc-reveal.is-visible .dc-chart__plot svg,
+.no-js .dc-chart__plot svg {
+  clip-path: inset(0 0 0 0);
+}
+
+.dc-chart__gap {
+  font-size: var(--type-body);
+  color: var(--text-body);
+}
+.dc-chart__gap b {
+  font-family: var(--font-display);
+  font-size: var(--type-h4);
+  color: var(--text-accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dc-chart__plot svg {
+    clip-path: none;
+    transition: none;
+  }
+}
+
+.dc-chart__note {
+  font-size: var(--type-small);
+  line-height: var(--lh-body);
+  color: var(--text-muted);
+  max-width: min(var(--measure), 100%);
+}
+
+.dc-chart__tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: none;
+  white-space: nowrap;
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--dc-depths);
+  color: var(--text-on-dark);
+  font-family: var(--font-body);
+  font-size: var(--type-small);
+  box-shadow: var(--shadow-lg);
+}
+.dc-chart__tip-date {
+  color: var(--text-on-dark-muted);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-caps);
+  font-size: var(--type-eyebrow);
+}
+.dc-chart__tip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dc-chart__tip-row b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.dc-chart__tip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  flex: 0 0 auto;
+}
+
 /* Стартовое состояние скролл-анимации. Ставится классом, а не инлайном,
    чтобы при отключённом JS контент оставался видимым (см. no-js ниже). */
 .dc-reveal {

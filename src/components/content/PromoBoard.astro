@@ -34,15 +34,8 @@ const {
     {
       items.map((item) => (
         <div class="dc-promo__card">
-          {/* Лента — только там, где есть старая цена: иначе «Акция» без скидки вводит в заблуждение */}
-          {item.was && (
-            <span class="dc-promo__ribbon" aria-hidden="true">
-              Акция
-            </span>
-          )}
-          <span class:list={['dc-promo__label', item.was && 'dc-promo__label--ribboned']}>
-            {item.title}
-          </span>
+          <span class="dc-promo__ribbon" aria-hidden="true">Акция</span>
+          <span class="dc-promo__label">{item.title}</span>
           <span class="dc-promo__price">{item.price}</span>
           {item.was && <span class="dc-promo__was">{item.was}</span>}
           {item.note && <span class="dc-promo__note">{item.note}</span>}
@@ -139,8 +132,6 @@ const {
     font-size: var(--type-small);
     font-weight: var(--fw-bold);
     color: var(--text-muted);
-  }
-  .dc-promo__label--ribboned {
     /* уступаем место ленте в углу */
     padding-right: 60px;
   }
@@ -148,7 +139,9 @@ const {
     font-family: var(--font-display);
     font-size: var(--type-price);
     font-weight: var(--fw-bold);
-    color: #f0574f;
+    /* Тот же цвет, что у цен в карточках услуг и в блоке сравнения:
+       красным остаётся только «акционная» атрибутика — ярлык и лента. */
+    color: var(--text-strong);
     line-height: 1.05;
   }
   .dc-promo__was {

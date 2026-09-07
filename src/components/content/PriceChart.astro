@@ -1,0 +1,275 @@
+---
+/**
+ * График «рынок против нашей цены» — области с градиентной заливкой,
+ * пунктирная сетка, подписи по-русски, проявление слева направо.
+ *
+ * Почему не готовая библиотека. Сначала пробовали bklit ui (его нет в npm —
+ * это registry в стиле shadcn на React + visx), затем tremor. Tremor v3
+ * рассчитан на Tailwind v3 со своим preset, а проект на Tailwind v4 — стили
+ * бы не применились; связка @astrojs/react с Rolldown-сборщиком Astro 5.15
+ * при этом ломала и dev-сервер, и сборку. Ради одного декоративного блока
+ * это ~180 КБ клиентского JS и сломанный тулчейн, поэтому график собран
+ * вручную на SVG: та же подача, единицы килобайт, ноль зависимостей.
+ *
+ * Геометрия считается на этапе сборки — в браузер уезжает готовый SVG.
+ */
+import { priceChart } from '../../data/price-chart';
+
+const { data, title, marketLabel, clinicLabel, note, anchorMonth } = priceChart;
+
+// ── Геометрия ───────────────────────────────────────────────
+// Пропорции близкие к 2:1 — чтобы на телефоне график не превращался в полоску
+const W = 660;
+const H = 320;
+const PAD = { top: 16, right: 12, bottom: 40, left: 60 };
+const plotW = W - PAD.left - PAD.right;
+const plotH = H - PAD.top - PAD.bottom;
+
+// Шкала от нуля: у диаграмм с областями усечённая база зрительно
+// раздувает разницу. Здесь разрыв и без того двукратный — приукрашивать нечего.
+const Y_MIN = 0;
+const Y_MAX = 60000;
+const yTicks = [0, 15000, 30000, 45000, 60000];
+
+const x = (i: number) => PAD.left + (plotW * i) / (data.length - 1);
+const y = (v: number) => PAD.top + plotH - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * plotH;
+
+/**
+ * Плавная кривая через точки (Catmull-Rom → кубические Безье).
+ * Тот же тип сглаживания, что `type="monotone"` у Recharts/Tremor.
+ */
+function smoothPath(values: readonly number[]): string {
+  const pts = values.map((v, i) => [x(i), y(v)] as const);
+  if (pts.length < 2) return '';
+
+  let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+
+    d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2[0]} ${p2[1]}`;
+  }
+  return d;
+}
+
+const baseline = PAD.top + plotH;
+const closeArea = (line: string) =>
+  `${line} L ${x(data.length - 1)} ${baseline} L ${x(0)} ${baseline} Z`;
+
+const marketLine = smoothPath(data.map((d) => d.market));
+const clinicLine = smoothPath(data.map((d) => d.clinic));
+
+const anchorIndex = data.findIndex((d) => d.month === anchorMonth);
+const gap = data[anchorIndex].market - data[anchorIndex].clinic;
+const rub = new Intl.NumberFormat('ru-RU');
+---
+
+<figure class="dc-chart">
+  <figcaption class="dc-chart__head">
+    <span class="dc-chart__eyebrow">{title}</span>
+    <div class="dc-chart__legend">
+      <span><i class="dc-chart__swatch dc-chart__swatch--market"></i>{marketLabel}</span>
+      <span><i class="dc-chart__swatch dc-chart__swatch--clinic"></i>{clinicLabel}</span>
+    </div>
+  </figcaption>
+
+  <div class="dc-chart__plot" data-chart>
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label={`${title}: ${marketLabel} растёт с ${rub.format(data[0].market)} до ${rub.format(data[data.length - 1].market)} ₽ за 2026 год, цена «${clinicLabel}» держится на ${rub.format(data[0].clinic)} ₽`}
+    >
+      <defs>
+        <linearGradient id="dcMarketFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--dc-white-caps)" stop-opacity="0.45"></stop>
+          <stop offset="100%" stop-color="var(--dc-white-caps)" stop-opacity="0"></stop>
+        </linearGradient>
+        <linearGradient id="dcClinicFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--dc-turquoise)" stop-opacity="0.55"></stop>
+          <stop offset="100%" stop-color="var(--dc-turquoise)" stop-opacity="0"></stop>
+        </linearGradient>
+      </defs>
+
+      {/* Сетка и подписи значений */}
+      {
+        yTicks.map((tick) => (
+          <>
+            <line
+              x1={PAD.left}
+              x2={W - PAD.right}
+              y1={y(tick)}
+              y2={y(tick)}
+              class="dc-chart__grid"
+            />
+            <text x={PAD.left - 14} y={y(tick) + 5} class="dc-chart__tick" text-anchor="end">
+              {tick / 1000} тыс
+            </text>
+          </>
+        ))
+      }
+
+      {/* Месяцы */}
+      {
+        data.map((point, i) => (
+          <text
+            x={x(i)}
+            y={H - 14}
+            class:list={['dc-chart__tick', i % 2 === 1 && 'dc-chart__tick--odd']}
+            text-anchor="middle"
+          >
+            {point.month}
+          </text>
+        ))
+      }
+
+      {/* Рынок — приглушённый нейтральный */}
+      <path d={closeArea(marketLine)} fill="url(#dcMarketFill)"></path>
+      <path d={marketLine} class="dc-chart__line dc-chart__line--market"></path>
+
+      {/* Наша цена — акцентная бирюза поверх */}
+      <path d={closeArea(clinicLine)} fill="url(#dcClinicFill)"></path>
+      <path d={clinicLine} class="dc-chart__line dc-chart__line--clinic"></path>
+
+      {/* Точка фактического замера рынка */}
+      <circle
+        cx={x(anchorIndex)}
+        cy={y(data[anchorIndex].market)}
+        r="5"
+        class="dc-chart__anchor"></circle>
+
+      {/* Наведение: невидимые полосы ловят курсор над каждым месяцем */}
+      <g class="dc-chart__hit">
+        {
+          data.map((point, i) => (
+            <rect
+              x={x(i) - plotW / (data.length - 1) / 2}
+              y={PAD.top}
+              width={plotW / (data.length - 1)}
+              height={plotH}
+              data-hit={i}
+              data-month={point.month}
+              data-market={point.market}
+              data-clinic={point.clinic}
+              data-forecast={String(point.forecast)}
+              data-cx={x(i)}
+            />
+          ))
+        }
+      </g>
+
+      <line class="dc-chart__cursor" y1={PAD.top} y2={baseline} data-on="false"></line>
+    </svg>
+
+    <div class="dc-chart__tip" data-chart-tip hidden></div>
+  </div>
+
+  <p class="dc-chart__gap">
+    В сентябре разница составляет <b>{rub.format(gap)} ₽</b> на каждой коронке.
+  </p>
+
+  <p class="dc-chart__note">{note}</p>
+</figure>
+
+<style>
+  .dc-chart__grid {
+    stroke: var(--line-hairline);
+    stroke-dasharray: 4 4;
+  }
+  .dc-chart__tick {
+    fill: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 13px;
+  }
+  /* На телефоне 12 подписей сливаются — оставляем каждую вторую */
+  @media (max-width: 640px) {
+    .dc-chart__tick--odd {
+      display: none;
+    }
+  }
+  .dc-chart__line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .dc-chart__line--market {
+    stroke: var(--dc-white-caps);
+    stroke-width: 2;
+  }
+  .dc-chart__line--clinic {
+    stroke: var(--dc-turquoise-ink);
+    stroke-width: 3;
+  }
+  .dc-chart__anchor {
+    fill: var(--dc-white);
+    stroke: var(--dc-white-caps);
+    stroke-width: 2.5;
+  }
+  .dc-chart__hit rect {
+    fill: transparent;
+  }
+  .dc-chart__cursor {
+    stroke: var(--line-strong);
+    stroke-dasharray: 4 4;
+    visibility: hidden;
+  }
+  .dc-chart__cursor[data-on='true'] {
+    visibility: visible;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-chart]').forEach((chart) => {
+    const svg = chart.querySelector('svg');
+    const tip = chart.querySelector<HTMLElement>('[data-chart-tip]');
+    const cursor = chart.querySelector<SVGLineElement>('.dc-chart__cursor');
+    if (!svg || !tip || !cursor) return;
+
+    const rub = new Intl.NumberFormat('ru-RU');
+    const money = (value: string) => `${rub.format(Number(value))} ₽`;
+
+    const hide = () => {
+      tip.hidden = true;
+      cursor.setAttribute('data-on', 'false');
+    };
+
+    svg.querySelectorAll<SVGRectElement>('[data-hit]').forEach((hit) => {
+      const show = () => {
+        const d = hit.dataset;
+
+        tip.innerHTML = `
+          <span class="dc-chart__tip-date">${d.month} 2026${d.forecast === 'true' ? ' · прогноз' : ''}</span>
+          <span class="dc-chart__tip-row">
+            <i class="dc-chart__tip-dot" style="background:var(--dc-white-caps)"></i>
+            В среднем по Москве<b>${money(d.market!)}</b>
+          </span>
+          <span class="dc-chart__tip-row">
+            <i class="dc-chart__tip-dot" style="background:var(--dc-turquoise-ink)"></i>
+            Дентал Круиз<b>${money(d.clinic!)}</b>
+          </span>`;
+        tip.hidden = false;
+
+        // Подсказку ставим над колонкой месяца, в долях ширины графика
+        const ratio = Number(d.cx) / 660;
+        tip.style.left = `${ratio * 100}%`;
+
+        cursor.setAttribute('x1', d.cx!);
+        cursor.setAttribute('x2', d.cx!);
+        cursor.setAttribute('data-on', 'true');
+      };
+
+      hit.addEventListener('mouseenter', show);
+      hit.addEventListener('focus', show);
+      hit.addEventListener('touchstart', show, { passive: true });
+    });
+
+    chart.addEventListener('mouseleave', hide);
+    svg.addEventListener('blur', hide, true);
+  });
+</script>

@@ -2,6 +2,7 @@
 /** Карточка рейтинга со ссылкой на Яндекс Карты. Из Ds2_2d9e23.ReviewsCard. */
 import Icon from '../core/Icon.astro';
 import Button from '../core/Button.astro';
+import CountUp from '../core/CountUp.astro';
 import { clinic } from '../../data/site';
 
 interface Props {
@@ -17,7 +18,7 @@ const filled = Math.round(value);
 
 <div class="dc-reviews">
   <div class="dc-reviews__head">
-    <span class="dc-reviews__value">{value.toString().replace('.', ',')}</span>
+    <span class="dc-reviews__value"><CountUp value={value} decimals={1} /></span>
     <span class="dc-reviews__stars" aria-label={`Рейтинг ${value} из 5`}>
       {
         [0, 1, 2, 3, 4].map((i) => (
@@ -31,7 +32,7 @@ const filled = Math.round(value);
         ))
       }
     </span>
-    <span class="dc-reviews__count">{count} отзывов</span>
+    <span class="dc-reviews__count"><CountUp value={count} /> отзывов</span>
   </div>
 
   <p class="dc-reviews__note">{note}</p>

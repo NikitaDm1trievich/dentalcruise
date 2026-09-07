@@ -1,0 +1,58 @@
+---
+/**
+ * Число, которое досчитывается до значения, когда доезжает до экрана.
+ *
+ * В разметку сразу пишется финальное значение: без JS и при
+ * prefers-reduced-motion посетитель видит готовую цифру, а не ноль.
+ * Anime.js только «отматывает» её назад и проигрывает вперёд.
+ */
+interface Props {
+  /** Конечное значение */
+  value: number;
+  /** Знаков после запятой (разделитель — запятая, как принято в русском) */
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+  /** С какого значения считать; по умолчанию — с нуля */
+  from?: number;
+  duration?: number;
+  /** Разряды через пробел. Для года (2013) нужно false, иначе выйдет «2 013» */
+  grouping?: boolean;
+  class?: string;
+}
+
+const {
+  value,
+  decimals = 0,
+  prefix = '',
+  suffix = '',
+  from = 0,
+  duration = 1400,
+  grouping = true,
+  class: className,
+} = Astro.props;
+
+const formatted = value.toLocaleString('ru-RU', {
+  minimumFractionDigits: decimals,
+  maximumFractionDigits: decimals,
+  useGrouping: grouping,
+});
+---
+
+<span
+  class:list={['dc-count', className]}
+  data-count
+  data-value={value}
+  data-from={from}
+  data-decimals={decimals}
+  data-prefix={prefix}
+  data-suffix={suffix}
+  data-grouping={String(grouping)}
+  data-duration={duration}>{prefix}{formatted}{suffix}</span
+>
+
+<style>
+  .dc-count {
+    font-variant-numeric: tabular-nums;
+  }
+</style>

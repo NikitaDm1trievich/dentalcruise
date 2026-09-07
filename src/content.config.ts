@@ -63,7 +63,8 @@ const carouselSlides = defineCollection({
     id: z.string(),
     title: z.string(),
     text: z.string(),
-    photo: z.string().optional(),
+    /** Несколько кадров — галерея с кроссфейдом; пустой массив — подписанная заглушка */
+    photos: z.array(z.string()).default([]),
     photoLabel: z.string().default('Здесь фото клиники'),
     ...orderable,
   }),

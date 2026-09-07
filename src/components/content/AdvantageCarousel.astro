@@ -5,10 +5,10 @@
  */
 import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
-import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+import PhotoGallery from '../media/PhotoGallery.astro';
 
 interface Props {
-  slides: { id: string; title: string; text: string; photo?: string; photoLabel: string }[];
+  slides: { id: string; title: string; text: string; photos: string[]; photoLabel: string }[];
   interval?: number;
 }
 
@@ -20,11 +20,12 @@ const { slides, interval = 6000 } = Astro.props;
     {
       slides.map((slide, i) => (
         <div class="dc-carousel__layer" data-slide={i} data-active={i === 0 ? 'true' : 'false'}>
-          <PhotoPlaceholder
+          <PhotoGallery
+            photos={slide.photos}
             label={slide.photoLabel}
-            src={slide.photo}
             alt={slide.title}
             ratio="4 / 3"
+            interval={4500}
             cover
           />
         </div>
