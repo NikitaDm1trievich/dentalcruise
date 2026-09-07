@@ -1,0 +1,119 @@
+---
+/** Кнопка/ссылка-кнопка. Перенесено из Ds2_2d9e23.Button. */
+interface Props {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'onDark';
+  size?: 'sm' | 'md' | 'lg';
+  href?: string;
+  type?: 'button' | 'submit';
+  fullWidth?: boolean;
+  class?: string;
+  id?: string;
+  [key: string]: unknown;
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  href,
+  type = 'button',
+  fullWidth = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const Tag = href ? 'a' : 'button';
+const classes = ['dc-btn', `dc-btn--${variant}`, `dc-btn--${size}`, fullWidth && 'dc-btn--full', className];
+---
+
+<Tag class:list={classes} href={href} type={href ? undefined : type} {...rest}>
+  <slot name="icon" />
+  <span class="dc-btn__label"><slot /></span>
+  <slot name="icon-right" />
+</Tag>
+
+<style>
+  .dc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: var(--font-body);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.01em;
+    border-radius: var(--radius-pill);
+    border: var(--border-width-strong) solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.1;
+    width: auto;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .dc-btn:active {
+    transform: scale(0.975);
+  }
+  .dc-btn--full {
+    width: 100%;
+  }
+
+  .dc-btn--lg {
+    padding: 18px 30px;
+    font-size: var(--type-body-lg);
+    min-height: 56px;
+  }
+  .dc-btn--md {
+    padding: 14px 24px;
+    font-size: var(--type-body);
+    min-height: var(--tap-min);
+  }
+  .dc-btn--sm {
+    padding: 10px 18px;
+    font-size: var(--type-small);
+    min-height: 40px;
+  }
+
+  .dc-btn--primary {
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-btn--primary:hover {
+    background: var(--cta-bg-hover);
+    color: var(--cta-fg);
+    box-shadow: var(--shadow-cta);
+  }
+
+  .dc-btn--secondary {
+    background: transparent;
+    color: var(--text-strong);
+    border-color: var(--line-strong);
+  }
+  .dc-btn--secondary:hover {
+    color: var(--text-strong);
+    border-color: var(--dc-depths);
+  }
+
+  .dc-btn--ghost {
+    background: transparent;
+    color: var(--text-strong);
+    border-color: transparent;
+  }
+  .dc-btn--ghost:hover {
+    background: rgba(4, 48, 65, 0.06);
+    color: var(--text-strong);
+  }
+
+  .dc-btn--onDark {
+    background: transparent;
+    color: var(--text-on-dark);
+    border-color: var(--line-on-dark);
+  }
+  .dc-btn--onDark:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--text-on-dark);
+  }
+</style>

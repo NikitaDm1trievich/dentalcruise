@@ -1,0 +1,8 @@
+[
+  { "id": "vladmiva", "name": "ВладМиВа", "order": 10 },
+  { "id": "stomadent", "name": "Стомадент", "order": 20 },
+  { "id": "celit", "name": "Целит", "order": 30 },
+  { "id": "raduga-r", "name": "Радуга-Р", "order": 40 },
+  { "id": "estet", "name": "ЭСТЕТ", "order": 50 },
+  { "id": "diarsi", "name": "ДиаРси", "order": 60 }
+]

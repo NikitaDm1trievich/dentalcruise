@@ -1,0 +1,19 @@
+{
+  "name": "dentalcruise-booking-worker",
+  "private": true,
+  "type": "module",
+  "description": "Приём заявок с формы записи и пересылка их в Telegram-бота",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "hono": "^4.10.3"
+  },
+  "devDependencies": {
+    "wrangler": "^4.48.0",
+    "@cloudflare/workers-types": "^5.20260903.1",
+    "typescript": "^5.9.3"
+  }
+}

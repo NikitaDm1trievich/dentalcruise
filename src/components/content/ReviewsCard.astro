@@ -1,0 +1,81 @@
+---
+/** Карточка рейтинга со ссылкой на Яндекс Карты. Из Ds2_2d9e23.ReviewsCard. */
+import Icon from '../core/Icon.astro';
+import Button from '../core/Button.astro';
+import { clinic } from '../../data/site';
+
+interface Props {
+  note?: string;
+}
+const {
+  note = 'Мы не публикуем придуманные отзывы — читайте настоящие в карточке клиники на Яндекс Картах.',
+} = Astro.props;
+
+const { value, count } = clinic.rating;
+const filled = Math.round(value);
+---
+
+<div class="dc-reviews">
+  <div class="dc-reviews__head">
+    <span class="dc-reviews__value">{value.toString().replace('.', ',')}</span>
+    <span class="dc-reviews__stars" aria-label={`Рейтинг ${value} из 5`}>
+      {
+        [0, 1, 2, 3, 4].map((i) => (
+          <Icon
+            name="star"
+            size={24}
+            strokeWidth={1.5}
+            color={i < filled ? 'var(--dc-turquoise)' : 'var(--dc-white-caps)'}
+            fill={i < filled ? 'var(--dc-turquoise)' : 'none'}
+          />
+        ))
+      }
+    </span>
+    <span class="dc-reviews__count">{count} отзывов</span>
+  </div>
+
+  <p class="dc-reviews__note">{note}</p>
+
+  <Button variant="secondary" href={clinic.links.yandexOrg} target="_blank" rel="noopener">
+    Смотреть отзывы на Яндекс Картах
+    <Icon slot="icon-right" name="arrow-up-right" size={20} />
+  </Button>
+</div>
+
+<style>
+  .dc-reviews {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+    padding: var(--space-8);
+    background: var(--surface-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+  }
+  .dc-reviews__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .dc-reviews__value {
+    font-family: var(--font-display);
+    font-size: var(--type-price);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+    line-height: 1;
+  }
+  .dc-reviews__stars {
+    display: flex;
+    gap: 2px;
+  }
+  .dc-reviews__count {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+  }
+  .dc-reviews__note {
+    color: var(--text-body);
+    max-width: min(var(--measure), 100%);
+  }
+</style>

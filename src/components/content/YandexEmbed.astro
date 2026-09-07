@@ -1,0 +1,119 @@
+---
+/**
+ * Виджет Яндекс Карт (карта организации или лента отзывов).
+ *
+ * iframe подставляется скриптом, только когда блок доезжает до экрана:
+ * оба виджета тяжёлые, а сидят они в самом низу страницы — грузить их
+ * на первом экране незачем.
+ */
+interface Props {
+  src: string;
+  title: string;
+  height?: number;
+  /** Подпись под виджетом со ссылкой на карточку организации */
+  linkHref?: string;
+  linkLabel?: string;
+  class?: string;
+}
+
+const { src, title, height = 400, linkHref, linkLabel, class: className } = Astro.props;
+---
+
+<div
+  class:list={['dc-embed', className]}
+  style={`--dc-embed-h:${height}px`}
+  data-embed
+  data-src={src}
+  data-title={title}
+>
+  <div class="dc-embed__frame">
+    <div class="dc-embed__skeleton" aria-hidden="true"></div>
+  </div>
+
+  {
+    linkHref && (
+      <a class="dc-embed__link" href={linkHref} target="_blank" rel="noopener">
+        {linkLabel ?? 'Открыть в Яндекс Картах'}
+      </a>
+    )
+  }
+</div>
+
+<style>
+  .dc-embed {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    background: var(--dc-breeze);
+    border: 1px solid var(--line-hairline);
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: var(--dc-embed-h);
+  }
+  .dc-embed__frame {
+    position: relative;
+    min-height: var(--dc-embed-h);
+  }
+  .dc-embed__frame :global(iframe) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: var(--dc-embed-h);
+    border: 0;
+    filter: saturate(0.88) contrast(1.03);
+  }
+  .dc-embed__skeleton {
+    position: absolute;
+    inset: 0;
+    background: var(--grad-shallow);
+  }
+  .dc-embed__link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap-min);
+    padding: 0 16px;
+    text-decoration: none;
+    color: var(--text-accent);
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    background: var(--surface-quiet);
+  }
+</style>
+
+<script>
+  const mount = (host: HTMLElement) => {
+    const frame = host.querySelector<HTMLElement>('.dc-embed__frame');
+    if (!frame || frame.querySelector('iframe')) return;
+
+    const iframe = document.createElement('iframe');
+    iframe.src = host.dataset.src ?? '';
+    iframe.title = host.dataset.title ?? '';
+    iframe.loading = 'lazy';
+    iframe.setAttribute('allowfullscreen', 'true');
+    iframe.addEventListener('load', () => host.querySelector('.dc-embed__skeleton')?.remove(), {
+      once: true,
+    });
+    frame.appendChild(iframe);
+  };
+
+  const hosts = document.querySelectorAll<HTMLElement>('[data-embed]');
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          io.unobserve(entry.target);
+          mount(entry.target as HTMLElement);
+        }
+      },
+      { rootMargin: '300px' },
+    );
+    hosts.forEach((host) => io.observe(host));
+  } else {
+    hosts.forEach(mount);
+  }
+</script>

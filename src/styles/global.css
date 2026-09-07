@@ -1,0 +1,172 @@
+/* ─────────────────────────────────────────────────────────────
+   Дентал Круиз — точка входа стилей.
+
+   Порядок важен:
+   1) Tailwind (в т.ч. preflight-сброс),
+   2) токены дизайн-системы,
+   3) base.css дизайн-системы — он идёт ПОСЛЕ preflight и возвращает
+      типографику бренда (h1–h4, ссылки, focus-ring),
+   4) утверждённые переопределения уровня страницы (перенесены
+      из <style> макета «Дентал Круиз - лендинг.dc.html»).
+   ───────────────────────────────────────────────────────────── */
+
+@import "tailwindcss";
+
+@import "./tokens/fonts.css";
+@import "./tokens/colors.css";
+@import "./tokens/typography.css";
+@import "./tokens/spacing.css";
+@import "./tokens/radius.css";
+@import "./tokens/elevation.css";
+@import "./tokens/motion.css";
+@import "./tokens/base.css";
+
+/* ── Мост «токены → утилиты Tailwind» ───────────────────────────
+   Токены остаются единственным источником правды: здесь они только
+   пробрасываются в утилиты (bg-surface-card, text-strong, rounded-lg…),
+   чтобы вёрстку можно было писать классами, не дублируя значения. */
+@theme inline {
+  --color-white-page: var(--dc-white);
+  --color-seashell: var(--dc-seashell);
+  --color-mist: var(--dc-mist);
+  --color-aqua-tint: var(--dc-aqua-tint);
+  --color-breeze: var(--dc-breeze);
+  --color-sea-glass: var(--dc-sea-glass);
+  --color-white-caps: var(--dc-white-caps);
+  --color-depths: var(--dc-depths);
+  --color-lagoon: var(--dc-lagoon);
+  --color-turquoise: var(--dc-turquoise);
+  --color-turquoise-ink: var(--dc-turquoise-ink);
+  --color-turquoise-mark: var(--dc-turquoise-mark);
+  --color-coral: var(--dc-coral);
+
+  --color-surface-page: var(--surface-page);
+  --color-surface-card: var(--surface-card);
+  --color-surface-warm: var(--surface-warm);
+  --color-surface-cool: var(--surface-cool);
+  --color-surface-quiet: var(--surface-quiet);
+  --color-surface-footer: var(--surface-footer);
+
+  --color-strong: var(--text-strong);
+  --color-body: var(--text-body);
+  --color-muted: var(--text-muted);
+  --color-on-dark: var(--text-on-dark);
+  --color-on-dark-muted: var(--text-on-dark-muted);
+  --color-accent: var(--text-accent);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --ease-out: var(--ease-out);
+}
+
+/* ── Переопределения, утверждённые в макете ──────────────────── */
+:root {
+  /* CTA: белый текст на глубокой бирюзе — мягче, чем тёмная краска на ярком */
+  --cta-bg: var(--dc-turquoise-ink);
+  --cta-bg-hover: var(--dc-turquoise-press);
+  --cta-fg: #ffffff;
+  --focus-ring: var(--dc-depths);
+  /* высота шапки — нужна якорям, чтобы не уезжать под фиксированный хедер */
+  --header-h: 76px;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+body {
+  background: var(--surface-page);
+  color: var(--text-body);
+}
+
+/* Скроллбары скрыты везде — решение макета (чистый «морской» вид). */
+html,
+body,
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+a {
+  color: var(--text-accent);
+}
+a:hover {
+  color: var(--dc-turquoise-press);
+}
+:focus-visible {
+  outline: 2px solid var(--dc-depths);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ── Общие раскладочные примитивы ────────────────────────────── */
+.dc-section {
+  padding: var(--section-y) var(--gutter);
+}
+.dc-section--tight {
+  padding: var(--section-y-tight) var(--gutter);
+}
+.dc-container {
+  max-width: var(--container);
+  margin-inline: auto;
+  display: grid;
+  gap: var(--space-10);
+}
+.dc-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--type-eyebrow);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Стартовое состояние скролл-анимации. Ставится классом, а не инлайном,
+   чтобы при отключённом JS контент оставался видимым (см. no-js ниже). */
+.dc-reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-shift));
+  will-change: opacity, transform;
+}
+.no-js .dc-reveal,
+.dc-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dc-reveal {
+    opacity: 1;
+    transform: none;
+  }
+}

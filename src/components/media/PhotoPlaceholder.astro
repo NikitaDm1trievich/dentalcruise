@@ -1,0 +1,120 @@
+---
+/**
+ * Фото или подписанная заглушка на его месте.
+ *
+ * Пока реальных фото нет — рисуется заглушка из макета. Как только в JSON
+ * появляется `photo`, тот же компонент отдаёт <img> с ленивой загрузкой и
+ * skeleton-подложкой (требование брифа: аудитория мобильная, фото тяжёлые).
+ */
+import Icon from '../core/Icon.astro';
+
+interface Props {
+  label?: string;
+  src?: string;
+  alt?: string;
+  ratio?: string;
+  radius?: string;
+  tone?: 'light' | 'dark';
+  cover?: boolean;
+  class?: string;
+}
+
+const {
+  label = 'Здесь реальное фото',
+  src,
+  alt = '',
+  ratio = '4 / 3',
+  radius = 'var(--radius-xl)',
+  tone = 'light',
+  cover = false,
+  class: className,
+} = Astro.props;
+
+const style = `--dc-photo-ratio:${ratio};--dc-photo-radius:${radius};`;
+---
+
+{
+  src ? (
+    <div class:list={['dc-photo', cover && 'dc-photo--cover', className]} style={style} data-photo>
+      <img src={src} alt={alt} loading="lazy" decoding="async" class="dc-photo__img" />
+    </div>
+  ) : (
+    <div
+      role="img"
+      aria-label={label}
+      class:list={[
+        'dc-photo',
+        'dc-photo--empty',
+        cover && 'dc-photo--cover',
+        tone === 'dark' && 'dc-photo--dark',
+        className,
+      ]}
+      style={style}
+    >
+      <Icon name="image" size={30} strokeWidth={1.5} />
+      <span class="dc-photo__label">{label}</span>
+    </div>
+  )
+}
+
+<style>
+  .dc-photo {
+    width: 100%;
+    aspect-ratio: var(--dc-photo-ratio);
+    border-radius: var(--dc-photo-radius);
+    overflow: hidden;
+    position: relative;
+    /* skeleton — видно, пока картинка не догрузилась */
+    background: var(--grad-shallow);
+  }
+  /* Заполнить отведённое место, а не диктовать высоту своим соотношением сторон */
+  .dc-photo--cover {
+    height: 100%;
+    aspect-ratio: auto;
+    min-height: 0;
+  }
+  .dc-photo__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+  .dc-photo__img[data-loaded] {
+    opacity: 1;
+  }
+
+  .dc-photo--empty {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: var(--space-3);
+    text-align: center;
+    padding: var(--space-6);
+    box-shadow: var(--shadow-inset-line);
+    color: var(--text-strong);
+  }
+  .dc-photo--dark {
+    background: var(--grad-deep);
+    box-shadow: none;
+    color: var(--text-on-dark);
+  }
+  .dc-photo__label {
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-caps);
+    text-transform: uppercase;
+    max-width: 24ch;
+  }
+</style>
+
+<script>
+  // Снимаем skeleton, когда картинка реально отрисовалась.
+  const markLoaded = (img: HTMLImageElement) => img.setAttribute('data-loaded', '');
+  document.querySelectorAll<HTMLImageElement>('[data-photo] .dc-photo__img').forEach((img) => {
+    if (img.complete && img.naturalWidth > 0) markLoaded(img);
+    else img.addEventListener('load', () => markLoaded(img), { once: true });
+  });
+</script>

@@ -1,0 +1,115 @@
+---
+/**
+ * Мета-теги, Open Graph и JSON-LD.
+ *
+ * Схема — Dentist (подтип MedicalBusiness/LocalBusiness) с реальными
+ * российскими данными: адрес в Москве, телефон +7, часы пн–сб.
+ * Пустые поля (индекс, ИНН/ОГРН, номер лицензии) в разметку не попадают —
+ * лучше не отдавать поле, чем отдать выдуманное.
+ */
+import { clinic } from '../../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Путь страницы относительно корня, напр. "/pricelist" */
+  path?: string;
+  ogImage?: string;
+  noindex?: boolean;
+  /** Вопросы FAQ — попадают в схему FAQPage (сниппеты в поиске) */
+  faq?: { q: string; a: string }[];
+}
+
+const { title, description, path = '/', ogImage, noindex = false, faq } = Astro.props;
+
+const canonical = new URL(path, Astro.site ?? 'https://dentalcruise.ru').toString();
+const image = new URL(ogImage ?? `${import.meta.env.BASE_URL}og-cover.jpg`.replace(/\/{2,}/g, '/'), Astro.site ?? 'https://dentalcruise.ru').toString();
+
+const address: Record<string, string> = {
+  '@type': 'PostalAddress',
+  streetAddress: clinic.address.street,
+  addressLocality: clinic.address.locality,
+  addressRegion: clinic.address.region,
+  addressCountry: clinic.address.country,
+};
+if (clinic.address.postalCode) address.postalCode = clinic.address.postalCode;
+
+const sameAs = [clinic.links.yandexOrg, clinic.links.vk, clinic.links.telegram].filter(Boolean);
+
+const business: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Dentist',
+  '@id': new URL('/', Astro.site ?? 'https://dentalcruise.ru').toString() + '#clinic',
+  name: clinic.name,
+  description: clinic.description,
+  url: new URL('/', Astro.site ?? 'https://dentalcruise.ru').toString(),
+  telephone: clinic.phoneE164,
+  email: clinic.email,
+  image,
+  logo: new URL(`${import.meta.env.BASE_URL}logo-dentalcruise.svg`.replace(/\/{2,}/g, '/'), Astro.site ?? 'https://dentalcruise.ru').toString(),
+  address,
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: clinic.geo.lat,
+    longitude: clinic.geo.lng,
+  },
+  openingHoursSpecification: clinic.openingHours.map((h) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: h.days,
+    opens: h.opens,
+    closes: h.closes,
+  })),
+  priceRange: '₽₽',
+  currenciesAccepted: 'RUB',
+  areaServed: { '@type': 'City', name: 'Москва' },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: clinic.rating.value,
+    reviewCount: clinic.rating.count,
+    bestRating: 5,
+  },
+  availableService: [
+    { '@type': 'MedicalProcedure', name: 'Виниры' },
+    { '@type': 'MedicalProcedure', name: 'Коронки' },
+    { '@type': 'MedicalProcedure', name: 'Протезирование под ключ' },
+    { '@type': 'MedicalProcedure', name: 'Имплантация зубов' },
+  ],
+};
+if (sameAs.length > 0) business.sameAs = sameAs;
+
+const faqSchema =
+  faq && faq.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faq.map((item) => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: { '@type': 'Answer', text: item.a },
+        })),
+      }
+    : null;
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={clinic.name} />
+<meta property="og:locale" content="ru_RU" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={image} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(business)} />
+{faqSchema && <script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />}

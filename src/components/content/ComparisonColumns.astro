@@ -1,0 +1,94 @@
+---
+/** «Обычная клиника» vs «Дентал Круиз». Из Ds2_2d9e23.ComparisonColumns. */
+import Icon from '../core/Icon.astro';
+
+interface Props {
+  theirTitle?: string;
+  ourTitle?: string;
+  theirItems: string[];
+  ourItems: string[];
+}
+
+const {
+  theirTitle = 'Обычная клиника',
+  ourTitle = 'Дентал Круиз',
+  theirItems,
+  ourItems,
+} = Astro.props;
+
+const columns = [
+  { title: theirTitle, items: theirItems, ours: false },
+  { title: ourTitle, items: ourItems, ours: true },
+];
+---
+
+<div class="dc-compare">
+  {
+    columns.map((col) => (
+      <div class:list={['dc-compare__col', col.ours && 'dc-compare__col--ours']}>
+        <h3>{col.title}</h3>
+        <ul>
+          {col.items.map((item) => (
+            <li>
+              <Icon
+                name={col.ours ? 'check' : 'minus'}
+                size={22}
+                strokeWidth={2.4}
+                color={col.ours ? 'var(--dc-turquoise-ink)' : 'var(--text-muted)'}
+              />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .dc-compare {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  .dc-compare__col {
+    display: grid;
+    gap: var(--space-5);
+    align-content: start;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    min-width: 0;
+    /* Колонка «обычная клиника» — на белом (правка макета) */
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    color: var(--text-body);
+  }
+  .dc-compare__col--ours {
+    border: 2px solid var(--dc-turquoise);
+    box-shadow: var(--shadow-lg);
+  }
+  .dc-compare__col h3 {
+    font-size: var(--type-h3);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-display);
+    color: var(--text-strong);
+  }
+  .dc-compare__col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-4);
+  }
+  .dc-compare__col li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    font-size: var(--type-body);
+    line-height: var(--lh-body);
+    color: var(--text-body);
+  }
+  .dc-compare__col :global(.dc-icon) {
+    margin-top: 2px;
+  }
+</style>

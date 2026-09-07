@@ -1,0 +1,237 @@
+---
+/**
+ * Заявка на приём. Уходит POST-запросом на Cloudflare Worker,
+ * который пересылает её в Telegram-бота (токен — секрет Worker'а).
+ *
+ * Адрес эндпоинта задаётся переменной PUBLIC_BOOKING_ENDPOINT (.env).
+ * Пока она не задана, форма честно предлагает позвонить, а не делает вид,
+ * что заявка ушла.
+ */
+import Button from '../core/Button.astro';
+import Icon from '../core/Icon.astro';
+import { clinic } from '../../data/site';
+
+const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
+---
+
+<form class="dc-form" data-booking-form data-endpoint={endpoint} novalidate>
+  <div class="dc-field">
+    <label for="dc-name">Ваше имя</label>
+    <input id="dc-name" name="name" type="text" required autocomplete="name" maxlength="80" />
+  </div>
+
+  <div class="dc-field">
+    <label for="dc-contact">Как с вами связаться</label>
+    <input
+      id="dc-contact"
+      name="contact"
+      type="tel"
+      required
+      autocomplete="tel"
+      inputmode="tel"
+      maxlength="40"
+      placeholder="+7 900 000-00-00"
+    />
+    <span class="dc-field__hint">Телефон или Max</span>
+  </div>
+
+  <div class="dc-field">
+    <label for="dc-comment">Что беспокоит (необязательно)</label>
+    <textarea id="dc-comment" name="comment" rows="3" maxlength="600"></textarea>
+  </div>
+
+  <!-- Ловушка для ботов: живой человек это поле не увидит и не заполнит -->
+  <div class="dc-honeypot" aria-hidden="true">
+    <label for="dc-website">Не заполняйте это поле</label>
+    <input id="dc-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <label class="dc-checkbox">
+    <input type="checkbox" name="consent" required />
+    <span class="dc-checkbox__box" aria-hidden="true">
+      <Icon name="check" size={18} strokeWidth={3} />
+    </span>
+    <span>Согласен на обработку персональных данных</span>
+  </label>
+
+  <Button type="submit" variant="primary" size="lg" fullWidth>Оставить заявку</Button>
+
+  <p class="dc-form__error" data-form-error hidden role="alert"></p>
+
+  <p class="dc-form__fallback">
+    Или просто позвоните: <a href={clinic.phoneHref}>{clinic.phone}</a>
+  </p>
+</form>
+
+<div class="dc-form-done" data-booking-done hidden>
+  <Icon name="circle-check" size={34} color="var(--text-accent)" />
+  <h3>Заявка отправлена</h3>
+  <p>Мы перезвоним вам в рабочее время и подберём удобное время приёма.</p>
+</div>
+
+<style>
+  .dc-form {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .dc-field {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-field label {
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+  }
+  .dc-field input,
+  .dc-field textarea {
+    min-height: var(--tap-min);
+    padding: 12px 16px;
+    font-family: var(--font-body);
+    font-size: var(--type-body);
+    color: var(--text-strong);
+    background: var(--surface-card);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    outline-offset: 2px;
+    width: 100%;
+    resize: vertical;
+  }
+  .dc-field input:user-invalid,
+  .dc-field textarea:user-invalid {
+    border-color: var(--dc-coral);
+  }
+  .dc-field__hint {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+
+  .dc-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .dc-checkbox {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    cursor: pointer;
+    font-size: var(--type-small);
+    color: var(--text-body);
+    line-height: var(--lh-body);
+  }
+  .dc-checkbox input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .dc-checkbox__box {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+    border: 2px solid var(--line-strong);
+    color: transparent;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .dc-checkbox input:checked + .dc-checkbox__box {
+    background: var(--cta-bg);
+    border-color: var(--cta-bg);
+    color: var(--cta-fg);
+  }
+  .dc-checkbox input:focus-visible + .dc-checkbox__box {
+    outline: 2px solid var(--dc-depths);
+    outline-offset: 2px;
+  }
+
+  .dc-form__error {
+    color: var(--dc-coral);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-form__fallback {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-form__fallback a {
+    font-weight: var(--fw-bold);
+  }
+
+  .dc-form-done {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+    padding: var(--space-6);
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-inset-line);
+  }
+  .dc-form-done h3 {
+    font-size: var(--type-h3);
+  }
+  .dc-form-done p {
+    color: var(--text-body);
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-booking-form]');
+  const done = document.querySelector<HTMLElement>('[data-booking-done]');
+  const error = document.querySelector<HTMLElement>('[data-form-error]');
+
+  const fail = (message: string) => {
+    if (!error) return;
+    error.textContent = message;
+    error.hidden = false;
+  };
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    error && (error.hidden = true);
+
+    if (!form.reportValidity()) return;
+
+    const endpoint = form.dataset.endpoint;
+    if (!endpoint) {
+      fail('Форма пока не подключена к серверу. Позвоните нам — ответим сразу.');
+      return;
+    }
+
+    const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const label = submit?.textContent;
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = 'Отправляем…';
+    }
+
+    try {
+      const payload = Object.fromEntries(new FormData(form).entries());
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error(String(response.status));
+
+      form.hidden = true;
+      if (done) done.hidden = false;
+    } catch {
+      fail('Не удалось отправить заявку. Попробуйте ещё раз или позвоните нам.');
+      if (submit) {
+        submit.disabled = false;
+        submit.textContent = label ?? 'Оставить заявку';
+      }
+    }
+  });
+</script>

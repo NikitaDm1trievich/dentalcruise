@@ -1,0 +1,10 @@
+:root{
+  --radius-none:0px;
+  --radius-sm:6px;
+  --radius-md:12px;
+  --radius-lg:20px;      /* cards */
+  --radius-xl:32px;      /* photo blocks, media panels */
+  --radius-pill:999px;   /* buttons, chips, counters */
+  --border-width:1px/* @kind other */;
+  --border-width-strong:2px/* @kind other */;
+}

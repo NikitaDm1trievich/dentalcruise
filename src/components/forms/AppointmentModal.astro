@@ -1,0 +1,87 @@
+---
+/** Модалка записи. Перенесено из Ds2_2d9e23.AppointmentModal. */
+import Icon from '../core/Icon.astro';
+import IconButton from '../core/IconButton.astro';
+import AppointmentForm from './AppointmentForm.astro';
+---
+
+<div class="dc-modal" id="dc-book" data-state="closed" aria-hidden="true">
+  <div class="dc-modal__scrim" data-close></div>
+
+  <div class="dc-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="dc-book-title">
+    <div class="dc-modal__head">
+      <div>
+        <h2 id="dc-book-title">Записаться на приём</h2>
+        <p>Оставьте контакт — мы перезвоним и подберём удобное время.</p>
+      </div>
+      <IconButton label="Закрыть" variant="bare" data-close>
+        <Icon name="x" size={24} />
+      </IconButton>
+    </div>
+
+    <AppointmentForm />
+  </div>
+</div>
+
+<style>
+  .dc-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: var(--gutter);
+    pointer-events: none;
+  }
+  .dc-modal[data-state='open'] {
+    pointer-events: auto;
+  }
+  .dc-modal__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 32, 41, 0.62);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+  .dc-modal[data-state='open'] .dc-modal__scrim {
+    opacity: 1;
+  }
+
+  .dc-modal__dialog {
+    position: relative;
+    width: min(520px, 100%);
+    max-height: 90svh;
+    overflow-y: auto;
+    background: var(--surface-page);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+    transition:
+      transform var(--dur-mid) var(--ease-out),
+      opacity var(--dur-mid) var(--ease-out);
+  }
+  .dc-modal[data-state='open'] .dc-modal__dialog {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .dc-modal__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+  .dc-modal__head h2 {
+    font-size: var(--type-h2);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-display);
+    margin-bottom: var(--space-2);
+  }
+  .dc-modal__head p {
+    color: var(--text-body);
+  }
+</style>

@@ -1,0 +1,210 @@
+---
+/** Карточка врача с переворотом. Портировано из DoctorFlipCard.dc.html. */
+import Icon from '../core/Icon.astro';
+import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+
+interface Props {
+  name: string;
+  speciality: string;
+  experience: string;
+  note: string;
+  extra?: string;
+  photo?: string;
+  photoLabel: string;
+}
+
+const { name, speciality, experience, note, extra, photo, photoLabel } = Astro.props;
+const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[];
+---
+
+<div class="dc-doc" data-flip>
+  <button
+    type="button"
+    class="dc-doc__toggle"
+    aria-label={`${speciality} — подробнее`}
+    data-flip-toggle></button>
+
+  <div class="dc-doc__inner">
+    <article class="dc-doc__face dc-doc__face--front">
+      <div class="dc-doc__photo">
+        <PhotoPlaceholder label={photoLabel} src={photo} alt={name} ratio="3 / 4" radius="0" cover />
+      </div>
+      <div class="dc-doc__body">
+        <h3>{name}</h3>
+        <p class="dc-doc__spec">{speciality}</p>
+        <span class="dc-doc__hint">
+          <Icon name="repeat-2" size={16} />
+          Подробнее — нажмите на карточку
+        </span>
+      </div>
+    </article>
+
+    <div class="dc-doc__face dc-doc__face--back">
+      <div class="dc-doc__backhead">
+        <h3>{name}</h3>
+        <p class="dc-doc__spec">{speciality}</p>
+      </div>
+      <ul class="dc-doc__facts">
+        {
+          facts.map((fact, i) => (
+            <li style={`--dc-doc-delay:${i * 50 + 150}ms`}>
+              <Icon name="check" size={16} strokeWidth={2.6} color="var(--text-accent)" />
+              <span>{fact}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <button type="button" class="dc-doc__cta" data-open="dc-book">
+        Записаться к врачу
+        <Icon name="arrow-right" size={20} />
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .dc-doc {
+    position: relative;
+    width: 100%;
+    height: 440px;
+    min-width: 0;
+    perspective: 2000px;
+  }
+  .dc-doc__toggle {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+  }
+  .dc-doc[data-flipped='true'] .dc-doc__toggle {
+    inset: 0 0 var(--tap-min) 0;
+  }
+
+  .dc-doc__inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 560ms cubic-bezier(0.77, 0, 0.175, 1);
+  }
+  .dc-doc[data-flipped='true'] .dc-doc__inner {
+    transform: rotateY(180deg);
+  }
+
+  .dc-doc__face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+  .dc-doc__face--front {
+    transform: rotateY(0deg);
+    background: var(--surface-card);
+    box-shadow: var(--shadow-md);
+    display: grid;
+    grid-template-rows: 1fr auto;
+  }
+  .dc-doc__photo {
+    position: relative;
+    overflow: hidden;
+  }
+  .dc-doc__body {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+    padding: var(--space-5);
+  }
+  .dc-doc__body h3,
+  .dc-doc__backhead h3 {
+    font-size: var(--type-h4);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .dc-doc__spec {
+    color: var(--text-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-doc__hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: var(--space-1);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+  }
+
+  .dc-doc__face--back {
+    transform: rotateY(180deg);
+    background: var(--grad-aqua);
+    box-shadow: var(--shadow-lg);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--space-4);
+    padding: var(--space-6);
+  }
+  .dc-doc__backhead {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-doc__facts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+  }
+  .dc-doc__facts li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    font-size: var(--type-small);
+    color: var(--text-body);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition:
+      transform var(--dur-mid) var(--ease-out) var(--dc-doc-delay),
+      opacity var(--dur-mid) var(--ease-out) var(--dc-doc-delay);
+  }
+  .dc-doc[data-flipped='true'] .dc-doc__facts li {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .dc-doc__facts :global(.dc-icon) {
+    margin-top: 3px;
+  }
+
+  .dc-doc__cta {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: var(--tap-min);
+    padding: 0 var(--space-5);
+    border: none;
+    border-radius: var(--radius-pill);
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+    font-family: var(--font-body);
+    font-size: var(--type-body);
+    font-weight: var(--fw-bold);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+  .dc-doc__cta:hover {
+    background: var(--cta-bg-hover);
+  }
+  .dc-doc__cta:active {
+    transform: scale(0.975);
+  }
+</style>

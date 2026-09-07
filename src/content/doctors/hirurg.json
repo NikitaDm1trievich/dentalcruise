@@ -1,0 +1,10 @@
+{
+  "name": "Врач-стоматолог",
+  "speciality": "Хирург",
+  "experience": "9 лет",
+  "note": "Имплантация Osstem и Astra Tech.",
+  "extra": "Работает вместе с зубным техником клиники",
+  "photoLabel": "Здесь фото врача-хирурга",
+  "featured": true,
+  "order": 40
+}

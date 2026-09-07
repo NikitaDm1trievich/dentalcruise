@@ -1,0 +1,70 @@
+---
+/** Заголовок секции: надзаголовок + H2 капслоком + лид. Из Ds2_2d9e23.SectionHeading. */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  align?: 'left' | 'center';
+  onDark?: boolean;
+  id?: string;
+  class?: string;
+}
+const { eyebrow, title, lead, align = 'left', onDark = false, id, class: className } = Astro.props;
+---
+
+<header
+  class:list={['dc-heading', align === 'center' && 'dc-heading--center', onDark && 'dc-heading--dark', className]}
+>
+  {eyebrow && <span class="dc-heading__eyebrow">{eyebrow}</span>}
+  <h2 class="dc-heading__title" id={id}>{title}</h2>
+  {lead && <p class="dc-heading__lead">{lead}</p>}
+  <slot />
+</header>
+
+<style>
+  .dc-heading {
+    display: grid;
+    gap: var(--space-4);
+    text-align: left;
+    justify-items: start;
+  }
+  .dc-heading--center {
+    text-align: center;
+    justify-items: center;
+    max-width: 860px;
+    margin-inline: auto;
+  }
+  .dc-heading__eyebrow {
+    font-family: var(--font-body);
+    font-size: var(--type-eyebrow);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .dc-heading__title {
+    font-family: var(--font-display);
+    font-weight: var(--fw-bold);
+    font-size: var(--type-display);
+    line-height: var(--lh-display);
+    letter-spacing: var(--ls-display);
+    text-transform: uppercase;
+    color: var(--text-strong);
+    margin: 0;
+  }
+  .dc-heading__lead {
+    font-size: var(--type-lead);
+    line-height: var(--lh-body);
+    max-width: min(var(--measure), 100%);
+    color: var(--text-body);
+  }
+  .dc-heading--dark .dc-heading__eyebrow {
+    color: var(--text-on-dark-muted);
+  }
+  .dc-heading--dark .dc-heading__title {
+    color: var(--text-on-dark);
+  }
+  .dc-heading--dark .dc-heading__lead {
+    color: var(--text-on-dark-muted);
+  }
+</style>

@@ -1,0 +1,239 @@
+---
+/**
+ * Фиксированная шапка: лого + адрес/часы/телефон + Max/VK/звонок + бургер.
+ * Перенесено из Ds2_2d9e23.Header.
+ *
+ * До скролла шапка прозрачная и лежит поверх видео — лого и контакты белые.
+ * После 40px становится плотно-белой с тенью (правка макета).
+ */
+import Icon from '../core/Icon.astro';
+import IconButton from '../core/IconButton.astro';
+import { clinic } from '../../data/site';
+
+interface Props {
+  /** true — под шапкой hero-видео: до скролла шапка прозрачная, лого и контакты белые.
+      На внутренних страницах hero нет, поэтому шапка сразу плотная. */
+  overHero?: boolean;
+}
+
+const { overHero = false } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+const logo = `${base}logo-dentalcruise.svg`.replace(/\/{2,}/g, '/');
+const { vk, max } = clinic.links;
+---
+
+<div class:list={['dc-header', overHero && 'dc-header--over-hero']} data-scrolled={String(!overHero)}>
+  <header class="dc-header__bar">
+    <div class="dc-header__inner">
+      <a href={base} class="dc-header__logo" aria-label={`${clinic.name} — на главную`}>
+        <img src={logo} alt={clinic.name} width="180" height="44" />
+      </a>
+
+      <div class="dc-header__contacts">
+        <div class="dc-header__place">
+          <span class="dc-header__address">{clinic.address.streetShort}</span>
+          <span class="dc-header__schedule">{clinic.scheduleShort}</span>
+        </div>
+        <a href={clinic.phoneHref} class="dc-header__phone">{clinic.phone}</a>
+      </div>
+
+      <div class="dc-header__actions">
+        {
+          max && (
+            <IconButton label="Написать в Max" href={max} size={44}>
+              <Icon name="message-circle" size={20} />
+            </IconButton>
+          )
+        }
+        {
+          vk && (
+            <IconButton label="Написать во ВКонтакте" href={vk} size={44}>
+              <Icon name="send" size={20} />
+            </IconButton>
+          )
+        }
+        <IconButton label={`Позвонить ${clinic.phone}`} href={clinic.phoneHref} variant="accent" size={44}>
+          <Icon name="phone" size={20} />
+        </IconButton>
+
+        <button
+          type="button"
+          class="dc-burger-btn"
+          data-open="dc-menu"
+          aria-expanded="false"
+          aria-controls="dc-menu"
+          aria-label="Открыть меню"
+        >
+          <span class="dc-burger-btn__bars">
+            <span></span><span></span><span></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+</div>
+
+<style>
+  .dc-header__bar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 60;
+    padding: 16px var(--gutter);
+    background: transparent;
+    transition:
+      padding var(--dur-mid) var(--ease-out),
+      background var(--dur-mid) var(--ease-out),
+      box-shadow var(--dur-mid) var(--ease-out);
+  }
+  .dc-header[data-scrolled='true'] .dc-header__bar {
+    padding: 8px var(--gutter);
+    background: var(--dc-white);
+    box-shadow:
+      0 1px 0 var(--line-strong),
+      0 10px 30px rgba(7, 59, 75, 0.1);
+  }
+
+  .dc-header__inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .dc-header__logo {
+    display: flex;
+    align-items: center;
+  }
+  .dc-header__logo img {
+    height: 44px;
+    width: auto;
+    transition:
+      height var(--dur-mid) var(--ease-out),
+      filter var(--dur-mid) var(--ease-out);
+  }
+  .dc-header[data-scrolled='true'] .dc-header__logo img {
+    height: 34px;
+  }
+  /* Поверх видео — белая версия логотипа */
+  .dc-header--over-hero[data-scrolled='false'] .dc-header__logo img {
+    filter: brightness(0) invert(1) drop-shadow(0 2px 14px rgba(7, 59, 75, 0.7));
+  }
+
+  .dc-header__contacts {
+    display: none;
+    gap: var(--space-6);
+    align-items: center;
+    text-align: center;
+    min-width: 0;
+  }
+  @media (min-width: 900px) {
+    .dc-header__contacts {
+      display: flex;
+    }
+  }
+  .dc-header__place {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+  .dc-header__address,
+  .dc-header__schedule,
+  .dc-header__phone {
+    white-space: nowrap;
+    font-family: var(--font-body);
+  }
+  .dc-header__address {
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+    color: var(--text-body);
+  }
+  .dc-header__schedule {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-header__phone {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+    text-decoration: none;
+  }
+  .dc-header--over-hero[data-scrolled='false'] .dc-header__address,
+  .dc-header--over-hero[data-scrolled='false'] .dc-header__schedule,
+  .dc-header--over-hero[data-scrolled='false'] .dc-header__phone {
+    color: #ffffff;
+    text-shadow: 0 2px 14px rgba(7, 59, 75, 0.55);
+  }
+
+  .dc-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .dc-burger-btn {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line-hairline);
+    background: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .dc-burger-btn:hover {
+    background: var(--dc-white);
+  }
+  .dc-burger-btn__bars {
+    display: grid;
+    gap: 5px;
+    place-items: center;
+  }
+  .dc-burger-btn__bars span {
+    display: block;
+    height: 2px;
+    width: 22px;
+    background: var(--text-strong);
+    border-radius: 2px;
+    transition:
+      transform var(--dur-mid) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out);
+  }
+  /* Морф в «крестик», когда меню открыто */
+  .dc-burger-btn[aria-expanded='true'] .dc-burger-btn__bars span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .dc-burger-btn[aria-expanded='true'] .dc-burger-btn__bars span:nth-child(2) {
+    opacity: 0;
+  }
+  .dc-burger-btn[aria-expanded='true'] .dc-burger-btn__bars span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  @media (hover: hover) and (min-width: 900px) {
+    .dc-burger-btn:hover {
+      background: var(--cta-bg);
+      border-color: transparent;
+    }
+    .dc-burger-btn:hover .dc-burger-btn__bars span {
+      background: #ffffff;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('.dc-header--over-hero');
+  if (header) {
+    const sync = () => {
+      header.dataset.scrolled = String(window.scrollY > 40);
+    };
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+  }
+</script>

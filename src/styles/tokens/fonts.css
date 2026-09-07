@@ -1,0 +1,8 @@
+/* Webfonts. Both families are designed with full, undistorted Cyrillic.
+   Onest      — contemporary geometric grotesk built for landing headlines (display).
+   Golos Text — Russian-designed interface sans, very even Cyrillic (body/UI).
+   Loaded from Google Fonts CDN; no local binaries are shipped.
+   Replaced Unbounded (display) + Manrope (body) — Unbounded's Cyrillic had
+   quirky cut-outs at large sizes. */
+/* Шрифты грузит BaseLayout.astro через <link rel=preconnect> + <link rel=stylesheet>,
+   чтобы CSS-@import не блокировал рендер. */

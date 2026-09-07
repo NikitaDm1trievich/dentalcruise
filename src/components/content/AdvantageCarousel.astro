@@ -1,0 +1,186 @@
+---
+/**
+ * Карусель преимуществ: фото слева, текст справа, кроссфейд слоёв.
+ * Перенесено из Ds2_2d9e23.AdvantageCarousel; кроссфейд играет Anime.js.
+ */
+import Icon from '../core/Icon.astro';
+import IconButton from '../core/IconButton.astro';
+import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+
+interface Props {
+  slides: { id: string; title: string; text: string; photo?: string; photoLabel: string }[];
+  interval?: number;
+}
+
+const { slides, interval = 6000 } = Astro.props;
+---
+
+<div class="dc-carousel" data-carousel data-interval={interval}>
+  <div class="dc-carousel__media">
+    {
+      slides.map((slide, i) => (
+        <div class="dc-carousel__layer" data-slide={i} data-active={i === 0 ? 'true' : 'false'}>
+          <PhotoPlaceholder
+            label={slide.photoLabel}
+            src={slide.photo}
+            alt={slide.title}
+            ratio="4 / 3"
+            cover
+          />
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="dc-carousel__side">
+    <div class="dc-carousel__text" aria-live="polite">
+      {
+        slides.map((slide, i) => (
+          <div class="dc-carousel__layer" data-slide={i} data-active={i === 0 ? 'true' : 'false'}>
+            <h3>{slide.title}</h3>
+            <p>{slide.text}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="dc-carousel__controls">
+      <IconButton label="Предыдущий слайд" data-carousel-prev>
+        <Icon name="arrow-left" size={20} />
+      </IconButton>
+      <IconButton label="Следующий слайд" data-carousel-next>
+        <Icon name="arrow-right" size={20} />
+      </IconButton>
+      <span class="dc-carousel__counter"><span data-carousel-index>1</span>/{slides.length}</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .dc-carousel {
+    display: grid;
+    gap: var(--space-8);
+    align-items: center;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  .dc-carousel__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+  .dc-carousel__layer {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .dc-carousel__layer[data-active='true'] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .dc-carousel__side {
+    display: grid;
+    gap: var(--space-6);
+    align-content: center;
+  }
+  .dc-carousel__text {
+    position: relative;
+    min-height: clamp(220px, 26vw, 280px);
+  }
+  .dc-carousel__text .dc-carousel__layer {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+  }
+  .dc-carousel__text h3 {
+    font-family: var(--font-display);
+    font-size: var(--type-h2);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-display);
+    line-height: var(--lh-display);
+  }
+  .dc-carousel__text p {
+    font-size: var(--type-lead);
+    color: var(--text-body);
+    max-width: min(var(--measure), 100%);
+  }
+
+  .dc-carousel__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+  .dc-carousel__counter {
+    font-family: var(--font-display);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+    font-size: var(--type-body);
+  }
+</style>
+
+<script>
+  import { animate } from 'animejs';
+
+  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
+    const layers = Array.from(root.querySelectorAll<HTMLElement>('.dc-carousel__layer'));
+    const counter = root.querySelector<HTMLElement>('[data-carousel-index]');
+    const total = Number(new Set(layers.map((l) => l.dataset.slide)).size);
+    if (total < 2) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const duration = reduced ? 1 : 900;
+    let current = 0;
+    let timer: number | undefined;
+
+    const show = (next: number) => {
+      const index = (next + total) % total;
+      if (index === current) return;
+
+      for (const layer of layers) {
+        const isNext = Number(layer.dataset.slide) === index;
+        const wasActive = layer.dataset.active === 'true';
+        if (!isNext && !wasActive) continue;
+
+        layer.dataset.active = isNext ? 'true' : 'false';
+        animate(layer, {
+          opacity: isNext ? [0, 1] : [1, 0],
+          duration,
+          ease: 'cubicBezier(.22,.61,.36,1)',
+        });
+      }
+
+      current = index;
+      if (counter) counter.textContent = String(index + 1);
+    };
+
+    const start = () => {
+      stop();
+      const ms = Number(root.dataset.interval ?? 6000);
+      if (ms > 0) timer = window.setInterval(() => show(current + 1), ms);
+    };
+    const stop = () => {
+      if (timer) window.clearInterval(timer);
+      timer = undefined;
+    };
+
+    root.querySelector('[data-carousel-prev]')?.addEventListener('click', () => {
+      show(current - 1);
+      start();
+    });
+    root.querySelector('[data-carousel-next]')?.addEventListener('click', () => {
+      show(current + 1);
+      start();
+    });
+
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    root.addEventListener('focusin', stop);
+
+    // На фоновой вкладке крутить нечего
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    if (!reduced) start();
+  });
+</script>

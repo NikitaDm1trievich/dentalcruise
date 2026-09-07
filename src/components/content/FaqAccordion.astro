@@ -1,0 +1,116 @@
+---
+/**
+ * Аккордеон вопросов. Из Ds2_2d9e23.FaqAccordion.
+ * Раскрытие — на grid-template-rows 0fr → 1fr: анимируется без замера высоты
+ * и работает при любой длине ответа.
+ */
+import Icon from '../core/Icon.astro';
+
+interface Props {
+  items: { id: string; q: string; a: string }[];
+}
+const { items } = Astro.props;
+---
+
+<div class="dc-faq" data-faq>
+  {
+    items.map((item) => (
+      <div class="dc-faq__item">
+        <h3>
+          <button
+            type="button"
+            class="dc-faq__q"
+            aria-expanded="false"
+            aria-controls={`faq-${item.id}`}
+            id={`faq-btn-${item.id}`}
+          >
+            <span>{item.q}</span>
+            <Icon name="chevron-down" size={24} color="var(--text-accent)" strokeWidth={2.2} />
+          </button>
+        </h3>
+        <div class="dc-faq__wrap" id={`faq-${item.id}`} role="region" aria-labelledby={`faq-btn-${item.id}`}>
+          <div class="dc-faq__clip">
+            <p>{item.a}</p>
+          </div>
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .dc-faq {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .dc-faq__item {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--dur-mid) var(--ease-out);
+    overflow: hidden;
+  }
+  .dc-faq__item:has([aria-expanded='true']) {
+    box-shadow: var(--shadow-md);
+  }
+  .dc-faq h3 {
+    margin: 0;
+  }
+  .dc-faq__q {
+    width: 100%;
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding: var(--space-5) var(--space-6);
+    min-height: var(--tap-min);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: var(--type-body-lg);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+  }
+  .dc-faq__q :global(.dc-icon) {
+    transition: transform var(--dur-mid) var(--ease-out);
+  }
+  .dc-faq__q[aria-expanded='true'] :global(.dc-icon) {
+    transform: rotate(180deg);
+  }
+
+  .dc-faq__wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-mid) var(--ease-out);
+  }
+  .dc-faq__q[aria-expanded='true'] + .dc-faq__wrap,
+  .dc-faq__item:has([aria-expanded='true']) .dc-faq__wrap {
+    grid-template-rows: 1fr;
+  }
+  .dc-faq__clip {
+    overflow: hidden;
+  }
+  .dc-faq__clip p {
+    padding: 0 var(--space-6) var(--space-6);
+    color: var(--text-body);
+    max-width: min(var(--measure), 100%);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-faq]').forEach((faq) => {
+    const buttons = Array.from(faq.querySelectorAll<HTMLButtonElement>('.dc-faq__q'));
+
+    faq.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('.dc-faq__q');
+      if (!button) return;
+
+      const wasOpen = button.getAttribute('aria-expanded') === 'true';
+      // Открыт всегда только один вопрос — как в макете
+      buttons.forEach((b) => b.setAttribute('aria-expanded', 'false'));
+      button.setAttribute('aria-expanded', String(!wasOpen));
+    });
+  });
+</script>

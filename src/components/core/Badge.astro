@@ -1,0 +1,46 @@
+---
+/** Пилюля-бейдж. Перенесено из Ds2_2d9e23.Badge. */
+interface Props {
+  tone?: 'quiet' | 'accent' | 'outline' | 'onDark' | 'promo';
+  class?: string;
+}
+const { tone = 'quiet', class: className } = Astro.props;
+---
+
+<span class:list={['dc-badge', `dc-badge--${tone}`, className]}><slot /></span>
+
+<style>
+  .dc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    line-height: 1.2;
+  }
+  .dc-badge--quiet {
+    background: var(--dc-sea-glass);
+    color: var(--text-strong);
+  }
+  .dc-badge--accent {
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+  }
+  /* Бейдж «Акция» на карточке услуги — единственный красный акцент (правка макета) */
+  .dc-badge--promo {
+    background: var(--dc-coral);
+    color: var(--text-on-coral);
+  }
+  .dc-badge--outline {
+    background: transparent;
+    color: var(--text-strong);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+  .dc-badge--onDark {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-on-dark);
+  }
+</style>

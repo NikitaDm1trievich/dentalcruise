@@ -1,0 +1,27 @@
+{
+  "name": "dentalcruise",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Лендинг стоматологической клиники «Дентал Круиз» — Astro SSG",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.6.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "animejs": "^4.2.2",
+    "astro": "^5.15.0",
+    "lucide": "^1.41.0",
+    "tailwindcss": "^4.1.14"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.9.3"
+  }
+}

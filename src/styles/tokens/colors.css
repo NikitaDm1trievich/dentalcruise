@@ -1,0 +1,65 @@
+:root{
+  /* ── Base palette (light nautical) ──────────────────── */
+  --dc-white:#FFFFFF;         /* main page ground */
+  --dc-seashell:#FAF7F5;      /* warm tint for alternating sections */
+  --dc-mist:#F3F8F9;          /* cool tint */
+  --dc-aqua-tint:#E8F5F1;     /* gentle mint — quiet cards, highlights */
+  --dc-breeze:#DEEAEC;        /* light cool step */
+  --dc-sea-glass:#D6E3E1;     /* soft neutral: dividers, quiet fills */
+  --dc-white-caps:#8FA2AC;    /* DECORATIVE ONLY — never text or buttons */
+  --dc-depths:#073B4B;        /* ink: headings, high-priority text */
+  --dc-lagoon:#0E5566;        /* softer deep tone for the few dark areas */
+  --dc-lagoon-lift:#14657A;
+
+  /* ── Accent (logo turquoise) — CTA ONLY ─────────────── */
+  --dc-turquoise:#00B189;
+  --dc-turquoise-press:#00926F;
+  --dc-turquoise-soft:#CDEDE3;   /* accent as a gentle wash */
+  --dc-turquoise-ink:#00654E;    /* accent as text on light: 4.9:1 */
+  --dc-turquoise-mark:#007C88;   /* the exact colour of the logo wave */
+
+  /* ── Promo (акции) — the only red in the system ─────── */
+  --dc-coral:#E03A3A;
+  --dc-coral-press:#C22F2F;
+  --dc-coral-soft:#FDEDEC;
+  --text-on-coral:#FFFFFF;
+
+  /* ── Semantic surfaces ─────────────────────────────── */
+  --surface-page:var(--dc-white);
+  --surface-card:var(--dc-white);
+  --surface-warm:var(--dc-seashell);
+  --surface-cool:var(--dc-mist);
+  --surface-quiet:var(--dc-aqua-tint);
+  --surface-dark:var(--dc-lagoon);
+  --surface-dark-lift:var(--dc-lagoon-lift);
+  --surface-footer:#0B4557;
+
+  /* ── Semantic text ─────────────────────────────────── */
+  --text-strong:var(--dc-depths);            /* 12.6:1 on white */
+  --text-body:#1F4451;                       /* 9.2:1 on white */
+  --text-muted:#3F6270;                      /* 6.1:1 on white — lowest allowed on light */
+  --text-on-dark:#FFFFFF;
+  --text-on-dark-muted:#D3E4E9;
+  --text-accent:var(--dc-turquoise-ink);
+  --text-on-accent:#04231C;                  /* ink on turquoise: 7.4:1 */
+
+  /* ── Borders & lines ───────────────────────────────── */
+  --line-hairline:rgba(7,59,75,.10);
+  --line-strong:rgba(7,59,75,.24);
+  --line-on-dark:rgba(255,255,255,.20);
+
+  /* ── Interactive ───────────────────────────────────── */
+  --cta-bg:var(--dc-turquoise);
+  --cta-bg-hover:#00A07B;
+  --cta-bg-press:var(--dc-turquoise-press);
+  --cta-fg:var(--text-on-accent);
+  --focus-ring:var(--dc-turquoise-ink);
+
+  /* ── Decorative gradients (White Caps lives here) ──── */
+  --grad-shallow:linear-gradient(180deg,#F3F8F9 0%,#DEEAEC 100%);/* @kind other */
+  --grad-deep:linear-gradient(180deg,#14657A 0%,#0E5566 100%);/* @kind other */
+  --grad-sand:linear-gradient(180deg,#FFFFFF 0%,#FAF7F5 100%);/* @kind other */
+  --grad-aqua:linear-gradient(180deg,#FFFFFF 0%,#E8F5F1 100%);/* @kind other */
+  --grad-horizon:linear-gradient(180deg,rgba(143,162,172,0) 0%,rgba(143,162,172,.35) 100%);/* @kind other */
+  --scrim-photo:linear-gradient(180deg,rgba(7,59,75,.10) 0%,rgba(7,59,75,.62) 100%);/* @kind other */
+}

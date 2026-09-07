@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dentalcruise-booking",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true },
+
+  // Домены, которым разрешено слать заявки. Всё остальное отбивается CORS.
+  // Добавьте сюда боевой домен клиники, когда сайт переедет с GitHub Pages.
+  "vars": {
+    "ALLOWED_ORIGINS": "https://dentalcruise.ru,https://www.dentalcruise.ru,https://nikitadm1trievich.github.io,http://localhost:4321"
+  },
+
+  // Ограничитель частоты: не больше 5 заявок за 60 секунд с одного IP
+  "ratelimits": [
+    {
+      "name": "BOOKING_LIMIT",
+      "namespace_id": "1001",
+      "simple": { "limit": 5, "period": 60 }
+    }
+  ]
+
+  // Секреты (задаются командой `wrangler secret put`, в файл не пишутся):
+  //   TELEGRAM_BOT_TOKEN — токен бота от @BotFather
+  //   TELEGRAM_CHAT_ID   — id чата/канала, куда падают заявки
+}

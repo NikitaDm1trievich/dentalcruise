@@ -1,0 +1,55 @@
+name: Сборка и публикация на GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Нужно, чтобы workflow мог опубликовать сборку в Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Параллельные публикации не нужны: догоняющий деплой отменяет предыдущий
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Сборка Astro
+        # GitHub Pages отдаёт проект из подпапки /dentalcruise/,
+        # поэтому base подставляем здесь, а не в коде.
+        env:
+          SITE: https://nikitadm1trievich.github.io
+          BASE: /dentalcruise/
+          PUBLIC_BOOKING_ENDPOINT: ${{ vars.PUBLIC_BOOKING_ENDPOINT }}
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

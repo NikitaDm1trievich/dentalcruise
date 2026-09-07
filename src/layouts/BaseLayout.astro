@@ -1,0 +1,90 @@
+---
+import '../styles/global.css';
+import Seo from '../components/seo/Seo.astro';
+import Header from '../components/layout/Header.astro';
+import BurgerMenu from '../components/layout/BurgerMenu.astro';
+import Footer from '../components/layout/Footer.astro';
+import AppointmentModal from '../components/forms/AppointmentModal.astro';
+import LicenseDrawer from '../components/content/LicenseDrawer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  path?: string;
+  /** Шапка лежит поверх hero-видео (только главная) */
+  overHero?: boolean;
+  noindex?: boolean;
+  faq?: { q: string; a: string }[];
+}
+
+const { title, description, path = '/', overHero = false, noindex = false, faq } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const asset = (p: string) => `${base}${p}`.replace(/\/{2,}/g, '/');
+---
+
+<!doctype html>
+<html lang="ru" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#00B189" />
+    <link rel="icon" type="image/svg+xml" href={asset('favicon.svg')} />
+    <link rel="apple-touch-icon" href={asset('apple-touch-icon.png')} />
+
+    <script is:inline>
+      // Снимаем .no-js до первой отрисовки — контент со скролл-анимацией
+      // прячется только тогда, когда его точно есть кому показать.
+      document.documentElement.classList.remove('no-js');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Golos+Text:wght@400;500;600;700;800&display=swap"
+    />
+
+    <Seo title={title} description={description} path={path} noindex={noindex} faq={faq} />
+  </head>
+
+  <body>
+    <a href="#main" class="dc-skip">Перейти к содержимому</a>
+
+    <Header overHero={overHero} />
+    <BurgerMenu />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <AppointmentModal />
+    <LicenseDrawer />
+
+    <script>
+      import { initReveal } from '../lib/reveal';
+      import { initOverlays } from '../lib/overlays';
+
+      initOverlays();
+      initReveal();
+    </script>
+
+    <style>
+      .dc-skip {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        z-index: 200;
+        padding: 12px 20px;
+        background: var(--dc-white);
+        color: var(--text-strong);
+        font-weight: var(--fw-bold);
+        border-radius: 0 0 var(--radius-md) 0;
+      }
+      .dc-skip:focus {
+        left: 0;
+      }
+    </style>
+  </body>
+</html>

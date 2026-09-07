@@ -1,0 +1,112 @@
+---
+/** Карточка места: адрес, часы, почта, телефон, кнопки связи. Из Ds2_2d9e23.PlaceCard. */
+import Icon from '../core/Icon.astro';
+import IconButton from '../core/IconButton.astro';
+import Button from '../core/Button.astro';
+import { clinic } from '../../data/site';
+
+const { max, telegram, yandexOrg } = clinic.links;
+---
+
+<div class="dc-place">
+  <h3>{clinic.name}</h3>
+
+  <div class="dc-place__row">
+    <Icon name="map-pin" size={22} color="var(--text-accent)" />
+    <div>
+      <span class="dc-place__main">{clinic.address.locality}, {clinic.address.street}</span>
+      <span class="dc-place__sub">{clinic.metroNote}</span>
+    </div>
+  </div>
+
+  <div class="dc-place__row">
+    <Icon name="clock" size={22} color="var(--text-accent)" />
+    <div><span class="dc-place__main">{clinic.scheduleLong}</span></div>
+  </div>
+
+  <div class="dc-place__row">
+    <Icon name="mail" size={22} color="var(--text-accent)" />
+    <div>
+      <a href={`mailto:${clinic.email}`} class="dc-place__main">{clinic.email}</a>
+    </div>
+  </div>
+
+  <a href={clinic.phoneHref} class="dc-place__phone">{clinic.phone}</a>
+
+  <div class="dc-place__actions">
+    {
+      max && (
+        <IconButton label="Написать в Max" href={max}>
+          <Icon name="message-circle" size={20} />
+        </IconButton>
+      )
+    }
+    {
+      telegram && (
+        <IconButton label="Написать в Telegram" href={telegram}>
+          <Icon name="send" size={20} />
+        </IconButton>
+      )
+    }
+    <Button variant="secondary" size="sm" href={yandexOrg} target="_blank" rel="noopener">
+      <Icon slot="icon" name="navigation" size={18} />
+      Как добраться
+    </Button>
+  </div>
+</div>
+
+<style>
+  .dc-place {
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-8);
+    background: var(--surface-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    align-content: start;
+  }
+  .dc-place h3 {
+    font-size: var(--type-h3);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-display);
+  }
+  .dc-place__row {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+  .dc-place__row > :global(.dc-icon) {
+    margin-top: 2px;
+  }
+  .dc-place__row > div {
+    display: grid;
+    gap: 2px;
+  }
+  .dc-place__main {
+    color: var(--text-strong);
+    font-weight: var(--fw-semibold);
+  }
+  a.dc-place__main {
+    text-decoration: none;
+  }
+  a.dc-place__main:hover {
+    color: var(--text-accent);
+  }
+  .dc-place__sub {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+  }
+  .dc-place__phone {
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+    text-decoration: none;
+  }
+  .dc-place__actions {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+</style>

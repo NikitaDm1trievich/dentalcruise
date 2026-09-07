@@ -1,0 +1,425 @@
+---
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionHeading from '../components/core/SectionHeading.astro';
+import Reveal from '../components/core/Reveal.astro';
+import Button from '../components/core/Button.astro';
+import Badge from '../components/core/Badge.astro';
+import Icon from '../components/core/Icon.astro';
+
+import OceanHero from '../components/media/OceanHero.astro';
+import PhotoPlaceholder from '../components/media/PhotoPlaceholder.astro';
+
+import PromoBoard from '../components/content/PromoBoard.astro';
+import AdvantageCarousel from '../components/content/AdvantageCarousel.astro';
+import ServiceFlipCard from '../components/content/ServiceFlipCard.astro';
+import BrandsMarquee from '../components/content/BrandsMarquee.astro';
+import ComparisonColumns from '../components/content/ComparisonColumns.astro';
+import PriceCompare from '../components/content/PriceCompare.astro';
+import DoctorFlipCard from '../components/content/DoctorFlipCard.astro';
+import FaqAccordion from '../components/content/FaqAccordion.astro';
+import ReviewsCard from '../components/content/ReviewsCard.astro';
+import TrustBar from '../components/content/TrustBar.astro';
+import PlaceCard from '../components/content/PlaceCard.astro';
+import YandexEmbed from '../components/content/YandexEmbed.astro';
+
+import { clinic } from '../data/site';
+
+const base = import.meta.env.BASE_URL;
+const asset = (p: string) => `${base}${p}`.replace(/\/{2,}/g, '/');
+
+type Ordered = { data: { order: number } };
+const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
+
+const promos = (await getCollection('promos')).sort(byOrder);
+const slides = (await getCollection('carousel-slides')).sort(byOrder);
+const services = (await getCollection('services')).filter((s) => s.data.featured).sort(byOrder);
+const brands = (await getCollection('brands')).sort(byOrder);
+const comparison = (await getCollection('comparison')).sort(byOrder);
+const doctors = (await getCollection('doctors')).filter((d) => d.data.featured).sort(byOrder);
+const faq = (await getCollection('faq')).sort(byOrder);
+const trust = (await getCollection('trust')).sort(byOrder);
+
+const them = comparison.filter((c) => c.data.side === 'them').map((c) => c.data.text);
+const us = comparison.filter((c) => c.data.side === 'us').map((c) => c.data.text);
+const faqItems = faq.map((f) => ({ id: f.data.id, q: f.data.q, a: f.data.a }));
+---
+
+<BaseLayout
+  title="Дентал Круиз — стоматология со своей зуботехнической лабораторией, м. Полежаевская"
+  description="Коронки от 19 900 ₽, виниры E-max от 25 000 ₽, протезирование под ключ от 65 000 ₽. Своя лаборатория с 2013 года — цена без наценки посредника. Москва, 4-я Магистральная, 5с1."
+  path="/"
+  overHero
+  faq={faqItems}
+>
+  <OceanHero
+    eyebrow="Центр стоматологии"
+    slogan={clinic.name}
+    webm={asset('video/ocean-hero.webm')}
+    mp4={asset('video/ocean-hero.mp4')}
+    poster={asset('video/ocean-hero-poster.jpg')}
+  >
+    <p class="dc-hero__lead">{clinic.tagline}</p>
+  </OceanHero>
+
+  <!-- Акции -->
+  <section id="promo" class="dc-section--tight dc-bg-white">
+    <div class="dc-container">
+      <Reveal>
+        <PromoBoard
+          title="Цены, которые видно сразу"
+          items={promos.map((p) => p.data)}
+          note="Цены ниже рынка потому, что коронки и виниры делает наша лаборатория — без наценки посредника."
+        />
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Преимущества -->
+  <section id="advantages" class="dc-section dc-bg-warm">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading eyebrow="Дентал Круиз" title="Почему пациенты выбирают нас" />
+      </Reveal>
+      <Reveal delay={90}>
+        <AdvantageCarousel slides={slides.map((s) => s.data)} />
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Топ-услуги -->
+  <section id="services" class="dc-section dc-bg-aqua">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Топ услуг"
+          title="Что заказывают чаще всего"
+          lead="Виниры, коронки и протезирование — три работы, которые в «Дентал Круиз» делает своя лаборатория. Наведите на карточку, чтобы увидеть, что входит в цену."
+        />
+      </Reveal>
+
+      <div class="dc-cards">
+        {
+          services.map((service, i) => (
+            <Reveal delay={i * 90}>
+              <ServiceFlipCard
+                title={service.data.title}
+                price={service.data.price}
+                priceNote={service.data.priceNote}
+                benefit={service.data.benefit}
+                features={service.data.features}
+                photo={service.data.photo}
+                photoLabel={service.data.photoLabel}
+                badge={service.data.badge}
+                href={`${asset('gallery')}?category=${service.data.category}`}
+              />
+            </Reveal>
+          ))
+        }
+      </div>
+
+      <Reveal delay={280}>
+        <div class="dc-actions">
+          <Button variant="secondary" size="lg" href={asset('pricelist')}>
+            Смотреть полный прайс-лист
+          </Button>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Поставщики -->
+  <section id="brands" class="dc-section--tight dc-bg-cool">
+    <div class="dc-container">
+      <Reveal>
+        <BrandsMarquee
+          eyebrow="Работаем на материалах проверенных поставщиков"
+          brands={brands.map((b) => b.data)}
+        />
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Почему мы -->
+  <section id="why" class="dc-section dc-bg-white">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Почему мы"
+          title="Своя лаборатория — своя цена"
+          lead="Большинство клиник заказывают коронки и виниры на стороне. Мы делаем их сами — поэтому нет наценки посредника и долгого ожидания."
+        />
+      </Reveal>
+      <Reveal delay={90}>
+        <ComparisonColumns theirItems={them} ourItems={us} />
+      </Reveal>
+      <Reveal delay={180}>
+        <PriceCompare
+          label="Виниры E-max, за зуб"
+          marketPrice="40 000–80 000 ₽"
+          ourPrice="25 000 ₽"
+          note="Дешевле не за счёт качества, а потому что между вами и техником никого нет. Импланты Osstem и Astra Tech — сертифицированные системы сторонних производителей, цена на уровне рынка, без накруток."
+        />
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- О клинике -->
+  <section id="about" class="dc-section dc-bg-warm">
+    <div class="dc-container dc-container--split">
+      <Reveal>
+        <div class="dc-about">
+          <SectionHeading
+            eyebrow="О клинике"
+            title="Лаборатория внутри клиники"
+            lead="С 2013 года наши зубные техники работают в том же здании, что и врачи. Более 10 000 изготовленных коронок: мы видим результат своими руками и отвечаем за него сами."
+          />
+          <Badge tone="quiet">10 000+ коронок с 2013 года</Badge>
+          <Button variant="secondary" size="lg" href={asset('about')}>Подробнее о клинике</Button>
+        </div>
+      </Reveal>
+      <Reveal delay={120}>
+        <PhotoPlaceholder label="Здесь фото зуботехнического цеха" ratio="4 / 3" />
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Врачи -->
+  <section id="doctors" class="dc-section dc-bg-aqua">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Врачи"
+          title="Команда, которая работает вместе"
+          lead="Врач и техник обсуждают вашу работу лично — не через посредника."
+        />
+      </Reveal>
+
+      <ul class="dc-doctors" role="list">
+        {
+          doctors.map((doctor, i) => (
+            <Reveal as="li" delay={i * 90}>
+              <DoctorFlipCard
+                name={doctor.data.name}
+                speciality={doctor.data.speciality}
+                experience={doctor.data.experience}
+                note={doctor.data.note}
+                extra={doctor.data.extra}
+                photo={doctor.data.photo}
+                photoLabel={doctor.data.photoLabel}
+              />
+            </Reveal>
+          ))
+        }
+      </ul>
+
+      <Reveal delay={320}>
+        <div class="dc-actions">
+          <Button variant="secondary" size="lg" href={asset('doctors')}>Все врачи</Button>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Вопросы -->
+  <section id="faq" class="dc-section dc-bg-cool">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading eyebrow="Вопросы" title="Что чаще всего спрашивают" />
+      </Reveal>
+      <Reveal delay={90}>
+        <FaqAccordion items={faqItems} />
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Отзывы -->
+  <section id="reviews" class="dc-section dc-bg-white">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading eyebrow="Отзывы" title="Настоящие отзывы, а не наши слова" />
+      </Reveal>
+
+      <div class="dc-two-col">
+        <Reveal delay={90}>
+          <div class="dc-reviews-col">
+            <ReviewsCard />
+            <div class="dc-facts">
+              <div>
+                <span class="dc-facts__value">4,9</span>
+                <span class="dc-facts__cap">Средняя оценка на Яндекс Картах</span>
+              </div>
+              <div>
+                <span class="dc-facts__value">120+</span>
+                <span class="dc-facts__cap">Отзывов пациентов района</span>
+              </div>
+              <div>
+                <span class="dc-facts__value">с 2013</span>
+                <span class="dc-facts__cap">Года принимаем в этом же здании</span>
+              </div>
+              <p>
+                Отметка «Хорошее место» от Яндекса даётся клиникам, которых пациенты оценивают выше
+                остальных в районе.
+              </p>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={180}>
+          <YandexEmbed
+            src={clinic.links.yandexReviewsWidget}
+            title="Отзывы о клинике «Дентал Круиз» на Яндекс Картах"
+            height={526}
+            linkHref={clinic.links.yandexOrg}
+            linkLabel="Все отзывы на Яндекс Картах"
+          />
+        </Reveal>
+      </div>
+    </div>
+  </section>
+
+  <!-- Полоса доверия -->
+  <section id="trust" class="dc-section--tight dc-bg-warm">
+    <div class="dc-container">
+      <Reveal>
+        <TrustBar items={trust.map((t) => t.data)} />
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Контакты -->
+  <section id="contacts" class="dc-section dc-bg-aqua">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Контакты"
+          title="Приезжайте или позвоните"
+          lead="5 минут пешком от метро Полежаевская: Москва, 4-я Магистральная, 5с1, 2 этаж. Пн–сб 10:00–22:00, вс — выходной. Позвоните — администратор подберёт время, или оставьте заявку, и мы перезвоним сами."
+        />
+      </Reveal>
+
+      <Reveal delay={90}>
+        <div class="dc-actions">
+          <Button variant="primary" size="lg" data-open="dc-book">
+            <Icon slot="icon" name="calendar" size={20} />
+            Записаться на приём
+          </Button>
+        </div>
+      </Reveal>
+
+      <div class="dc-two-col">
+        <Reveal delay={140}>
+          <PlaceCard />
+        </Reveal>
+        <Reveal delay={220}>
+          <YandexEmbed
+            src={clinic.links.yandexMapWidget}
+            title="Дентал Круиз на Яндекс Картах"
+            height={400}
+            linkHref={clinic.links.yandexOrg}
+            linkLabel={`${clinic.address.streetShort} · ${clinic.metro} — открыть в Яндекс Картах`}
+          />
+        </Reveal>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .dc-bg-white {
+    background: var(--dc-white);
+  }
+  .dc-bg-warm {
+    background: var(--surface-warm);
+  }
+  .dc-bg-cool {
+    background: var(--surface-cool);
+  }
+  .dc-bg-aqua {
+    background: var(--grad-aqua);
+  }
+
+  .dc-hero__lead {
+    margin: var(--space-8) auto 0;
+    max-width: 24ch;
+    font-family: var(--font-body);
+    font-size: clamp(1.0625rem, 2vw, 1.375rem);
+    font-weight: var(--fw-medium);
+    line-height: var(--lh-body);
+    color: #ffffff;
+    text-shadow: 0 2px 18px rgba(7, 59, 75, 0.55);
+  }
+
+  .dc-container--split {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    align-items: center;
+  }
+  .dc-about {
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
+    min-width: 0;
+  }
+
+  .dc-cards {
+    display: grid;
+    gap: var(--space-6);
+    align-items: start;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+
+  .dc-doctors {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 var(--space-4);
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+
+  .dc-actions {
+    display: flex;
+  }
+
+  .dc-two-col {
+    display: grid;
+    gap: var(--space-6);
+    align-items: stretch;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  }
+  .dc-reviews-col {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-rows: auto 1fr;
+    height: 100%;
+  }
+  .dc-facts {
+    display: grid;
+    gap: var(--space-5);
+    align-content: center;
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    background: var(--surface-card);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line-hairline);
+  }
+  .dc-facts > div {
+    display: grid;
+    gap: var(--space-1);
+  }
+  .dc-facts__value {
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+  }
+  .dc-facts__cap {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-facts p {
+    font-size: var(--type-small);
+    color: var(--text-body);
+  }
+</style>

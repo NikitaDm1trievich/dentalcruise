@@ -1,0 +1,64 @@
+---
+/**
+ * Lucide-глиф, отрисованный на этапе сборки.
+ *
+ * В макете Claude Design иконки приходили из UMD-скрипта lucide на CDN.
+ * Здесь пакет `lucide` читается в build-time и в HTML попадает готовый
+ * инлайн-SVG: без запроса к CDN, без мигания иконок и без JS в браузере.
+ */
+import { icons } from 'lucide';
+
+interface Props {
+  /** kebab-case имя глифа Lucide, напр. "chevron-down" */
+  name: string;
+  size?: number;
+  strokeWidth?: number;
+  color?: string;
+  class?: string;
+  fill?: string;
+}
+
+const {
+  name,
+  size = 22,
+  strokeWidth = 1.75,
+  color = 'currentColor',
+  class: className,
+  fill = 'none',
+} = Astro.props;
+
+// kebab-case → PascalCase: 'chevron-down' → 'ChevronDown', 'repeat-2' → 'Repeat2'
+const key = name
+  .split('-')
+  .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+  .join('');
+const node = (icons as Record<string, [string, Record<string, string>][]>)[key];
+
+if (!node) {
+  throw new Error(
+    `Icon: глиф «${name}» (${key}) не найден в lucide. Проверьте имя на lucide.dev/icons.`,
+  );
+}
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill={fill}
+  stroke={color}
+  stroke-width={strokeWidth}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  class:list={['dc-icon', className]}
+>
+  {node.map(([tag, attrs]) => <Fragment set:html={`<${tag} ${Object.entries(attrs).map(([k, v]) => `${k}="${v}"`).join(' ')} />`} />)}
+</svg>
+
+<style>
+  .dc-icon {
+    flex: 0 0 auto;
+    display: block;
+  }
+</style>

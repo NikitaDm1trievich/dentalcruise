@@ -1,0 +1,91 @@
+---
+/** «В среднем по Москве» vs «У нас». Из Ds2_2d9e23.PriceCompare. */
+interface Props {
+  label?: string;
+  marketLabel?: string;
+  marketPrice: string;
+  ourLabel?: string;
+  ourPrice: string;
+  note?: string;
+}
+
+const {
+  label,
+  marketLabel = 'В среднем по Москве',
+  marketPrice,
+  ourLabel = 'У нас',
+  ourPrice,
+  note,
+} = Astro.props;
+---
+
+<div class="dc-pricecmp">
+  {label && <span class="dc-pricecmp__label">{label}</span>}
+  <div class="dc-pricecmp__row">
+    <div class="dc-pricecmp__side">
+      <span class="dc-pricecmp__cap">{marketLabel}</span>
+      <span class="dc-pricecmp__market">{marketPrice}</span>
+    </div>
+    <div class="dc-pricecmp__side">
+      <span class="dc-pricecmp__cap dc-pricecmp__cap--ours">{ourLabel}</span>
+      <span class="dc-pricecmp__ours">{ourPrice}</span>
+    </div>
+  </div>
+  {note && <p class="dc-pricecmp__note">{note}</p>}
+</div>
+
+<style>
+  .dc-pricecmp {
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-8);
+    border-radius: var(--radius-xl);
+    background: var(--surface-card);
+    box-shadow: var(--shadow-md);
+  }
+  .dc-pricecmp__label {
+    font-family: var(--font-body);
+    font-size: var(--type-eyebrow);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .dc-pricecmp__row {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    align-items: end;
+  }
+  .dc-pricecmp__side {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-pricecmp__cap {
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-muted);
+  }
+  .dc-pricecmp__cap--ours {
+    color: var(--text-accent);
+  }
+  .dc-pricecmp__market {
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: var(--fw-semibold);
+    color: var(--text-muted);
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+  }
+  .dc-pricecmp__ours {
+    font-family: var(--font-display);
+    font-size: var(--type-price);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+    line-height: 1.05;
+  }
+  .dc-pricecmp__note {
+    color: var(--text-body);
+    max-width: min(var(--measure), 100%);
+  }
+</style>

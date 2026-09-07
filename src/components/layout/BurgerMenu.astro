@@ -1,0 +1,185 @@
+---
+/**
+ * Выезжающее справа меню. Перенесено из Ds2_2d9e23.BurgerMenu.
+ * Открытие/закрытие/Escape/ловушка фокуса — в src/lib/overlays.ts.
+ */
+import Icon from '../core/Icon.astro';
+import IconButton from '../core/IconButton.astro';
+import Button from '../core/Button.astro';
+import { clinic, navLinks } from '../../data/site';
+
+const base = import.meta.env.BASE_URL;
+const href = (p: string) => `${base}${p}`.replace(/\/{2,}/g, '/');
+const { vk, max } = clinic.links;
+---
+
+<div class="dc-burger" id="dc-menu" data-state="closed" aria-hidden="true">
+  <div class="dc-burger__scrim" data-close></div>
+
+  <nav class="dc-burger__panel" aria-label="Меню сайта">
+    <div class="dc-burger__close">
+      <IconButton label="Закрыть меню" variant="bare" data-close>
+        <Icon name="x" size={24} />
+      </IconButton>
+    </div>
+
+    <ul class="dc-burger__links">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a href={href(link.href.replace(/^\//, ''))} data-close>
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="dc-burger__socials">
+      {
+        max && (
+          <IconButton label="Написать в Max" href={max}>
+            <Icon name="message-circle" size={20} />
+          </IconButton>
+        )
+      }
+      {
+        vk && (
+          <IconButton label="ВКонтакте" href={vk}>
+            <Icon name="send" size={20} />
+          </IconButton>
+        )
+      }
+      <IconButton label="Позвонить" href={clinic.phoneHref} variant="accent">
+        <Icon name="phone" size={20} />
+      </IconButton>
+    </div>
+
+    <div class="dc-burger__info">
+      <a href={clinic.phoneHref} class="dc-burger__phone">{clinic.phone}</a>
+      <p>{clinic.scheduleLong}</p>
+      <p>{clinic.address.locality}, {clinic.address.street}</p>
+      <a href={`mailto:${clinic.email}`} class="dc-burger__mail">{clinic.email}</a>
+      <p class="dc-burger__route">{clinic.metroNote}</p>
+      <a href={clinic.links.yandexOrg} target="_blank" rel="noopener" class="dc-burger__map">
+        <Icon name="map-pin" size={18} />
+        Как добраться?
+      </a>
+    </div>
+
+    <Button variant="primary" size="lg" fullWidth data-open="dc-book">Записаться на приём</Button>
+  </nav>
+</div>
+
+<style>
+  .dc-burger {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    pointer-events: none;
+  }
+  .dc-burger[data-state='open'] {
+    pointer-events: auto;
+  }
+
+  .dc-burger__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 59, 75, 0.26);
+    opacity: 0;
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+  .dc-burger[data-state='open'] .dc-burger__scrim {
+    opacity: 1;
+  }
+
+  .dc-burger__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    width: min(420px, 92vw);
+    background: var(--surface-page);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-6);
+    overflow-y: auto;
+    display: grid;
+    align-content: start;
+    gap: var(--space-6);
+    transform: translateX(102%);
+    opacity: 0;
+    transition:
+      transform var(--dur-mid) var(--ease-out),
+      opacity var(--dur-mid) var(--ease-out);
+  }
+  .dc-burger[data-state='open'] .dc-burger__panel {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .dc-burger__close {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .dc-burger__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-1);
+  }
+  .dc-burger__links a {
+    display: block;
+    padding: 12px 0;
+    font-family: var(--font-display);
+    font-weight: var(--fw-semibold);
+    font-size: var(--type-h3);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-display);
+    color: var(--text-strong);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line-hairline);
+  }
+  .dc-burger__links a:hover {
+    color: var(--text-accent);
+  }
+
+  .dc-burger__socials {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .dc-burger__info {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-burger__info p {
+    color: var(--text-body);
+    font-size: var(--type-body);
+  }
+  .dc-burger__phone {
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+    text-decoration: none;
+  }
+  .dc-burger__mail {
+    color: var(--text-accent);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-burger__route {
+    color: var(--text-muted) !important;
+    font-size: var(--type-small) !important;
+  }
+  .dc-burger__map {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-accent);
+    font-weight: var(--fw-bold);
+    justify-self: start;
+  }
+</style>

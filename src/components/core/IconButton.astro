@@ -1,0 +1,89 @@
+---
+/** Круглая иконочная кнопка. Перенесено из Ds2_2d9e23.IconButton. */
+interface Props {
+  label: string;
+  variant?: 'light' | 'accent' | 'onDark' | 'bare';
+  size?: number;
+  href?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const { label, variant = 'light', size = 48, href, class: className, ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  class:list={['dc-iconbtn', `dc-iconbtn--${variant}`, className]}
+  href={href}
+  type={href ? undefined : 'button'}
+  aria-label={label}
+  title={label}
+  style={`--dc-iconbtn-size:${size}px`}
+  {...rest}
+>
+  <slot />
+</Tag>
+
+<style>
+  .dc-iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--dc-iconbtn-size);
+    height: var(--dc-iconbtn-size);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    flex: 0 0 auto;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .dc-iconbtn--light {
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--text-strong);
+    border: 1px solid var(--line-hairline);
+  }
+  .dc-iconbtn--light:hover {
+    background: var(--dc-white);
+    color: var(--text-strong);
+  }
+  .dc-iconbtn--accent {
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+    border: 1px solid transparent;
+  }
+  .dc-iconbtn--accent:hover {
+    background: var(--cta-bg-hover);
+    color: var(--cta-fg);
+  }
+  .dc-iconbtn--onDark {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-on-dark);
+    border: 1px solid var(--line-on-dark);
+  }
+  .dc-iconbtn--onDark:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: var(--text-on-dark);
+  }
+  .dc-iconbtn--bare {
+    background: transparent;
+    color: var(--text-strong);
+    border: 1px solid transparent;
+  }
+  .dc-iconbtn--bare:hover {
+    background: rgba(4, 48, 65, 0.06);
+    color: var(--text-strong);
+  }
+
+  /* Ховер шапки на ПК: заливка акцентом, иконка белая (правка макета) */
+  @media (hover: hover) and (min-width: 900px) {
+    :global(.dc-header) .dc-iconbtn--light:hover,
+    :global(.dc-burger) .dc-iconbtn--light:hover {
+      background: var(--cta-bg);
+      border-color: transparent;
+      color: #ffffff;
+    }
+  }
+</style>

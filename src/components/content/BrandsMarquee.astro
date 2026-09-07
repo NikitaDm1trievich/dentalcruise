@@ -1,0 +1,87 @@
+---
+/** Бегущая строка поставщиков. Перенесено из Ds2_2d9e23.BrandsMarquee. */
+interface Props {
+  eyebrow?: string;
+  brands: { id: string; name: string; logo?: string; note?: string }[];
+  speed?: number;
+}
+
+const { eyebrow = 'Материалы и поставщики', brands, speed = 38 } = Astro.props;
+// Дубль списка — чтобы лента замыкалась без стыка
+const row = [...brands, ...brands];
+---
+
+<div class="dc-marquee">
+  {eyebrow && <span class="dc-marquee__eyebrow">{eyebrow}</span>}
+  <div class="dc-marquee__viewport">
+    <div class="dc-marquee__row" style={`animation-duration:${speed}s`}>
+      {
+        row.map((brand, i) => (
+          <span class="dc-marquee__item" title={brand.note ?? brand.name} aria-hidden={i >= brands.length}>
+            {brand.logo ? <img src={brand.logo} alt={brand.name} height="34" /> : brand.name}
+          </span>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<style>
+  .dc-marquee {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .dc-marquee__eyebrow {
+    font-family: var(--font-body);
+    font-size: var(--type-eyebrow);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .dc-marquee__viewport {
+    position: relative;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .dc-marquee__row {
+    display: flex;
+    width: max-content;
+    gap: clamp(32px, 6vw, 80px);
+    align-items: center;
+    animation-name: dc-marquee;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+  @keyframes dc-marquee {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-marquee__row {
+      animation: none;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+  }
+  .dc-marquee__item {
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-display);
+    color: var(--text-strong);
+    white-space: nowrap;
+    opacity: 0.78;
+  }
+  .dc-marquee__item img {
+    height: 34px;
+    width: auto;
+  }
+</style>

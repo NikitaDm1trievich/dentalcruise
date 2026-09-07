@@ -1,0 +1,108 @@
+---
+/** Полоса доверия перед подвалом. Из Ds2_2d9e23.TrustBar. */
+import Icon from '../core/Icon.astro';
+
+interface Props {
+  items: { id: string; title: string; text: string; icon: string; href?: string; opensLicense: boolean }[];
+  tone?: 'light' | 'dark';
+}
+const { items, tone = 'light' } = Astro.props;
+---
+
+<div class:list={['dc-trust', tone === 'dark' && 'dc-trust--dark']}>
+  <div class="dc-trust__grid">
+    {
+      items.map((item) => {
+        const attrs = item.opensLicense
+          ? { 'data-open': 'dc-license', type: 'button' as const }
+          : {};
+        const Tag = item.opensLicense ? 'button' : item.href ? 'a' : 'div';
+        return (
+          <Tag
+            class="dc-trust__card"
+            href={!item.opensLicense && item.href ? item.href : undefined}
+            target={!item.opensLicense && item.href ? '_blank' : undefined}
+            rel={!item.opensLicense && item.href ? 'noopener' : undefined}
+            {...attrs}
+          >
+            <Icon
+              name={item.icon}
+              size={30}
+              strokeWidth={1.6}
+              color={tone === 'dark' ? 'var(--dc-turquoise)' : 'var(--text-accent)'}
+            />
+            <span class="dc-trust__title">{item.title}</span>
+            <span class="dc-trust__text">{item.text}</span>
+          </Tag>
+        );
+      })
+    }
+  </div>
+</div>
+
+<style>
+  .dc-trust {
+    background: var(--surface-quiet);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+  }
+  .dc-trust--dark {
+    background: var(--surface-dark);
+  }
+  .dc-trust__grid {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .dc-trust__card {
+    min-width: 0;
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    justify-items: start;
+    text-align: left;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--text-body);
+    font-family: var(--font-body);
+  }
+  button.dc-trust__card,
+  a.dc-trust__card {
+    cursor: pointer;
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+  button.dc-trust__card:hover,
+  a.dc-trust__card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: var(--text-body);
+  }
+  .dc-trust--dark .dc-trust__card {
+    background: var(--surface-dark-lift);
+    border-color: var(--line-on-dark);
+    box-shadow: none;
+    color: var(--text-on-dark);
+  }
+  .dc-trust__title {
+    font-family: var(--font-display);
+    font-weight: var(--fw-semibold);
+    font-size: var(--type-h4);
+    color: var(--text-strong);
+  }
+  .dc-trust--dark .dc-trust__title {
+    color: var(--text-on-dark);
+  }
+  .dc-trust__text {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+  }
+  .dc-trust--dark .dc-trust__text {
+    color: var(--text-on-dark-muted);
+  }
+</style>

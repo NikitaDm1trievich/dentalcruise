@@ -19,3 +19,18 @@ coconut-reference/
 
 # Downloaded design export archives
 *.zip
+
+# ── Astro / Node ────────────────────────────────────────────
+node_modules/
+dist/
+.astro/
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+.DS_Store
+
+# ── Cloudflare Worker ───────────────────────────────────────
+worker/node_modules/
+worker/.wrangler/
+.dev.vars
