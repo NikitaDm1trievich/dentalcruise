@@ -61,6 +61,28 @@ const { items } = Astro.props;
     background: var(--surface-card);
     border: 1px solid var(--line-hairline);
     box-shadow: var(--shadow-sm);
+    /* Появление по очереди после того, как проявилась сама полоса.
+       Свой `.dc-reveal` тут не поставить — он на родителе. */
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 420ms var(--ease-out),
+      transform 420ms var(--ease-out);
+  }
+  .dc-strip__card:nth-child(2) {
+    transition-delay: 110ms;
+  }
+  :global(.dc-reveal.is-visible) .dc-strip__card,
+  :global(.no-js) .dc-strip__card {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-strip__card {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0s;
+    }
   }
   /* Мягкий фирменный подсвет в углу — вместо цветного градиента оригинала */
   .dc-strip__card::before {

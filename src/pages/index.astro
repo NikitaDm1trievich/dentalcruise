@@ -104,7 +104,12 @@ const clinicPhotos = Array.from(
       <Reveal>
         <PromoBoard
           title="Цены, которые видно сразу"
-          items={promos.map((p) => p.data)}
+          items={promos.map((p) => ({
+            ...p.data,
+            href: p.data.category
+              ? `${asset('pricelist')}#${p.data.category}`
+              : undefined,
+          }))}
           note="Цены ниже рынка потому, что коронки и виниры делает наша лаборатория — без наценки посредника."
         />
       </Reveal>

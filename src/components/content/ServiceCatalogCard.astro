@@ -32,7 +32,7 @@ const shown = items.slice(0, 3);
     <Icon name={icon} size={26} strokeWidth={1.75} color="var(--text-accent)" />
   </div>
 
-  <h3>{title}</h3>
+  <h3><a href={href} class="dc-catalog-card__title-link">{title}</a></h3>
   <p class="dc-catalog-card__desc">{description}</p>
 
   <ul class="dc-catalog-card__items">
@@ -122,6 +122,15 @@ const shown = items.slice(0, 3);
     font-size: var(--type-h3);
     /* Место под две строки: длинные названия не сдвигают прайс соседних карточек */
     min-height: calc(2em * var(--lh-heading));
+  }
+  .dc-catalog-card__title-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .dc-catalog-card__title-link:hover,
+  .dc-catalog-card__title-link:focus-visible {
+    color: var(--text-accent);
   }
 
   .dc-catalog-card__desc {

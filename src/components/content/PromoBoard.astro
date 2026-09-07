@@ -19,6 +19,8 @@ interface Props {
     was?: string;
     note?: string;
     attributes?: { label: string; value: string }[];
+    /** Готовая ссылка в раздел прайса — карточка целиком кликабельна */
+    href?: string;
   }[];
 }
 
@@ -39,8 +41,11 @@ const {
 
   <div class="dc-promo__grid">
     {
-      items.map((item) => (
-        <div class="dc-promo__card">
+      items.map((item) => {
+        // Карточка со ссылкой — <a>, без ссылки — прежний <div>
+        const Tag = item.href ? 'a' : 'div';
+        return (
+        <Tag class="dc-promo__card" href={item.href}>
           <span class="dc-promo__ribbon" aria-hidden="true">Акция</span>
           <span class="dc-promo__label">{item.title}</span>
           <span class="dc-promo__price">{item.price}</span>
@@ -56,8 +61,9 @@ const {
               ))}
             </dl>
           )}
-        </div>
-      ))
+        </Tag>
+        );
+      })
     }
   </div>
 
@@ -125,6 +131,51 @@ const {
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     box-shadow: var(--shadow-md);
+    /* Карточка-ссылка ведёт в свой раздел прайса. Не двигается под курсором —
+       отклик только тенью, как у карточек каталога. */
+    color: inherit;
+    text-decoration: none;
+    transition: box-shadow var(--dur-mid) var(--ease-out);
+  }
+  a.dc-promo__card:hover,
+  a.dc-promo__card:focus-visible {
+    box-shadow: var(--shadow-lg);
+  }
+  a.dc-promo__card:hover .dc-promo__label {
+    color: var(--text-accent);
+  }
+  .dc-promo__label {
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  /* Карточки выезжают по очереди после того, как проявилась сама плашка.
+     Своим `.dc-reveal` их не пометить: он лежит на родителе, и вложенные
+     появления отыграли бы, пока родитель ещё прозрачный. */
+  .dc-promo__card {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 420ms var(--ease-out),
+      transform 420ms var(--ease-out),
+      box-shadow var(--dur-mid) var(--ease-out);
+  }
+  :global(.dc-reveal.is-visible) .dc-promo__card,
+  :global(.no-js) .dc-promo__card {
+    opacity: 1;
+    transform: none;
+  }
+  .dc-promo__card:nth-child(2) {
+    transition-delay: 90ms;
+  }
+  .dc-promo__card:nth-child(3) {
+    transition-delay: 180ms;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-promo__card {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0s;
+    }
   }
   /* Лента «Акция» через правый верхний угол */
   .dc-promo__ribbon {

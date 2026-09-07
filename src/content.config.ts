@@ -94,6 +94,11 @@ const promos = defineCollection({
      * Общие свойства материалов, не измеренные клиникой лично значения.
      */
     attributes: z.array(z.object({ label: z.string(), value: z.string() })).default([]),
+    /**
+     * Слаг раздела из service-categories: карточка акции ведёт в прайс
+     * с якорем на нужное направление.
+     */
+    category: z.string().optional(),
     ...orderable,
   }),
 });
