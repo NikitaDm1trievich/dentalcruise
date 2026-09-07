@@ -26,17 +26,18 @@ const plotW = W - PAD.left - PAD.right;
 const plotH = H - PAD.top - PAD.bottom;
 
 /**
- * Шкала начинается не с нуля, а с 15 тыс.
+ * Шкала начинается не с нуля, а с 16 тыс., и заканчивается на 32 тыс. —
+ * вплотную к рядам (19 900–30 800 ₽).
  *
- * От нуля помесячные шаги (200–1 600 ₽) сжимались в пару пикселей и обе
+ * От нуля помесячные шаги (100–1 600 ₽) сжимались в пару пикселей и обе
  * линии выглядели прямыми. Обычно у диаграмм с областями усечённая база
  * недопустима — заливка своим размером врёт о величине. Здесь это смягчено:
  * заливка уходит в прозрачность к низу, на каждом месяце стоит точка,
  * а ось подписана — значения читаются, а не угадываются по площади.
  */
-const Y_MIN = 15000;
-const Y_MAX = 55000;
-const yTicks = [15000, 25000, 35000, 45000, 55000];
+const Y_MIN = 16000;
+const Y_MAX = 32000;
+const yTicks = [16000, 20000, 24000, 28000, 32000];
 
 const x = (i: number) => PAD.left + (plotW * i) / (data.length - 1);
 const y = (v: number) => PAD.top + plotH - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * plotH;
@@ -74,7 +75,6 @@ const marketLine = smoothPath(data.map((d) => d.market));
 const clinicLine = smoothPath(data.map((d) => d.clinic));
 
 const anchorIndex = data.findIndex((d) => d.month === anchorMonth);
-const promoIndex = data.findIndex((d) => d.promo);
 const gap = data[anchorIndex].market - data[anchorIndex].clinic;
 const rub = new Intl.NumberFormat('ru-RU');
 ---
@@ -169,22 +169,6 @@ const rub = new Intl.NumberFormat('ru-RU');
         ))
       }
 
-      {/* Подпись к месяцу, с которого действует акция.
-          Ставим над точкой: снизу она упирается в названия месяцев,
-          а сверху между линиями свободно. */}
-      {
-        promoIndex >= 0 && (
-          <text
-            x={x(promoIndex)}
-            y={y(data[promoIndex].clinic) - 16}
-            class="dc-chart__promo-label"
-            text-anchor="middle"
-          >
-            акция {rub.format(data[promoIndex].clinic)} ₽
-          </text>
-        )
-      }
-
       {/* Наведение: невидимые полосы ловят курсор над каждым месяцем */}
       <g class="dc-chart__hit">
         {
@@ -266,12 +250,6 @@ const rub = new Intl.NumberFormat('ru-RU');
     fill: var(--dc-turquoise-ink);
     stroke: var(--dc-white);
     stroke-width: 3;
-  }
-  .dc-chart__promo-label {
-    fill: var(--dc-turquoise-ink);
-    font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: var(--fw-bold);
   }
   .dc-chart__hit rect {
     fill: transparent;
