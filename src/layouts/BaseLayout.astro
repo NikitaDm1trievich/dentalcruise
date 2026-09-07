@@ -65,9 +65,11 @@ const asset = (p: string) => `${base}${p}`.replace(/\/{2,}/g, '/');
     <script>
       import { initReveal } from '../lib/reveal';
       import { initOverlays } from '../lib/overlays';
+      import { initFlipCards } from '../lib/flip';
 
       initOverlays();
       initReveal();
+      initFlipCards();
     </script>
 
     <style>

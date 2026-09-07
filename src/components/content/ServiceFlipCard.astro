@@ -45,7 +45,7 @@ const {
     aria-label={`${title} — показать подробности`}
     data-flip-toggle></button>
 
-  <div class="dc-flip__inner">
+  <div class="dc-flip__inner" data-flip-inner>
     <article class="dc-flip__face dc-flip__face--front">
       <div class="dc-flip__photo">
         <PhotoPlaceholder label={photoLabel} src={photo} alt={title} ratio="4 / 3" radius="0" cover />
@@ -91,8 +91,13 @@ const {
   .dc-flip {
     position: relative;
     height: var(--dc-flip-h);
-    perspective: 2000px;
     min-width: 0;
+  }
+  /* Перспектива и preserve-3d включаются только на время переворота
+     (класс ставит src/lib/flip.ts): постоянный 3D-контекст уводит карточку
+     на отдельный слой композитора и размывает текст лицевой стороны. */
+  .dc-flip.is-3d {
+    perspective: 2000px;
   }
   /* Кнопка-подложка: переворот доступен и с клавиатуры, и на тач-экране */
   .dc-flip__toggle {
@@ -113,8 +118,11 @@ const {
     position: relative;
     height: 100%;
     width: 100%;
-    transform-style: preserve-3d;
+    transform-style: flat;
     transition: transform 560ms cubic-bezier(0.77, 0, 0.175, 1);
+  }
+  .dc-flip.is-3d .dc-flip__inner {
+    transform-style: preserve-3d;
   }
   .dc-flip[data-flipped='true'] .dc-flip__inner {
     transform: rotateY(180deg);
@@ -194,12 +202,17 @@ const {
   }
 
   .dc-flip__face--back {
+    /* Без 3D-контекста backface-visibility не работает — прячем изнанку явно */
+    visibility: hidden;
     transform: rotateY(180deg);
     background: var(--grad-aqua);
     display: grid;
     grid-template-rows: auto 1fr auto;
     gap: var(--space-4);
     padding: var(--space-6);
+  }
+  .dc-flip.is-3d .dc-flip__face--back {
+    visibility: visible;
   }
   .dc-flip__backhead {
     display: grid;
@@ -263,29 +276,3 @@ const {
     color: var(--cta-fg);
   }
 </style>
-
-<script>
-  document.querySelectorAll<HTMLElement>('[data-flip]').forEach((card) => {
-    const set = (flipped: boolean) => {
-      card.dataset.flipped = String(flipped);
-      card
-        .querySelector<HTMLButtonElement>('[data-flip-toggle]')
-        ?.setAttribute('aria-expanded', String(flipped));
-    };
-
-    set(false);
-
-    // Наведение — только там, где есть настоящая мышь
-    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      card.addEventListener('mouseenter', () => set(true));
-      card.addEventListener('mouseleave', () => set(false));
-    }
-
-    card.querySelector('[data-flip-toggle]')?.addEventListener('click', () => {
-      set(card.dataset.flipped !== 'true');
-    });
-    card.addEventListener('focusout', (event) => {
-      if (!card.contains(event.relatedTarget as Node)) set(false);
-    });
-  });
-</script>

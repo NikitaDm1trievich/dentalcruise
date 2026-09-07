@@ -20,6 +20,9 @@ function finish(el: HTMLElement): void {
   el.style.removeProperty('opacity');
   el.style.removeProperty('transform');
   el.style.removeProperty('will-change');
+  // Снимаем подсказку композитору: пока она висит, блок остаётся на отдельном
+  // слое, а текст на нём теряет субпиксельное сглаживание и выглядит размытым.
+  el.classList.remove('dc-reveal--animating');
   el.classList.add('is-visible');
 }
 
@@ -53,6 +56,8 @@ export function initReveal(): void {
     }
 
     pending.add(el);
+    el.classList.add('dc-reveal--animating');
+
     const done = () => {
       pending.delete(el);
       window.clearTimeout(watchdog);

@@ -5,6 +5,7 @@
  */
 import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
+import VkMark from '../core/VkMark.astro';
 import Button from '../core/Button.astro';
 import { clinic, navLinks } from '../../data/site';
 
@@ -46,7 +47,7 @@ const { vk, max } = clinic.links;
       {
         vk && (
           <IconButton label="ВКонтакте" href={vk}>
-            <Icon name="send" size={20} />
+            <VkMark size={20} />
           </IconButton>
         )
       }

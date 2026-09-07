@@ -46,9 +46,10 @@ export const clinic = {
     yandexOrg: 'https://yandex.ru/maps/org/dental_kruiz/154025048590/',
     yandexMapWidget: 'https://yandex.ru/map-widget/v1/?ll=37.520284%2C55.774426&z=17',
     yandexReviewsWidget: 'https://yandex.ru/maps-reviews-widget/154025048590?comments',
-    /** TODO: подставить реальные адреса сообществ, когда клиника их подтвердит. */
-    vk: '',
-    max: '',
+    vk: 'https://vk.ru/dentalcruise',
+    /** Max открывает чат по рабочему номеру клиники */
+    max: 'https://max.ru/+79255777677',
+    /** Отдельного Telegram у клиники нет — кнопка не выводится, пока поле пустое */
     telegram: '',
   },
 

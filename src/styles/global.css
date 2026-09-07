@@ -157,6 +157,12 @@ a:hover {
 .dc-reveal {
   opacity: 0;
   transform: translateY(var(--reveal-shift));
+}
+/* will-change держим ТОЛЬКО на время анимации.
+   Постоянный will-change:transform навсегда уводит блок на отдельный слой
+   композитора, а там браузер отключает субпиксельное сглаживание — текст
+   выглядит размытым и тонким. Класс снимается в src/lib/reveal.ts. */
+.dc-reveal--animating {
   will-change: opacity, transform;
 }
 .no-js .dc-reveal,

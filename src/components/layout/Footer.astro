@@ -4,6 +4,7 @@
  * Перенесено из Ds2_2d9e23.Footer.
  */
 import Icon from '../core/Icon.astro';
+import VkMark from '../core/VkMark.astro';
 import { clinic, navLinks } from '../../data/site';
 
 const base = import.meta.env.BASE_URL;
@@ -17,7 +18,7 @@ const infoLinks = [
 ];
 
 const socials = [
-  { label: 'ВКонтакте', icon: 'send', href: clinic.links.vk },
+  { label: 'ВКонтакте', icon: null, href: clinic.links.vk },
   { label: 'Max', icon: 'message-circle', href: clinic.links.max },
 ].filter((s) => s.href);
 ---
@@ -38,7 +39,7 @@ const socials = [
           <div class="dc-footer__socials">
             {socials.map((s) => (
               <a href={s.href} aria-label={s.label} target="_blank" rel="noopener">
-                <Icon name={s.icon} size={20} />
+                {s.icon ? <Icon name={s.icon} size={20} /> : <VkMark size={20} />}
               </a>
             ))}
           </div>
