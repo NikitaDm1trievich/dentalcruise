@@ -18,6 +18,13 @@ interface Props {
 }
 
 const { title, description, icon, items, href } = Astro.props;
+
+/**
+ * Ровно три позиции на карточку: одинаковая высота списка держит ссылку
+ * «Смотреть все услуги» на одной линии во всех карточках сетки.
+ * Остальные позиции раздела — на странице прайса, куда ведёт ссылка.
+ */
+const shown = items.slice(0, 3);
 ---
 
 <article class="dc-catalog-card">
@@ -30,7 +37,7 @@ const { title, description, icon, items, href } = Astro.props;
 
   <ul class="dc-catalog-card__items">
     {
-      items.map((item) => (
+      shown.map((item) => (
         <li>
           <span class="dc-catalog-card__item-title">{item.title}</span>
           <span class="dc-catalog-card__item-price">{item.price}</span>

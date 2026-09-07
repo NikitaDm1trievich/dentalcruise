@@ -180,10 +180,19 @@ const clinicPhotos = Array.from(
   <section id="advantages" class="dc-section dc-bg-warm">
     <div class="dc-container">
       <Reveal>
-        <SectionHeading eyebrow="Дентал Круиз" title="Почему пациенты выбирают нас" />
+        <SectionHeading
+          eyebrow="Условия"
+          title="Консультация бесплатно, лечение — в рассрочку"
+          lead="Прежде чем что-то делать, мы смотрим и считаем. Без оплаты за осмотр и без обязательств."
+        />
       </Reveal>
       <Reveal delay={90}>
         <AdvantageCarousel slides={slides.map((s) => s.data)} />
+      </Reveal>
+      <Reveal delay={140}>
+        <div class="dc-actions">
+          <Button variant="primary" size="lg" data-open="dc-book">Записаться на консультацию</Button>
+        </div>
       </Reveal>
     </div>
   </section>
@@ -193,7 +202,7 @@ const clinicPhotos = Array.from(
     <div class="dc-container">
       <Reveal>
         <SectionHeading
-          eyebrow="Почему мы"
+          eyebrow="Почему выбирают нас"
           title="Своя лаборатория — своя цена"
           lead="Большинство клиник заказывают коронки и виниры на стороне. Мы делаем их сами — поэтому нет наценки посредника и долгого ожидания."
         />
@@ -245,8 +254,9 @@ const clinicPhotos = Array.from(
   <section id="faq" class="dc-section dc-bg-cool">
     <div class="dc-container dc-container--aside">
       <Reveal>
-        <div class="dc-faq-aside">
+        <div class="dc-aside-col">
           <SectionHeading
+            class="dc-aside-heading"
             eyebrow="Вопросы"
             title="Что чаще всего спрашивают"
             lead="Если вашего вопроса тут нет — задайте его администратору, ответим по телефону или в мессенджере."
@@ -406,10 +416,17 @@ const clinicPhotos = Array.from(
       gap: var(--space-8);
     }
   }
-  .dc-faq-aside {
+  .dc-aside-col {
     display: grid;
     gap: var(--space-6);
     justify-items: start;
+    min-width: 0;
+  }
+  /* В узкой колонке display-размер заголовка не помещается и наезжает на соседей.
+     :global целиком — класс приходит из SectionHeading, чужая область видимости. */
+  :global(.dc-aside-heading .dc-heading__title) {
+    font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+    overflow-wrap: anywhere;
   }
   .dc-about {
     display: grid;
@@ -422,16 +439,31 @@ const clinicPhotos = Array.from(
     display: grid;
     gap: var(--space-6);
     align-items: stretch;
+    /* Одинаковая высота рядов: ссылка «Смотреть все услуги» встаёт на одну
+       линию во всех карточках, а не только внутри своего ряда. */
+    grid-auto-rows: 1fr;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   }
 
+  /* Ровная сетка: 2 колонки на планшете, 4 на десктопе — без «хвоста»
+     из одной карточки, который давал auto-fit при четырёх врачах. */
   .dc-doctors {
     list-style: none;
     margin: 0;
     padding: 0 0 var(--space-4);
     display: grid;
     gap: var(--space-5);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 560px) {
+    .dc-doctors {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1040px) {
+    .dc-doctors {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 
   .dc-actions {
