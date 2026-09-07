@@ -1,0 +1,21 @@
+# Real client/clinic photos and unprocessed reference material — not part of the working project
+assets/Авито Фото/
+assets/Наше фото/
+assets/Стоматологическая клиника Дентал Круиз/
+assets/Фото клиника/
+assets/постановка актуальное/
+assets/case1.jpg
+assets/case2.jpg
+assets/case3.jpg
+assets/case4.jpg
+assets/case5.jpg
+assets/colors.jpg
+assets/design1.jpg
+assets/design2.jpg
+assets/coverr-the-ocean-7381-1080p.mp4
+
+# Design reference snippets, not part of the shipped project
+coconut-reference/
+
+# Downloaded design export archives
+*.zip

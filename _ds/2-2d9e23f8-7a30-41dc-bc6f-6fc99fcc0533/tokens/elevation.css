@@ -1,0 +1,11 @@
+:root{
+  /* Shadows are cool-tinted (Depths), never neutral black. */
+  --shadow-sm:0 1px 2px rgba(4,48,65,.06),0 2px 8px rgba(4,48,65,.05);
+  --shadow-md:0 2px 4px rgba(4,48,65,.05),0 10px 24px rgba(4,48,65,.08);
+  --shadow-lg:0 4px 8px rgba(4,48,65,.06),0 24px 56px rgba(4,48,65,.12);
+  --shadow-cta:0 8px 20px rgba(0,177,137,.28);
+  --shadow-inset-line:inset 0 0 0 1px rgba(4,48,65,.10);
+  --blur-glass:blur(14px) saturate(140%);/* @kind other */
+  --glass-light:rgba(237,233,230,.82);
+  --glass-dark:rgba(4,48,65,.62);
+}

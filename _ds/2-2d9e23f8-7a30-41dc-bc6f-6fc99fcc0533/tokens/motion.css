@@ -1,0 +1,17 @@
+:root{
+  --ease-out:cubic-bezier(.22,.61,.36,1)/* @kind other */;   /* the house easing */
+  --ease-in-out:cubic-bezier(.65,.05,.36,1)/* @kind other */;
+  --ease-swell:cubic-bezier(.37,0,.24,1)/* @kind other */;   /* wave/parallax drift */
+
+  --dur-fast:160ms/* @kind other */;      /* hover, press */
+  --dur-mid:320ms/* @kind other */;       /* menus, accordions, header shrink */
+  --dur-slow:640ms/* @kind other */;      /* section reveals */
+  --dur-crossfade:900ms/* @kind other */; /* carousel image+text crossfade */
+  --dur-wave-1:18s/* @kind other */;--dur-wave-2:26s/* @kind other */;--dur-wave-3:34s/* @kind other */;
+
+  --reveal-shift:26px;/* @kind spacing */   /* section reveal travel: 20-30px, from below */
+  --reveal-stagger:90ms;/* @kind other */
+}
+@media (prefers-reduced-motion:reduce){
+  :root{--dur-slow:1ms/* @kind other */;--dur-crossfade:1ms/* @kind other */;--reveal-shift:0px}
+}

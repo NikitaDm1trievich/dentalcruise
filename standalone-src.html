@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="ext-resource-dependency" content="assets/logo-dentalcruise.svg" data-resource-id="logo" />
+<meta name="ext-resource-dependency" content="assets/video/ocean-hero.mp4" data-resource-id="heroVideo" />
+<meta name="ext-resource-dependency" content="DoctorFlipCard.dc.html" data-resource-id="doctorCard" />
+<meta name="ext-resource-dependency" content="LicenseDrawer.dc.html" data-resource-id="licenseDrawer" />
+<template id="__bundler_thumbnail" data-bg-color="#043041">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#043041"/>
+    <path d="M0 470c150-46 250 30 400 0s250-70 400-34 250 62 400 20v344H0z" fill="#0b4a5f"/>
+    <path d="M0 560c160-40 260 26 420 4s260-60 420-30 200 52 360 16v250H0z" fill="#EDE9E6"/>
+    <circle cx="600" cy="300" r="120" fill="none" stroke="#00B189" stroke-width="18"/>
+    <path d="M552 300l38 38 76-76" fill="none" stroke="#00B189" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</template>
+<script>
+(function(){
+  var map={'DoctorFlipCard.dc.html':'doctorCard','LicenseDrawer.dc.html':'licenseDrawer'};
+  var of=window.fetch;
+  window.fetch=function(u,o){
+    try{
+      var s=typeof u==='string'?u:(u&&u.url)||'';
+      var k=Object.keys(map).find(function(n){return s.indexOf(n)>-1});
+      var r=window.__resources||{};
+      if(k&&r[map[k]])return of(r[map[k]],o);
+    }catch(e){}
+    return of(u,o);
+  };
+})();
+</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/tokens/colors.css">
+<link rel="stylesheet" href="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/tokens/typography.css">
+<link rel="stylesheet" href="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/tokens/radius.css">
+<link rel="stylesheet" href="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/tokens/motion.css">
+<link rel="stylesheet" href="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/tokens/base.css">
+<link rel="stylesheet" href="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/styles.css">
+<script src="https://unpkg.com/lucide@0.544.0/dist/umd/lucide.js"></script>
+<script src="_ds/2-2d9e23f8-7a30-41dc-bc6f-6fc99fcc0533/_ds_bundle.js"></script>
+<style>
+html{scroll-behavior:smooth}
+body{background:var(--surface-page);color:var(--text-body)}
+
+/* Скроллбары скрыты везде — и на странице, и внутри компонентов */
+html,body,*{scrollbar-width:none;-ms-overflow-style:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{width:0;height:0;display:none}
+a{color:var(--text-accent)}
+a:hover{color:var(--dc-turquoise-press)}
+
+/* CTA: белый текст на глубокой бирюзе — мягче, чем тёмная краска на ярком */
+:root{
+  --cta-bg:var(--dc-turquoise-ink);
+  --cta-bg-hover:var(--dc-turquoise-press);
+  --cta-fg:#FFFFFF;
+  --focus-ring:var(--dc-depths);
+}
+:focus-visible{outline:2px solid var(--dc-depths);outline-offset:2px}
+
+/* Хедер поверх видео — белая версия логотипа и контактов */
+.dc-header[data-scrolled="0"] .dc-header-contacts span,
+.dc-header[data-scrolled="0"] .dc-header-contacts a{color:#FFFFFF!important;text-shadow:0 2px 14px rgba(7,59,75,.55)}
+.dc-header[data-scrolled="0"] header a img{filter:brightness(0) invert(1) drop-shadow(0 2px 14px rgba(7,59,75,.7))!important}
+/* Бургер — в один цвет с остальными кнопками шапки */
+.dc-header header button[aria-label]{background:rgba(255,255,255,.72)!important;border:1px solid var(--line-hairline)!important}
+.dc-header header button[aria-label]:hover{background:var(--dc-white)!important}
+/* Ховер для кнопок шапки на ПК: меняем фон, иконку красим в белый */
+@media (hover:hover) and (min-width:900px){
+  .dc-header header a[aria-label]:has(svg),.dc-header header button[aria-label],.dc-burger nav a[aria-label]{transition:background var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out)}
+  .dc-header header a[aria-label]:has(svg):hover,.dc-header header button[aria-label]:hover,.dc-burger nav a[aria-label]:hover{background:var(--cta-bg)!important;border-color:transparent!important;color:#FFFFFF!important}
+  .dc-header header a[aria-label]:has(svg):hover svg,.dc-header header button[aria-label]:hover svg,.dc-burger nav a[aria-label]:hover svg{color:#FFFFFF!important;stroke:#FFFFFF!important}
+  .dc-header header button[aria-label]:hover span span{background:#FFFFFF!important}
+  /* Логотип — без эффекта наведения */
+  .dc-header header a:has(img):hover{background:transparent!important;box-shadow:none!important;transform:none!important}
+}
+
+/* Волны hero — дрейф в относительных единицах, полосы шире экрана с двух сторон */
+@keyframes dc-wave-drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-6%,0,0)}}
+#top svg[viewBox="0 0 1620 160"]{width:130vw!important;max-width:none!important;left:-15vw!important;right:auto!important}
+/* После скролла — плотный белый, отделён от контента линией и тенью */
+.dc-header[data-scrolled="1"] header{background:var(--dc-white)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 1px 0 var(--line-strong),0 10px 30px rgba(7,59,75,.10)!important}
+
+/* Бургер-меню: скрим светлее */
+.dc-burger > div > div{background:rgba(7,59,75,.26)!important;backdrop-filter:none!important}
+
+/* Промо-плашка: палитра сайта, красной остаётся только плашка «Акции» */
+#promo div[style*="background: var(--dc-coral)"]{background:var(--grad-aqua)!important;box-shadow:var(--shadow-sm)!important;border:1px solid var(--line-hairline)}
+#promo div[style*="background: var(--dc-coral)"] > div > div:first-child > span{display:inline-flex;align-items:center;justify-self:start;align-self:start;background:var(--dc-coral);color:var(--text-on-coral);padding:7px 14px;border-radius:var(--radius-pill)}
+#promo div[style*="background: var(--dc-coral)"] h2{color:var(--text-strong)!important}
+#promo div[style*="background: var(--dc-coral)"] > div > div:last-child > p{color:var(--text-body)!important}
+#promo div[style*="background: var(--dc-coral)"] > div > div:last-child button{background:var(--cta-bg)!important;color:var(--cta-fg)!important}
+/* Цены — более светлый красный */
+#promo div[style*="background: var(--dc-coral)"] span[style*="var(--type-price)"]{color:#F0574F!important}
+/* Лента «Акция» через правый верхний угол каждой карточки */
+#promo div[style*="background: var(--dc-coral)"] > div > div:nth-child(2) > div{position:relative;overflow:hidden}
+#promo div[style*="background: var(--dc-coral)"] > div > div:nth-child(2) > div > span:first-child{padding-right:60px}
+#promo div[style*="background: var(--dc-coral)"] > div > div:nth-child(2) > div::after{content:"Акция";position:absolute;top:18px;right:-52px;width:170px;transform:rotate(38deg);padding:5px 0;background:var(--dc-coral);color:var(--text-on-coral);font-family:var(--font-body);font-size:15px;font-weight:var(--fw-bold);line-height:1.2;text-align:center;letter-spacing:.02em;box-shadow:0 2px 10px rgba(7,59,75,.18)}
+
+/* Бейдж «Акция» на карточке коронок — красный */
+.dc-svc-promo span[style*="position: absolute"]{background:var(--dc-coral)!important;color:var(--text-on-coral)!important}
+
+/* Колонка «обычная клиника» — на белом */
+.dc-compare div[style*="minmax(280px"] > div:first-child{background:var(--surface-card)!important}
+
+/* Футер без вводного абзаца */
+.dc-footer footer > div > div:first-child > p{display:none}
+</style>
+</helmet>
+
+<div class="dc-header" data-scrolled="{{ scrolled }}">
+  <x-import component-from-global-scope="Ds2_2d9e23.Header" logo-src="{{ logoSrc }}" menu-open="{{ menuOpen }}" on-menu-toggle="{{ toggleMenu }}" hint-size="100%,76px"></x-import>
+</div>
+<div class="dc-burger">
+  <x-import component-from-global-scope="Ds2_2d9e23.BurgerMenu" open="{{ menuOpen }}" on-close="{{ closeMenu }}" on-book="{{ openBook }}" hint-size="0px,0px"></x-import>
+</div>
+
+<main style="background:var(--surface-page)">
+
+  <x-import component-from-global-scope="Ds2_2d9e23.OceanHero" video-src="{{ videoSrc }}" eyebrow="Центр стоматологии" slogan="Дентал Круиз" hint-size="100%,100svh">
+    <p style="margin:var(--space-8) auto 0;max-width:24ch;font-family:var(--font-body);font-size:clamp(1.0625rem,2vw,1.375rem);font-weight:var(--fw-medium);line-height:var(--lh-body);color:#FFFFFF;text-shadow:0 2px 18px rgba(7,59,75,.55)">Путешествие в мир прекрасных улыбок</p>
+  </x-import>
+
+  <section id="promo" style="background:var(--dc-white);padding:var(--section-y-tight) var(--gutter)">
+    <div class="dc-promo" style="max-width:var(--container);margin:0 auto;display:grid;gap:var(--space-10)">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,360px">
+        <x-import component-from-global-scope="Ds2_2d9e23.PromoBoard" eyebrow="Акции месяца" title="Цены, которые видно сразу" items="{{ promoItems }}" cta-label="Записаться по акции" note="Цены ниже рынка потому, что коронки и виниры делает наша лаборатория — без наценки посредника." on-cta="{{ openBook }}" hint-size="100%,360px"></x-import>
+      </x-import>
+    </div>
+  </section>
+
+  <section id="advantages" style="background:var(--surface-warm);padding:var(--section-y) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto;display:grid;gap:var(--space-10)">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,120px">
+        <x-import component-from-global-scope="Ds2_2d9e23.SectionHeading" eyebrow="Дентал Круиз" title="Почему пациенты выбирают нас" hint-size="100%,120px"></x-import>
+      </x-import>
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="90" hint-size="100%,420px">
+        <x-import component-from-global-scope="Ds2_2d9e23.AdvantageCarousel" slides="{{ advantageSlides }}" interval="{{ carouselInterval }}" hint-size="100%,420px"></x-import>
+      </x-import>
+    </div>
+  </section>
+
+  <section id="services" style="background:var(--grad-aqua);padding:var(--section-y) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto;display:grid;gap:var(--space-10)">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,140px">
+        <x-import component-from-global-scope="Ds2_2d9e23.SectionHeading" eyebrow="Топ услуг" title="Что заказывают чаще всего" lead="Виниры, коронки и протезирование — три работы, которые в «Дентал Круиз» делает своя лаборатория. Наведите на карточку, чтобы увидеть, что входит в цену." hint-size="100%,140px"></x-import>
+      </x-import>
+      <div style="display:grid;gap:var(--space-6);align-items:start;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))">
+        <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,440px">
+          <x-import component-from-global-scope="Ds2_2d9e23.ServiceFlipCard" title="Виниры" price="от 25 000 ₽" price-note="E-max, за зуб" benefit="Изготавливаем в своей лаборатории — вдвое дешевле средней цены по Москве (40 000–80 000 ₽)." features="{{ veneerFeatures }}" photo-label="Здесь фото работы: виниры E-max" height="{{ cardHeight }}" hint-size="100%,440px"></x-import>
+        </x-import>
+        <div class="dc-svc-promo">
+          <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="90" hint-size="100%,440px">
+            <x-import component-from-global-scope="Ds2_2d9e23.ServiceFlipCard" title="Коронки" price="от 19 900 ₽" price-note="цирконий, по акции" badge="Акция" benefit="Снимок, изготовление и подгонка — в одном месте, без ожидания подрядчика." features="{{ crownFeatures }}" photo-label="Здесь фото работы: циркониевая коронка" height="{{ cardHeight }}" hint-size="100%,440px"></x-import>
+          </x-import>
+        </div>
+        <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="180" hint-size="100%,440px">
+          <x-import component-from-global-scope="Ds2_2d9e23.ServiceFlipCard" title="Протезирование под ключ" price="от 65 000 ₽" price-note="имплант Osstem + коронка" benefit="Имплант — сертифицированная система по рыночной цене, коронка — наша лаборатория." features="{{ prostheticFeatures }}" photo-label="Здесь фото работы: имплант с коронкой" height="{{ cardHeight }}" hint-size="100%,440px"></x-import>
+        </x-import>
+      </div>
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="280" hint-size="auto,52px">
+        <div style="display:flex">
+          <x-import component-from-global-scope="Ds2_2d9e23.Button" variant="secondary" size="lg" href="#pricelist" hint-size="auto,52px">Смотреть полный прайс-лист</x-import>
+        </div>
+      </x-import>
+    </div>
+  </section>
+
+  <section id="brands" style="background:var(--surface-cool);padding:var(--section-y-tight) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,120px">
+        <x-import component-from-global-scope="Ds2_2d9e23.BrandsMarquee" eyebrow="Работаем на материалах проверенных поставщиков" brands="{{ brands }}" hint-size="100%,120px"></x-import>
+      </x-import>
+    </div>
+  </section>
+
+  <section id="why" style="background:var(--dc-white);padding:var(--section-y) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto;display:grid;gap:var(--space-10)">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,160px">
+        <x-import component-from-global-scope="Ds2_2d9e23.SectionHeading" eyebrow="Почему мы" title="Своя лаборатория — своя цена" lead="Большинство клиник заказывают коронки и виниры на стороне. Мы делаем их сами — поэтому нет наценки посредника и долгого ожидания." hint-size="100%,160px"></x-import>
+      </x-import>
+      <div class="dc-compare">
+        <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="90" hint-size="100%,320px">
+          <x-import component-from-global-scope="Ds2_2d9e23.ComparisonColumns" their-items="{{ theirItems }}" our-items="{{ ourItems }}" hint-size="100%,320px"></x-import>
+        </x-import>
+      </div>
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="180" hint-size="100%,200px">
+        <x-import component-from-global-scope="Ds2_2d9e23.PriceCompare" label="Виниры E-max, за зуб" market-price="40 000–80 000 ₽" our-price="25 000 ₽" note="Дешевле не за счёт качества, а потому что между вами и техником никого нет. Импланты Osstem и Astra Tech — сертифицированные системы сторонних производителей, цена на уровне рынка, без накруток." hint-size="100%,200px"></x-import>
+      </x-import>
+    </div>
+  </section>
+
+  <section id="about" style="background:var(--surface-warm);padding:var(--section-y) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto;display:grid;gap:var(--space-10);align-items:center;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,280px">
+        <div style="display:grid;gap:var(--space-6);justify-items:start;min-width:0">
+          <x-import component-from-global-scope="Ds2_2d9e23.SectionHeading" eyebrow="О клинике" title="Лаборатория внутри клиники" lead="С 2013 года наши зубные техники работают в том же здании, что и врачи. Более 10 000 изготовленных коронок: мы видим результат своими руками и отвечаем за него сами." hint-size="100%,200px"></x-import>
+          <x-import component-from-global-scope="Ds2_2d9e23.Badge" tone="quiet" hint-size="auto,34px">10 000+ коронок с 2013 года</x-import>
+          <x-import component-from-global-scope="Ds2_2d9e23.Button" variant="secondary" size="lg" href="#about-page" hint-size="auto,52px">Подробнее о клинике</x-import>
+        </div>
+      </x-import>
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="120" hint-size="100%,300px">
+        <x-import component-from-global-scope="Ds2_2d9e23.PhotoPlaceholder" label="Здесь фото зуботехнического цеха" ratio="4 / 3" hint-size="100%,300px"></x-import>
+      </x-import>
+    </div>
+  </section>
+
+  <section id="doctors" style="background:var(--grad-aqua);padding:var(--section-y) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto;display:grid;gap:var(--space-10)">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,140px">
+        <x-import component-from-global-scope="Ds2_2d9e23.SectionHeading" eyebrow="Врачи" title="Команда, которая работает вместе" lead="Врач и техник обсуждают вашу работу лично — не через посредника." hint-size="100%,140px"></x-import>
+      </x-import>
+      <div ref="{{ sliderRef }}" onMouseEnter="{{ sliderPause }}" onMouseLeave="{{ sliderResume }}" onPointerDown="{{ sliderPause }}" style="display:flex;gap:var(--space-5);overflow-x:auto;align-items:stretch;padding-bottom:var(--space-4);scroll-snap-type:x mandatory">
+        <div style="flex:0 0 clamp(240px,74vw,300px);scroll-snap-align:start">
+          <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,440px">
+            <dc-import name="DoctorFlipCard" name-text="Врач-стоматолог" speciality="Ортопед, имплантолог" experience="18 лет" note="Ведёт протезирование под ключ." photo-label="Здесь фото врача-ортопеда" on-book="{{ openBook }}" hint-size="100%,440px"></dc-import>
+          </x-import>
+        </div>
+        <div style="flex:0 0 clamp(240px,74vw,300px);scroll-snap-align:start">
+          <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="90" hint-size="100%,440px">
+            <dc-import name="DoctorFlipCard" name-text="Врач-стоматолог" speciality="Терапевт" experience="12 лет" note="Лечение под микроскопом." photo-label="Здесь фото врача-терапевта" on-book="{{ openBook }}" hint-size="100%,440px"></dc-import>
+          </x-import>
+        </div>
+        <div style="flex:0 0 clamp(240px,74vw,300px);scroll-snap-align:start">
+          <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="180" hint-size="100%,440px">
+            <dc-import name="DoctorFlipCard" name-text="Зубной техник" speciality="Керамист лаборатории" experience="15 лет" note="Подбирает оттенок винира на месте." extra="Работает в лаборатории клиники с 2013 года" photo-label="Здесь фото зубного техника" on-book="{{ openBook }}" hint-size="100%,440px"></dc-import>
+          </x-import>
+        </div>
+        <div style="flex:0 0 clamp(240px,74vw,300px);scroll-snap-align:start">
+          <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="270" hint-size="100%,440px">
+            <dc-import name="DoctorFlipCard" name-text="Врач-стоматолог" speciality="Хирург" experience="9 лет" note="Имплантация Osstem и Astra Tech." photo-label="Здесь фото врача-хирурга" on-book="{{ openBook }}" hint-size="100%,440px"></dc-import>
+          </x-import>
+        </div>
+      </div>
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="320" hint-size="auto,52px">
+        <div style="display:flex">
+          <x-import component-from-global-scope="Ds2_2d9e23.Button" variant="secondary" size="lg" href="#doctors-page" hint-size="auto,52px">Все врачи</x-import>
+        </div>
+      </x-import>
+    </div>
+  </section>
+
+  <section id="faq" style="background:var(--surface-cool);padding:var(--section-y) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto;display:grid;gap:var(--space-10)">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,120px">
+        <x-import component-from-global-scope="Ds2_2d9e23.SectionHeading" eyebrow="Вопросы" title="Что чаще всего спрашивают" hint-size="100%,120px"></x-import>
+      </x-import>
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="90" hint-size="100%,400px">
+        <x-import component-from-global-scope="Ds2_2d9e23.FaqAccordion" items="{{ faqItems }}" hint-size="100%,400px"></x-import>
+      </x-import>
+    </div>
+  </section>
+
+  <section id="reviews" style="background:var(--dc-white);padding:var(--section-y) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto;display:grid;gap:var(--space-10)">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,120px">
+        <x-import component-from-global-scope="Ds2_2d9e23.SectionHeading" eyebrow="Отзывы" title="Настоящие отзывы, а не наши слова" hint-size="100%,120px"></x-import>
+      </x-import>
+      <div style="display:grid;gap:var(--space-6);align-items:stretch;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))">
+        <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="90" hint-size="100%,560px">
+          <div style="display:grid;gap:var(--space-6);align-content:stretch;grid-template-rows:auto 1fr;height:100%;min-height:560px">
+            <x-import component-from-global-scope="Ds2_2d9e23.ReviewsCard" rating="{{ rating }}" count="{{ reviewCount }}" href="https://yandex.ru/maps/org/dental_kruiz/154025048590/" hint-size="100%,260px"></x-import>
+            <div style="display:grid;gap:var(--space-5);align-content:center;padding:var(--space-6);border-radius:var(--radius-xl);background:var(--surface-card);box-shadow:var(--shadow-sm);border:1px solid var(--line-hairline)">
+              <div style="display:grid;gap:var(--space-1)">
+                <span style="font-family:var(--font-display);font-size:var(--type-h3);font-weight:var(--fw-bold);color:var(--text-strong)">4,9</span>
+                <span style="font-size:var(--type-small);color:var(--text-muted)">Средняя оценка на Яндекс Картах</span>
+              </div>
+              <div style="display:grid;gap:var(--space-1)">
+                <span style="font-family:var(--font-display);font-size:var(--type-h3);font-weight:var(--fw-bold);color:var(--text-strong)">120+</span>
+                <span style="font-size:var(--type-small);color:var(--text-muted)">Отзывов пациентов района</span>
+              </div>
+              <div style="display:grid;gap:var(--space-1)">
+                <span style="font-family:var(--font-display);font-size:var(--type-h3);font-weight:var(--fw-bold);color:var(--text-strong)">с 2013</span>
+                <span style="font-size:var(--type-small);color:var(--text-muted)">Года принимаем в этом же здании</span>
+              </div>
+              <p style="font-size:var(--type-small);color:var(--text-body);margin:0">Отметка «Хорошее место» от Яндекса даётся клиникам, которых пациенты оценивают выше остальных в районе.</p>
+            </div>
+          </div>
+        </x-import>
+        <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="180" hint-size="100%,560px">
+          <div style="position:relative;width:100%;height:100%;min-height:560px;overflow:hidden;border-radius:var(--radius-xl);box-shadow:var(--shadow-md);background:var(--surface-card);border:1px solid var(--line-hairline)">
+            <iframe title="Отзывы о клинике «Дентал Круиз» на Яндекс Картах" src="https://yandex.ru/maps-reviews-widget/154025048590?comments" style="display:block;width:100%;height:calc(100% - 34px);border:0;box-sizing:border-box"></iframe>
+            <a href="https://yandex.ru/maps/org/dental_kruiz/154025048590/" target="_blank" rel="noopener" style="box-sizing:border-box;display:flex;align-items:center;justify-content:center;height:34px;text-decoration:none;color:var(--text-muted);font-family:var(--font-body);font-size:var(--type-small);font-weight:var(--fw-bold);background:var(--surface-quiet);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 16px">Все отзывы на Яндекс Картах</a>
+          </div>
+        </x-import>
+      </div>
+    </div>
+  </section>
+
+  <section id="trust" style="background:var(--surface-warm);padding:var(--section-y-tight) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto" onClick="{{ onTrustClick }}">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,240px">
+        <x-import component-from-global-scope="Ds2_2d9e23.TrustBar" items="{{ trustItems }}" tone="light" hint-size="100%,240px"></x-import>
+      </x-import>
+    </div>
+  </section>
+
+  <section id="contacts" style="background:var(--grad-aqua);padding:var(--section-y) var(--gutter)">
+    <div style="max-width:var(--container);margin:0 auto;display:grid;gap:var(--space-10)">
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" hint-size="100%,160px">
+        <x-import component-from-global-scope="Ds2_2d9e23.SectionHeading" eyebrow="Контакты" title="Приезжайте или позвоните" lead="5 минут пешком от метро Полежаевская: Москва, 4-я Магистральная, 5с1, 2 этаж. Пн–сб 10:00–22:00, вс — выходной. Позвоните — администратор подберёт время, или оставьте заявку, и мы перезвоним сами." hint-size="100%,160px"></x-import>
+      </x-import>
+      <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="90" hint-size="auto,52px">
+        <div style="display:flex">
+          <x-import component-from-global-scope="Ds2_2d9e23.Button" variant="primary" size="lg" on-click="{{ openBook }}" icon="{{ calendarIcon }}" hint-size="auto,52px">Записаться на приём</x-import>
+        </div>
+      </x-import>
+      <div style="display:grid;gap:var(--space-6);grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))">
+        <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="140" hint-size="100%,360px">
+          <x-import component-from-global-scope="Ds2_2d9e23.PlaceCard" name="Дентал Круиз" address="Москва, 4-я Магистральная, 5с1, 2 этаж" metro="5 минут пешком от м. Полежаевская" schedule="Пн–Сб 10:00–22:00 · Вс — выходной" phone="+7 925 577-76-77" email="dental.cruise@inbox.ru" hint-size="100%,360px"></x-import>
+        </x-import>
+        <x-import component-from-global-scope="Ds2_2d9e23.Reveal" delay="220" hint-size="100%,400px">
+          <div style="position:relative;overflow:hidden;border-radius:var(--radius-xl);box-shadow:var(--shadow-md);background:var(--dc-breeze);border:1px solid var(--line-hairline)">
+            <iframe title="Дентал Круиз на Яндекс Картах" src="https://yandex.ru/map-widget/v1/?ll=37.520284%2C55.774426&amp;z=17" allowfullscreen="true" style="position:relative;display:block;width:100%;height:400px;border:0;filter:saturate(.88) contrast(1.03)"></iframe>
+            <div aria-hidden="true" style="position:absolute;left:50%;top:calc(50% - 34px);transform:translate(-50%,-100%);pointer-events:none;display:grid;justify-items:center;gap:6px">
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--radius-pill);background:var(--dc-white);box-shadow:var(--shadow-lg)">
+                <img src="{{ logoSrc }}" alt="" style="height:20px;width:auto">
+              </div>
+              <div style="width:2px;height:14px;background:var(--dc-turquoise-mark);border-radius:2px"></div>
+            </div>
+            <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);background:var(--glass-light);backdrop-filter:var(--blur-glass)">
+              <span style="font-family:var(--font-body);font-size:var(--type-small);font-weight:var(--fw-bold);color:var(--text-strong)">4-я Магистральная, 5с1 · м. Полежаевская</span>
+              <a href="https://yandex.ru/maps/org/dental_kruiz/154025048590/?utm_medium=mapframe&amp;utm_source=maps" target="_blank" rel="noopener" style="font-family:var(--font-body);font-size:var(--type-small);font-weight:var(--fw-bold);color:var(--text-accent);text-decoration:none">Открыть в Яндекс Картах</a>
+            </div>
+          </div>
+        </x-import>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="dc-footer">
+  <x-import component-from-global-scope="Ds2_2d9e23.Footer" logo-src="{{ logoSrc }}" year="2026" hint-size="100%,420px" style="position: relative"></x-import>
+</div>
+<dc-import name="LicenseDrawer" open="{{ licenseOpen }}" on-close="{{ closeLicense }}" hint-size="0px,0px"></dc-import>
+<x-import component-from-global-scope="Ds2_2d9e23.AppointmentModal" open="{{ bookOpen }}" on-close="{{ closeBook }}" hint-size="0px,0px" style="position: absolute; left: -3px; top: 4114px"></x-import>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;carouselInterval&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:6000,&quot;tsType&quot;:&quot;number&quot;,&quot;min&quot;:3000,&quot;max&quot;:12000,&quot;step&quot;:500,&quot;unit&quot;:&quot;ms&quot;,&quot;section&quot;:&quot;Поведение&quot;},&quot;serviceCardHeight&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:440,&quot;tsType&quot;:&quot;number&quot;,&quot;min&quot;:360,&quot;max&quot;:560,&quot;step&quot;:20,&quot;unit&quot;:&quot;px&quot;,&quot;section&quot;:&quot;Поведение&quot;}}">
+class Component extends DCLogic {
+  state = { menuOpen: false, bookOpen: false, licenseOpen: false, scrolled: false };
+
+  sliderRef = React.createRef();
+
+  componentDidMount() {
+    this._slide = setInterval(() => {
+      const el = this.sliderRef.current;
+      if (!el || this._pause) return;
+      const first = el.firstElementChild;
+      const step = first ? first.getBoundingClientRect().width + 20 : 300;
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 8) el.scrollTo({ left: 0, behavior: 'smooth' });
+      else el.scrollBy({ left: step, behavior: 'smooth' });
+    }, 4500);
+    this._onScroll = () => {
+      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      const s = y > 40;
+      if (s !== this.state.scrolled) this.setState({ scrolled: s });
+    };
+    this._onScroll();
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+  }
+  componentWillUnmount() { window.removeEventListener('scroll', this._onScroll); clearInterval(this._slide); }
+
+  renderVals() {
+    const NS = window.Ds2_2d9e23 || {};
+    const res = window.__resources || {};
+    const icon = (name) => NS.Icon ? React.createElement(NS.Icon, { name, size: 20 }) : null;
+    return {
+      logoSrc: res.logo || 'assets/logo-dentalcruise.svg',
+      videoSrc: res.heroVideo || 'assets/video/ocean-hero.mp4',
+      menuOpen: this.state.menuOpen,
+      bookOpen: this.state.bookOpen,
+      toggleMenu: () => this.setState(s => ({ menuOpen: !s.menuOpen })),
+      closeMenu: () => this.setState({ menuOpen: false }),
+      openBook: () => this.setState({ bookOpen: true, menuOpen: false }),
+      closeBook: () => this.setState({ bookOpen: false }),
+      scrolled: this.state.scrolled ? '1' : '0',
+      sliderRef: this.sliderRef,
+      sliderPause: () => { this._pause = true; },
+      sliderResume: () => { this._pause = false; },
+      licenseOpen: this.state.licenseOpen,
+      closeLicense: () => this.setState({ licenseOpen: false }),
+      onTrustClick: (e) => {
+        const a = e.target.closest && e.target.closest('a[href="#license"]');
+        if (a) { e.preventDefault(); this.setState({ licenseOpen: true }); }
+      },
+      calendarIcon: icon('calendar'),
+
+      carouselInterval: this.props.carouselInterval ?? 6000,
+      cardHeight: this.props.serviceCardHeight ?? 440,
+      rating: 4.9,
+      reviewCount: 120,
+
+      promoItems: [
+        { title: 'Коронка из циркония', price: '19 900 ₽', was: '26 000 ₽', note: 'Изготовление и установка, по акции' },
+        { title: 'Винир E-max, за зуб', price: '25 000 ₽', was: '40 000–80 000 ₽', note: 'Своя лаборатория' },
+        { title: 'Протезирование под ключ', price: 'от 65 000 ₽', note: 'Имплант Osstem + коронка' }
+      ],
+
+      advantageSlides: [
+        { title: 'Своя лаборатория',
+          text: 'Зуботехническая лаборатория работает с 2013 года — изготовлено более 10 000 коронок. Слепок, изготовление и правки происходят в одном месте.',
+          photoLabel: 'Здесь фото зуботехнической лаборатории' },
+        { title: 'Опытные врачи',
+          text: 'Ортопеды, имплантологи и зубные техники работают одной командой: врач и техник обсуждают вашу работу напрямую, без переписки с подрядчиком.',
+          photoLabel: 'Здесь фото команды клиники' }
+      ],
+
+      veneerFeatures: ['Слепок и примерка', 'Изготовление у нас в лаборатории', 'Подбор оттенка на месте', 'Правки в тот же визит'],
+      crownFeatures: ['Цирконий или металлокерамика', 'Изготовление 3–5 дней', 'Подгонка по прикусу', 'Гарантия с бесплатными правками'],
+      prostheticFeatures: ['Импланты Osstem и Astra Tech', 'Цена импланта — на уровне рынка', 'Коронка из своей лаборатории', 'План лечения с итоговой суммой'],
+
+      brands: [{ name: 'ВладМиВа' }, { name: 'Стомадент' }, { name: 'Целит' }, { name: 'Радуга-Р' }, { name: 'ЭСТЕТ' }, { name: 'ДиаРси' }],
+
+      theirItems: ['Заказывают коронки и виниры на стороне', 'Наценка посредника в каждой работе', 'Долгое ожидание изготовления', 'Правки — через лабораторию-подрядчика'],
+      ourItems: ['Своя зуботехническая лаборатория с 2013 года', 'Честная цена без посредника', 'Готово быстро — техник рядом с врачом', 'Правки на месте, часто в тот же визит'],
+
+      faqItems: [
+        { q: 'Больно ли это?', a: 'Все вмешательства проходят под анестезией — подбираем её индивидуально и проверяем действие до начала работы. Если вы боитесь стоматологов, скажите об этом на первом приёме: врач объяснит каждый шаг заранее.' },
+        { q: 'Сколько по времени займёт протезирование?', a: 'Ориентировочно 2–4 визита. Так как коронки изготавливает наша лаборатория в этом же здании, ожидание между этапами короче, чем при заказе на стороне, а правки делаются на месте.' },
+        { q: 'Что входит в цену, есть ли скрытые доплаты?', a: 'Цена в прайсе — за конкретную работу: например, коронка включает изготовление и установку. После осмотра врач составляет план лечения с итоговой суммой, и она не меняется по ходу без вашего согласия.' },
+        { q: 'Какая гарантия?', a: 'На работы нашей лаборатории даём гарантию и бесплатно исправляем недочёты в оговорённый срок. Поскольку техник работает здесь же, правка занимает визит, а не недели.' },
+        { q: 'Как записаться и что взять с собой?', a: 'Проще всего позвонить: +7 925 577-76-77 — администратор подберёт время. Можно оставить заявку в форме, мы перезвоним сами. Возьмите паспорт и, если есть, свежие снимки или выписки от других врачей.' }
+      ],
+
+      trustItems: [
+        { title: 'Яндекс Хорошее место', text: 'Отметка за высокие оценки пациентов', icon: 'award' },
+        { title: 'Лицензия на медицинскую деятельность', text: 'Нажмите, чтобы посмотреть документ', icon: 'file-text', href: '#license' },
+        { title: 'Рейтинг 4,9 на Яндекс Картах', text: 'Более 120 отзывов пациентов', icon: 'star' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>
