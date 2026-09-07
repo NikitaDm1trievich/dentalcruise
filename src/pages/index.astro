@@ -141,7 +141,7 @@ const clinicPhotos = Array.from(
   </section>
 
   <!-- Полублок-перебивка между каталогом и врачами -->
-  <section id="terms" class="dc-section--tight dc-bg-warm">
+  <section id="terms" class="dc-section--tight dc-bg-fade-aqua">
     <div class="dc-container">
       <Reveal>
         <OfferStrip
@@ -402,6 +402,11 @@ const clinicPhotos = Array.from(
   .dc-bg-fade {
     background: linear-gradient(180deg, var(--surface-cool) 0%, var(--dc-white) 100%);
   }
+  /* Полоса условий: подхватывает мятный низ каталога и уходит в белое
+     к врачам — та же логика, что у ленты поставщиков. */
+  .dc-bg-fade-aqua {
+    background: linear-gradient(180deg, var(--dc-aqua-tint) 0%, var(--dc-white) 100%);
+  }
 
   .dc-hero__lead {
     margin: var(--space-8) auto 0;
@@ -463,12 +468,6 @@ const clinicPhotos = Array.from(
        линию во всех карточках, а не только внутри своего ряда. */
     grid-auto-rows: 1fr;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-  }
-  /* Соседние карточки гаснут при наведении — приём из kokonut ui spotlight cards */
-  @media (hover: hover) and (pointer: fine) {
-    .dc-catalog-grid:hover :global(.dc-catalog-card:not(:hover)) {
-      opacity: 0.62;
-    }
   }
 
   /* Ровная сетка: 2 колонки на планшете, 4 на десктопе — без «хвоста»

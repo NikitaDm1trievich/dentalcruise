@@ -68,11 +68,11 @@ const shown = items.slice(0, 3);
     border: 1px solid var(--line-hairline);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+    /* Карточка не двигается под курсором: за подпрыгивающей ссылкой
+       неудобно целиться. Отклик — только тенью и рамкой. */
     transition:
       box-shadow var(--dur-mid) var(--ease-out),
-      transform var(--dur-mid) var(--ease-out),
-      border-color var(--dur-mid) var(--ease-out),
-      opacity var(--dur-mid) var(--ease-out);
+      border-color var(--dur-mid) var(--ease-out);
   }
   /* Фирменный подсвет в углу карточки — один цвет вместо палитры оригинала */
   .dc-catalog-card::before {
@@ -97,7 +97,6 @@ const shown = items.slice(0, 3);
   }
   .dc-catalog-card:hover {
     box-shadow: var(--shadow-lg);
-    transform: translateY(-3px);
     border-color: var(--line-strong);
   }
   .dc-catalog-card:hover::after {
