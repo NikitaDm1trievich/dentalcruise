@@ -1,5 +1,5 @@
 ---
-/** Заголовок секции: надзаголовок + H2 капслоком + лид. Из Ds2_2d9e23.SectionHeading. */
+/** Заголовок секции: надзаголовок + H2 + лид. Из Ds2_2d9e23.SectionHeading. */
 interface Props {
   eyebrow?: string;
   title: string;
@@ -39,16 +39,18 @@ const { eyebrow, title, lead, align = 'left', onDark = false, id, class: classNa
     font-size: var(--type-eyebrow);
     font-weight: var(--fw-bold);
     letter-spacing: var(--ls-eyebrow);
-    text-transform: uppercase;
+
     color: var(--text-muted);
   }
   .dc-heading__title {
     font-family: var(--font-display);
-    font-weight: var(--fw-bold);
+    /* fw-black, а не fw-bold: без капса заголовку нужен более тяжёлый
+       вес, иначе строчные буквы визуально «лёгче» прежнего варианта. */
+    font-weight: var(--fw-black);
     font-size: var(--type-display);
     line-height: var(--lh-display);
     letter-spacing: var(--ls-display);
-    text-transform: uppercase;
+
     color: var(--text-strong);
     margin: 0;
   }

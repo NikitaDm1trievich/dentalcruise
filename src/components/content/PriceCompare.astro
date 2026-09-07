@@ -48,7 +48,7 @@ const {
     font-size: var(--type-eyebrow);
     font-weight: var(--fw-bold);
     letter-spacing: var(--ls-eyebrow);
-    text-transform: uppercase;
+
     color: var(--text-muted);
   }
   .dc-pricecmp__row {
@@ -80,8 +80,9 @@ const {
   .dc-pricecmp__ours {
     font-family: var(--font-display);
     font-size: var(--type-price);
-    font-weight: var(--fw-bold);
-    color: var(--text-strong);
+    /* Наша цена — главное число блока: акцент + самое жирное начертание */
+    font-weight: var(--fw-black);
+    color: var(--text-accent);
     line-height: 1.05;
   }
   .dc-pricecmp__note {

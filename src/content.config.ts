@@ -88,6 +88,12 @@ const promos = defineCollection({
     price: z.string(),
     was: z.string().optional(),
     note: z.string().optional(),
+    /**
+     * Характеристики материала (срок службы, внешний вид и т.п.) —
+     * поясняют, за счёт чего позиция «горячая», а не только цену.
+     * Общие свойства материалов, не измеренные клиникой лично значения.
+     */
+    attributes: z.array(z.object({ label: z.string(), value: z.string() })).default([]),
     ...orderable,
   }),
 });
@@ -120,6 +126,25 @@ const priceList = defineCollection({
         note: z.string().optional(),
       }),
     ),
+    ...orderable,
+  }),
+});
+
+/**
+ * Категории услуг для каталога на главной и для выпадающего меню «Услуги».
+ * Единственный источник правды по названиям и якорям (slug) — то же самое
+ * меню в бургере и десктоп-панели ссылается на эти же id.
+ */
+const serviceCategories = defineCollection({
+  loader: file('./src/content/service-categories/categories.json'),
+  schema: z.object({
+    id: z.string(),
+    /** Якорь на будущей странице /pricelist, напр. "protezirovanie" */
+    slug: z.string(),
+    title: z.string(),
+    description: z.string(),
+    icon: z.string(),
+    items: z.array(z.object({ title: z.string(), price: z.string() })),
     ...orderable,
   }),
 });
@@ -159,6 +184,7 @@ export const collections = {
   promos,
   brands,
   'price-list': priceList,
+  'service-categories': serviceCategories,
   trust,
   comparison,
 };

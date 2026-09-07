@@ -6,6 +6,7 @@ import BurgerMenu from '../components/layout/BurgerMenu.astro';
 import Footer from '../components/layout/Footer.astro';
 import AppointmentModal from '../components/forms/AppointmentModal.astro';
 import LicenseDrawer from '../components/content/LicenseDrawer.astro';
+import ScrollToTop from '../components/core/ScrollToTop.astro';
 import { withBase } from '../lib/asset';
 
 interface Props {
@@ -61,6 +62,7 @@ const asset = withBase;
 
     <AppointmentModal />
     <LicenseDrawer />
+    <ScrollToTop />
 
     <script>
       import { initReveal } from '../lib/reveal';

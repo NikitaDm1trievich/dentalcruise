@@ -9,8 +9,9 @@
 import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
 import BrandIcon from '../core/BrandIcon.astro';
-import { clinic } from '../../data/site';
+import { clinic, navLinks } from '../../data/site';
 import { withBase } from '../../lib/asset';
+import { getCollection } from 'astro:content';
 
 interface Props {
   /** true — под шапкой hero-видео: до скролла шапка прозрачная, лого и контакты белые.
@@ -23,6 +24,12 @@ const { overHero = false } = Astro.props;
 const base = withBase('');
 const logo = withBase('logo-dentalcruise.svg');
 const { vk, max } = clinic.links;
+
+const categories = (await getCollection('service-categories')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const pricelistHref = withBase('pricelist');
+const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelist');
 ---
 
 <div class:list={['dc-header', overHero && 'dc-header--over-hero']} data-scrolled={String(!overHero)}>
@@ -31,6 +38,36 @@ const { vk, max } = clinic.links;
       <a href={base} class="dc-header__logo" aria-label={`${clinic.name} — на главную`}>
         <img src={logo} alt={clinic.name} width="180" height="44" />
       </a>
+
+      <nav class="dc-header__nav" aria-label="Разделы сайта">
+        <div class="dc-header__nav-item" data-nav-dropdown data-open="false">
+          <button
+            type="button"
+            class="dc-header__nav-toggle"
+            aria-expanded="false"
+            aria-controls="header-services"
+          >
+            Услуги
+            <Icon name="chevron-down" size={16} />
+          </button>
+          <div class="dc-header__dropdown" id="header-services">
+            <ul>
+              {
+                categories.map((cat) => (
+                  <li>
+                    <a href={`${pricelistHref}#${cat.data.slug}`}>{cat.data.title}</a>
+                  </li>
+                ))
+              }
+            </ul>
+            <a href={pricelistHref} class="dc-header__dropdown-all">
+              Весь прайс-лист
+              <Icon name="arrow-right" size={16} />
+            </a>
+          </div>
+        </div>
+        {restLinks.map((link) => <a href={withBase(link.href.replace(/^\//, ''))}>{link.label}</a>)}
+      </nav>
 
       <div class="dc-header__contacts">
         <div class="dc-header__place">
@@ -124,6 +161,14 @@ const { vk, max } = clinic.links;
     filter: brightness(0) invert(1) drop-shadow(0 2px 14px rgba(7, 59, 75, 0.7));
   }
 
+  /* Десктоп-навигация и адрес/часы появляются вместе — на планшете и уже
+     им попросту не хватает места рядом с лого и кнопками; вся навигация
+     там живёт в бургере, дублирования нет. */
+  .dc-header__nav {
+    display: none;
+    align-items: center;
+    gap: var(--space-6);
+  }
   .dc-header__contacts {
     display: none;
     gap: var(--space-6);
@@ -131,10 +176,103 @@ const { vk, max } = clinic.links;
     text-align: center;
     min-width: 0;
   }
-  @media (min-width: 900px) {
+  @media (min-width: 1180px) {
+    .dc-header__nav {
+      display: flex;
+    }
     .dc-header__contacts {
       display: flex;
     }
+  }
+
+  .dc-header__nav > a,
+  .dc-header__nav-toggle {
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-body);
+    text-decoration: none;
+    white-space: nowrap;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+  }
+  .dc-header__nav > a:hover,
+  .dc-header__nav-toggle:hover {
+    color: var(--text-accent);
+  }
+  .dc-header--over-hero[data-scrolled='false'] .dc-header__nav > a,
+  .dc-header--over-hero[data-scrolled='false'] .dc-header__nav-toggle {
+    color: #ffffff;
+    text-shadow: 0 2px 14px rgba(7, 59, 75, 0.55);
+  }
+
+  .dc-header__nav-item {
+    position: relative;
+  }
+  .dc-header__nav-toggle :global(svg) {
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .dc-header__nav-toggle[aria-expanded='true'] :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .dc-header__dropdown {
+    position: absolute;
+    top: calc(100% + 18px);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    z-index: 5;
+    width: 260px;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--dc-white);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--line-hairline);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+  .dc-header__nav-item[data-open='true'] .dc-header__dropdown {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+  .dc-header__dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 2px;
+  }
+  .dc-header__dropdown a {
+    display: block;
+    padding: 9px 10px;
+    border-radius: var(--radius-sm);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+    color: var(--text-body);
+    text-decoration: none;
+  }
+  .dc-header__dropdown a:hover {
+    background: var(--surface-quiet);
+    color: var(--text-accent);
+  }
+  .dc-header__dropdown-all {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-2);
+    padding-top: var(--space-3) !important;
+    border-top: 1px solid var(--line-hairline);
+    color: var(--text-accent) !important;
+    font-weight: var(--fw-bold) !important;
   }
   .dc-header__place {
     display: grid;
@@ -238,4 +376,27 @@ const { vk, max } = clinic.links;
     sync();
     window.addEventListener('scroll', sync, { passive: true });
   }
+
+  // Дропдаун «Услуги»: наведение мышью на десктопе + клик/тач и Escape
+  document.querySelectorAll<HTMLElement>('[data-nav-dropdown]').forEach((item) => {
+    const toggle = item.querySelector<HTMLButtonElement>('.dc-header__nav-toggle');
+    if (!toggle) return;
+
+    const set = (open: boolean) => {
+      item.dataset.open = String(open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      item.addEventListener('mouseenter', () => set(true));
+      item.addEventListener('mouseleave', () => set(false));
+    }
+    toggle.addEventListener('click', () => set(item.dataset.open !== 'true'));
+    item.addEventListener('focusout', (event) => {
+      if (!item.contains(event.relatedTarget as Node)) set(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') set(false);
+    });
+  });
 </script>

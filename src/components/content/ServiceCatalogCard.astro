@@ -1,0 +1,127 @@
+---
+/**
+ * Карточка категории услуг в каталоге на главной. Referenced by scope
+ * screenshot 3 (немецкий стоматологический центр): иконка + описание +
+ * список входящих позиций с ценами, ссылка ведёт в раздел прайс-листа.
+ *
+ * Не флип-карточка — список позиций должен быть виден сразу, а не
+ * прятаться за переворотом, как в ServiceFlipCard.
+ */
+import Icon from '../core/Icon.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  icon: string;
+  items: { title: string; price: string }[];
+  href: string;
+}
+
+const { title, description, icon, items, href } = Astro.props;
+---
+
+<article class="dc-catalog-card">
+  <div class="dc-catalog-card__icon">
+    <Icon name={icon} size={26} strokeWidth={1.75} color="var(--text-accent)" />
+  </div>
+
+  <h3>{title}</h3>
+  <p class="dc-catalog-card__desc">{description}</p>
+
+  <ul class="dc-catalog-card__items">
+    {
+      items.map((item) => (
+        <li>
+          <span class="dc-catalog-card__item-title">{item.title}</span>
+          <span class="dc-catalog-card__item-price">{item.price}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <a href={href} class="dc-catalog-card__link">
+    Смотреть все услуги
+    <Icon name="arrow-right" size={18} />
+  </a>
+</article>
+
+<style>
+  .dc-catalog-card {
+    display: grid;
+    grid-template-rows: auto auto auto 1fr auto;
+    gap: var(--space-3);
+    height: 100%;
+    min-width: 0;
+    padding: var(--space-6);
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition:
+      box-shadow var(--dur-mid) var(--ease-out),
+      transform var(--dur-mid) var(--ease-out);
+  }
+  .dc-catalog-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+
+  .dc-catalog-card__icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    background: var(--surface-quiet);
+  }
+
+  .dc-catalog-card h3 {
+    font-size: var(--type-h3);
+    /* Место под две строки: длинные названия не сдвигают прайс соседних карточек */
+    min-height: calc(2em * var(--lh-heading));
+  }
+
+  .dc-catalog-card__desc {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+    /* То же выравнивание для описаний — три строки на всех карточках */
+    min-height: calc(3em * var(--lh-body));
+  }
+
+  .dc-catalog-card__items {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-3) 0 0;
+    border-top: 1px solid var(--line-hairline);
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+  .dc-catalog-card__items li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: var(--type-small);
+  }
+  .dc-catalog-card__item-title {
+    color: var(--text-body);
+    min-width: 0;
+  }
+  .dc-catalog-card__item-price {
+    flex: 0 0 auto;
+    font-weight: var(--fw-bold);
+    /* Усиленный контраст цены — тот же приём, что в карточках акций */
+    color: var(--text-accent);
+  }
+
+  .dc-catalog-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+    text-decoration: none;
+  }
+  .dc-catalog-card__link:hover {
+    color: var(--dc-turquoise-press);
+  }
+</style>

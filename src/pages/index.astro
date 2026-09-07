@@ -15,7 +15,7 @@ import PhotoGallery from '../components/media/PhotoGallery.astro';
 
 import PromoBoard from '../components/content/PromoBoard.astro';
 import AdvantageCarousel from '../components/content/AdvantageCarousel.astro';
-import ServiceFlipCard from '../components/content/ServiceFlipCard.astro';
+import ServiceCatalogCard from '../components/content/ServiceCatalogCard.astro';
 import BrandsMarquee from '../components/content/BrandsMarquee.astro';
 import ComparisonColumns from '../components/content/ComparisonColumns.astro';
 import PriceCompare from '../components/content/PriceCompare.astro';
@@ -37,7 +37,7 @@ const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
 
 const promos = (await getCollection('promos')).sort(byOrder);
 const slides = (await getCollection('carousel-slides')).sort(byOrder);
-const services = (await getCollection('services')).filter((s) => s.data.featured).sort(byOrder);
+const categories = (await getCollection('service-categories')).sort(byOrder);
 const brands = (await getCollection('brands')).sort(byOrder);
 const comparison = (await getCollection('comparison')).sort(byOrder);
 const doctors = (await getCollection('doctors')).filter((d) => d.data.featured).sort(byOrder);
@@ -73,7 +73,29 @@ const clinicPhotos = Array.from(
     poster={asset('video/ocean-hero-poster.jpg')}
   >
     <p class="dc-hero__lead">{clinic.tagline}</p>
+    <div class="dc-hero__actions">
+      <Button variant="primary" size="lg" data-open="dc-book">
+        <Icon slot="icon" name="calendar" size={20} />
+        Записаться на приём
+      </Button>
+      <Button variant="onDark" size="lg" href={clinic.phoneHref}>
+        <Icon slot="icon" name="phone" size={20} />
+        Позвонить
+      </Button>
+    </div>
   </OceanHero>
+
+  <!-- Поставщики: сразу после hero, до акций -->
+  <section id="brands" class="dc-section--tight dc-bg-cool">
+    <div class="dc-container">
+      <Reveal>
+        <BrandsMarquee
+          eyebrow="Работаем на материалах проверенных поставщиков"
+          brands={brands.map((b) => b.data)}
+        />
+      </Reveal>
+    </div>
+  </section>
 
   <!-- Акции -->
   <section id="promo" class="dc-section--tight dc-bg-white">
@@ -88,6 +110,72 @@ const clinicPhotos = Array.from(
     </div>
   </section>
 
+  <!-- Каталог услуг: все направления клиники с ценами -->
+  <section id="services" class="dc-section dc-bg-aqua">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Услуги"
+          title="Что мы лечим и восстанавливаем"
+          lead="Открывайте раздел — там цены на самые частые позиции. Полный прайс по каждому направлению — на отдельной странице."
+        />
+      </Reveal>
+
+      <div class="dc-catalog-grid">
+        {
+          categories.map((category, i) => (
+            <Reveal delay={i * 70}>
+              <ServiceCatalogCard
+                title={category.data.title}
+                description={category.data.description}
+                icon={category.data.icon}
+                items={category.data.items}
+                href={`${asset('pricelist')}#${category.data.slug}`}
+              />
+            </Reveal>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Врачи -->
+  <section id="doctors" class="dc-section dc-bg-white">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Врачи"
+          title="Команда, которая работает вместе"
+          lead="Врач и техник обсуждают вашу работу лично — не через посредника."
+        />
+      </Reveal>
+
+      <ul class="dc-doctors" role="list">
+        {
+          doctors.map((doctor, i) => (
+            <Reveal as="li" delay={i * 90}>
+              <DoctorFlipCard
+                name={doctor.data.name}
+                speciality={doctor.data.speciality}
+                experience={doctor.data.experience}
+                note={doctor.data.note}
+                extra={doctor.data.extra}
+                photo={doctor.data.photo}
+                photoLabel={doctor.data.photoLabel}
+              />
+            </Reveal>
+          ))
+        }
+      </ul>
+
+      <Reveal delay={320}>
+        <div class="dc-actions">
+          <Button variant="secondary" size="lg" href={asset('doctors')}>Все врачи</Button>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
   <!-- Преимущества -->
   <section id="advantages" class="dc-section dc-bg-warm">
     <div class="dc-container">
@@ -96,59 +184,6 @@ const clinicPhotos = Array.from(
       </Reveal>
       <Reveal delay={90}>
         <AdvantageCarousel slides={slides.map((s) => s.data)} />
-      </Reveal>
-    </div>
-  </section>
-
-  <!-- Топ-услуги -->
-  <section id="services" class="dc-section dc-bg-aqua">
-    <div class="dc-container">
-      <Reveal>
-        <SectionHeading
-          eyebrow="Топ услуг"
-          title="Что заказывают чаще всего"
-          lead="Виниры, коронки и протезирование — три работы, которые в «Дентал Круиз» делает своя лаборатория. Наведите на карточку, чтобы увидеть, что входит в цену."
-        />
-      </Reveal>
-
-      <div class="dc-cards">
-        {
-          services.map((service, i) => (
-            <Reveal delay={i * 90}>
-              <ServiceFlipCard
-                title={service.data.title}
-                price={service.data.price}
-                priceNote={service.data.priceNote}
-                benefit={service.data.benefit}
-                features={service.data.features}
-                photo={service.data.photo}
-                photoLabel={service.data.photoLabel}
-                badge={service.data.badge}
-                href={`${asset('gallery')}?category=${service.data.category}`}
-              />
-            </Reveal>
-          ))
-        }
-      </div>
-
-      <Reveal delay={280}>
-        <div class="dc-actions">
-          <Button variant="secondary" size="lg" href={asset('pricelist')}>
-            Смотреть полный прайс-лист
-          </Button>
-        </div>
-      </Reveal>
-    </div>
-  </section>
-
-  <!-- Поставщики -->
-  <section id="brands" class="dc-section--tight dc-bg-cool">
-    <div class="dc-container">
-      <Reveal>
-        <BrandsMarquee
-          eyebrow="Работаем на материалах проверенных поставщиков"
-          brands={brands.map((b) => b.data)}
-        />
       </Reveal>
     </div>
   </section>
@@ -206,48 +241,18 @@ const clinicPhotos = Array.from(
     </div>
   </section>
 
-  <!-- Врачи -->
-  <section id="doctors" class="dc-section dc-bg-aqua">
-    <div class="dc-container">
-      <Reveal>
-        <SectionHeading
-          eyebrow="Врачи"
-          title="Команда, которая работает вместе"
-          lead="Врач и техник обсуждают вашу работу лично — не через посредника."
-        />
-      </Reveal>
-
-      <ul class="dc-doctors" role="list">
-        {
-          doctors.map((doctor, i) => (
-            <Reveal as="li" delay={i * 90}>
-              <DoctorFlipCard
-                name={doctor.data.name}
-                speciality={doctor.data.speciality}
-                experience={doctor.data.experience}
-                note={doctor.data.note}
-                extra={doctor.data.extra}
-                photo={doctor.data.photo}
-                photoLabel={doctor.data.photoLabel}
-              />
-            </Reveal>
-          ))
-        }
-      </ul>
-
-      <Reveal delay={320}>
-        <div class="dc-actions">
-          <Button variant="secondary" size="lg" href={asset('doctors')}>Все врачи</Button>
-        </div>
-      </Reveal>
-    </div>
-  </section>
-
   <!-- Вопросы -->
   <section id="faq" class="dc-section dc-bg-cool">
-    <div class="dc-container">
+    <div class="dc-container dc-container--aside">
       <Reveal>
-        <SectionHeading eyebrow="Вопросы" title="Что чаще всего спрашивают" />
+        <div class="dc-faq-aside">
+          <SectionHeading
+            eyebrow="Вопросы"
+            title="Что чаще всего спрашивают"
+            lead="Если вашего вопроса тут нет — задайте его администратору, ответим по телефону или в мессенджере."
+          />
+          <Button variant="primary" data-open="dc-book">Задать вопрос</Button>
+        </div>
       </Reveal>
       <Reveal delay={90}>
         <FaqAccordion items={faqItems} />
@@ -370,7 +375,7 @@ const clinicPhotos = Array.from(
 
   .dc-hero__lead {
     margin: var(--space-8) auto 0;
-    max-width: 24ch;
+    max-width: 30ch;
     font-family: var(--font-body);
     font-size: clamp(1.0625rem, 2vw, 1.375rem);
     font-weight: var(--fw-medium);
@@ -378,10 +383,33 @@ const clinicPhotos = Array.from(
     color: #ffffff;
     text-shadow: 0 2px 18px rgba(7, 59, 75, 0.55);
   }
+  .dc-hero__actions {
+    margin-top: var(--space-8);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    justify-content: center;
+  }
 
   .dc-container--split {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
     align-items: center;
+  }
+
+  /* Полублок: узкая колонка с заголовком слева, контент справа (ритм «блок — полублок») */
+  .dc-container--aside {
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .dc-container--aside {
+      grid-template-columns: minmax(280px, 0.8fr) 1.2fr;
+      gap: var(--space-8);
+    }
+  }
+  .dc-faq-aside {
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
   }
   .dc-about {
     display: grid;
@@ -390,11 +418,11 @@ const clinicPhotos = Array.from(
     min-width: 0;
   }
 
-  .dc-cards {
+  .dc-catalog-grid {
     display: grid;
     gap: var(--space-6);
-    align-items: start;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    align-items: stretch;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   }
 
   .dc-doctors {
@@ -439,8 +467,9 @@ const clinicPhotos = Array.from(
   .dc-facts__value {
     font-family: var(--font-display);
     font-size: var(--type-h3);
-    font-weight: var(--fw-bold);
-    color: var(--text-strong);
+    /* Цифры-факты выделяем акцентом — глаз цепляется за них, а не за подпись */
+    font-weight: var(--fw-black);
+    color: var(--text-accent);
   }
   .dc-facts__cap {
     font-size: var(--type-small);

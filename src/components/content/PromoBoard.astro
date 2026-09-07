@@ -12,7 +12,14 @@ interface Props {
   title: string;
   note?: string;
   ctaLabel?: string;
-  items: { id: string; title: string; price: string; was?: string; note?: string }[];
+  items: {
+    id: string;
+    title: string;
+    price: string;
+    was?: string;
+    note?: string;
+    attributes?: { label: string; value: string }[];
+  }[];
 }
 
 const {
@@ -39,6 +46,16 @@ const {
           <span class="dc-promo__price">{item.price}</span>
           {item.was && <span class="dc-promo__was">{item.was}</span>}
           {item.note && <span class="dc-promo__note">{item.note}</span>}
+          {item.attributes && item.attributes.length > 0 && (
+            <dl class="dc-promo__attrs">
+              {item.attributes.map((attr) => (
+                <div>
+                  <dt>{attr.label}</dt>
+                  <dd>{attr.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
         </div>
       ))
     }
@@ -79,15 +96,15 @@ const {
     font-size: var(--type-eyebrow);
     font-weight: var(--fw-bold);
     letter-spacing: var(--ls-eyebrow);
-    text-transform: uppercase;
+
   }
   .dc-promo__title {
     font-family: var(--font-display);
     font-size: var(--type-h2);
-    font-weight: var(--fw-bold);
+    font-weight: var(--fw-black);
     line-height: var(--lh-display);
     letter-spacing: var(--ls-display);
-    text-transform: uppercase;
+
     color: var(--text-strong);
     margin: 0;
   }
@@ -138,10 +155,10 @@ const {
   .dc-promo__price {
     font-family: var(--font-display);
     font-size: var(--type-price);
-    font-weight: var(--fw-bold);
-    /* Тот же цвет, что у цен в карточках услуг и в блоке сравнения:
-       красным остаётся только «акционная» атрибутика — ярлык и лента. */
-    color: var(--text-strong);
+    font-weight: var(--fw-black);
+    /* Акцентный цвет, не нейтральный: усиливаем контраст на самом
+       «горячем» числе карточки — красным остаётся только лента/ярлык. */
+    color: var(--text-accent);
     line-height: 1.05;
   }
   .dc-promo__was {
@@ -154,6 +171,28 @@ const {
   .dc-promo__note {
     font-size: var(--type-small);
     color: var(--text-body);
+  }
+  .dc-promo__attrs {
+    display: grid;
+    gap: var(--space-2);
+    margin: var(--space-2) 0 0;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line-hairline);
+  }
+  .dc-promo__attrs div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: var(--type-small);
+  }
+  .dc-promo__attrs dt {
+    color: var(--text-muted);
+  }
+  .dc-promo__attrs dd {
+    margin: 0;
+    font-weight: var(--fw-semibold);
+    color: var(--text-body);
+    text-align: right;
   }
 
   .dc-promo__foot {

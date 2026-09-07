@@ -1,0 +1,61 @@
+---
+/**
+ * Кнопка «наверх» — правый нижний угол. Появляется после того, как
+ * посетитель проскроллил мимо hero (тот же порог, что у смены шапки).
+ */
+import Icon from './Icon.astro';
+---
+
+<button type="button" class="dc-totop" data-scroll-top aria-label="Наверх страницы" data-visible="false">
+  <Icon name="arrow-up" size={22} />
+</button>
+
+<style>
+  .dc-totop {
+    position: fixed;
+    right: var(--space-5);
+    bottom: var(--space-5);
+    z-index: 50;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition:
+      opacity var(--dur-mid) var(--ease-out),
+      transform var(--dur-mid) var(--ease-out),
+      background var(--dur-fast) var(--ease-out);
+  }
+  .dc-totop[data-visible='true'] {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .dc-totop:hover {
+    background: var(--cta-bg-hover);
+  }
+</style>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-scroll-top]');
+  if (button) {
+    const sync = () => {
+      button.dataset.visible = String(window.scrollY > window.innerHeight * 0.6);
+    };
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+
+    button.addEventListener('click', () => {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    });
+  }
+</script>

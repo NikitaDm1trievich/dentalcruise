@@ -1,7 +1,9 @@
 ---
 /**
- * Выезжающее справа меню. Перенесено из Ds2_2d9e23.BurgerMenu.
- * Открытие/закрытие/Escape/ловушка фокуса — в src/lib/overlays.ts.
+ * Выезжающее справа меню. Перенесено из Ds2_2d9e23.BurgerMenu, дополнено
+ * 2026-09: лого сверху панели и аккордеон «Услуги» с категориями —
+ * тот же список, что в десктоп-меню (Header.astro) и в каталоге на
+ * главной, единый источник — src/content/service-categories.
  */
 import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
@@ -9,30 +11,67 @@ import BrandIcon from '../core/BrandIcon.astro';
 import Button from '../core/Button.astro';
 import { clinic, navLinks } from '../../data/site';
 import { withBase } from '../../lib/asset';
+import { getCollection } from 'astro:content';
 
 const href = withBase;
 const { vk, max } = clinic.links;
+const logo = withBase('logo-dentalcruise.svg');
+
+const categories = (await getCollection('service-categories')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const pricelistHref = href('pricelist');
 ---
 
 <div class="dc-burger" id="dc-menu" data-state="closed" aria-hidden="true">
   <div class="dc-burger__scrim" data-close></div>
 
   <nav class="dc-burger__panel" aria-label="Меню сайта">
-    <div class="dc-burger__close">
+    <div class="dc-burger__head">
+      <a href={href('')} class="dc-burger__logo" aria-label={`${clinic.name} — на главную`} data-close>
+        <img src={logo} alt={clinic.name} width="150" height="36" />
+      </a>
       <IconButton label="Закрыть меню" variant="bare" data-close>
         <Icon name="x" size={24} />
       </IconButton>
     </div>
 
     <ul class="dc-burger__links">
+      <li class="dc-burger__accordion">
+        <button
+          type="button"
+          class="dc-burger__accordion-toggle"
+          aria-expanded="false"
+          aria-controls="burger-services"
+        >
+          Услуги
+          <Icon name="chevron-down" size={22} />
+        </button>
+        <div class="dc-burger__accordion-body" id="burger-services">
+          <ul class="dc-burger__sublist">
+            {
+              categories.map((cat) => (
+                <li>
+                  <a href={`${pricelistHref}#${cat.data.slug}`} data-close>
+                    {cat.data.title}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </li>
+
       {
-        navLinks.map((link) => (
-          <li>
-            <a href={href(link.href.replace(/^\//, ''))} data-close>
-              {link.label}
-            </a>
-          </li>
-        ))
+        navLinks
+          .filter((l) => l.href !== '/')
+          .map((link) => (
+            <li>
+              <a href={href(link.href.replace(/^\//, ''))} data-close>
+                {link.label}
+              </a>
+            </li>
+          ))
       }
     </ul>
 
@@ -119,9 +158,15 @@ const { vk, max } = clinic.links;
     opacity: 1;
   }
 
-  .dc-burger__close {
+  .dc-burger__head {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .dc-burger__logo img {
+    height: 36px;
+    width: auto;
   }
 
   .dc-burger__links {
@@ -131,19 +176,70 @@ const { vk, max } = clinic.links;
     display: grid;
     gap: var(--space-1);
   }
-  .dc-burger__links a {
+  .dc-burger__links > li > a {
     display: block;
     padding: 12px 0;
     font-family: var(--font-display);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-black);
     font-size: var(--type-h3);
-    text-transform: uppercase;
     letter-spacing: var(--ls-display);
     color: var(--text-strong);
     text-decoration: none;
     border-bottom: 1px solid var(--line-hairline);
   }
-  .dc-burger__links a:hover {
+  .dc-burger__links > li > a:hover {
+    color: var(--text-accent);
+  }
+
+  .dc-burger__accordion-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--line-hairline);
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: var(--fw-black);
+    font-size: var(--type-h3);
+    letter-spacing: var(--ls-display);
+    color: var(--text-strong);
+  }
+  .dc-burger__accordion-toggle :global(svg) {
+    transition: transform var(--dur-mid) var(--ease-out);
+  }
+  .dc-burger__accordion-toggle[aria-expanded='true'] :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .dc-burger__accordion-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-mid) var(--ease-out);
+  }
+  .dc-burger__accordion-toggle[aria-expanded='true'] + .dc-burger__accordion-body {
+    grid-template-rows: 1fr;
+  }
+  .dc-burger__sublist {
+    overflow: hidden;
+    list-style: none;
+    margin: 0;
+    padding: var(--space-2) 0 var(--space-2) var(--space-4);
+    display: grid;
+    gap: var(--space-1);
+  }
+  .dc-burger__sublist a {
+    display: block;
+    padding: 8px 0;
+    font-family: var(--font-body);
+    font-size: var(--type-body);
+    font-weight: var(--fw-semibold);
+    color: var(--text-body);
+    text-decoration: none;
+  }
+  .dc-burger__sublist a:hover {
     color: var(--text-accent);
   }
 
@@ -184,3 +280,12 @@ const { vk, max } = clinic.links;
     justify-self: start;
   }
 </style>
+
+<script>
+  // Аккордеон «Услуги» — не открывает/закрывает бургер, поэтому не через overlays.ts
+  document.querySelectorAll<HTMLButtonElement>('.dc-burger__accordion-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      btn.setAttribute('aria-expanded', String(btn.getAttribute('aria-expanded') !== 'true'));
+    });
+  });
+</script>

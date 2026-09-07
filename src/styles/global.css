@@ -148,7 +148,7 @@ a:hover {
   font-size: var(--type-eyebrow);
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-eyebrow);
-  text-transform: uppercase;
+
   color: var(--text-muted);
 }
 
@@ -175,7 +175,7 @@ a:hover {
   font-size: var(--type-eyebrow);
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-eyebrow);
-  text-transform: uppercase;
+
   color: var(--text-muted);
 }
 .dc-chart__legend {
@@ -267,7 +267,7 @@ a:hover {
 .dc-chart__tip-date {
   color: var(--text-on-dark-muted);
   font-weight: var(--fw-bold);
-  text-transform: uppercase;
+
   letter-spacing: var(--ls-caps);
   font-size: var(--type-eyebrow);
 }
