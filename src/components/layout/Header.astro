@@ -239,6 +239,16 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
       opacity var(--dur-fast) var(--ease-out),
       transform var(--dur-fast) var(--ease-out);
   }
+  /* Мостик через отступ между кнопкой и панелью: без него курсор по пути
+     вниз выходил за пределы пункта меню и дропдаун закрывался. */
+  .dc-header__dropdown::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -20px;
+    height: 20px;
+  }
   .dc-header__nav-item[data-open='true'] .dc-header__dropdown {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
@@ -388,8 +398,17 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     };
 
     if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      item.addEventListener('mouseenter', () => set(true));
-      item.addEventListener('mouseleave', () => set(false));
+      // Небольшая отсрочка на уход курсора: меню прощает, если по дороге
+      // к списку мышь на мгновение вышла за край пункта.
+      let closeTimer = 0;
+      item.addEventListener('mouseenter', () => {
+        window.clearTimeout(closeTimer);
+        set(true);
+      });
+      item.addEventListener('mouseleave', () => {
+        window.clearTimeout(closeTimer);
+        closeTimer = window.setTimeout(() => set(false), 220);
+      });
     }
     toggle.addEventListener('click', () => set(item.dataset.open !== 'true'));
     item.addEventListener('focusout', (event) => {

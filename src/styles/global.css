@@ -224,9 +224,12 @@ a:hover {
   clip-path: inset(0 0 0 0);
 }
 
+/* Подписи под графиком центрируем: слева они занимали половину карточки,
+   а справа оставалось пустое поле шириной с сам график. */
 .dc-chart__gap {
   font-size: var(--type-body);
   color: var(--text-body);
+  text-align: center;
 }
 .dc-chart__gap b {
   font-family: var(--font-display);
@@ -244,7 +247,10 @@ a:hover {
   font-size: var(--type-small);
   line-height: var(--lh-body);
   color: var(--text-muted);
+  /* Ширину строки держим читаемой, но сам абзац ставим по центру карточки */
   max-width: min(var(--measure), 100%);
+  margin-inline: auto;
+  text-align: center;
 }
 
 .dc-chart__tip {

@@ -87,7 +87,7 @@ const clinicPhotos = Array.from(
   </OceanHero>
 
   <!-- Поставщики: сразу после hero, до акций -->
-  <section id="brands" class="dc-section--tight dc-bg-cool">
+  <section id="brands" class="dc-section--tight dc-bg-fade">
     <div class="dc-container">
       <Reveal>
         <BrandsMarquee
@@ -395,6 +395,12 @@ const clinicPhotos = Array.from(
   }
   .dc-bg-aqua {
     background: var(--grad-aqua);
+  }
+  /* Лента поставщиков: сверху подхватывает холодный тон под hero и
+     растворяется в белом к акциям — иначе полоса читалась как чужой
+     прямоугольник, вставленный между двумя белыми блоками. */
+  .dc-bg-fade {
+    background: linear-gradient(180deg, var(--surface-cool) 0%, var(--dc-white) 100%);
   }
 
   .dc-hero__lead {
