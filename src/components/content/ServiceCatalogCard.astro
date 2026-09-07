@@ -39,8 +39,10 @@ const shown = items.slice(0, 3);
     {
       shown.map((item) => (
         <li>
-          <span class="dc-catalog-card__item-title">{item.title}</span>
-          <span class="dc-catalog-card__item-price">{item.price}</span>
+          <a href={href} class="dc-catalog-card__item">
+            <span class="dc-catalog-card__item-title">{item.title}</span>
+            <span class="dc-catalog-card__item-price">{item.price}</span>
+          </a>
         </li>
       ))
     }
@@ -140,14 +142,31 @@ const shown = items.slice(0, 3);
     align-content: start;
   }
   .dc-catalog-card__items li {
+    font-size: var(--type-small);
+  }
+  .dc-catalog-card__item {
     display: flex;
     justify-content: space-between;
     gap: var(--space-3);
-    font-size: var(--type-small);
+    text-decoration: none;
+    color: inherit;
   }
   .dc-catalog-card__item-title {
     color: var(--text-body);
     min-width: 0;
+    /* Подчёркивание — опознавательный знак ссылки: позиция кликабельна */
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      text-decoration-color var(--dur-fast) var(--ease-out);
+  }
+  .dc-catalog-card__item:hover .dc-catalog-card__item-title,
+  .dc-catalog-card__item:focus-visible .dc-catalog-card__item-title {
+    color: var(--text-accent);
+    text-decoration-color: var(--text-accent);
   }
   .dc-catalog-card__item-price {
     flex: 0 0 auto;

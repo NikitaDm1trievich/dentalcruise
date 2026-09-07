@@ -1,0 +1,289 @@
+---
+/**
+ * Один SVG-график цены. Вынесен из PriceChart, чтобы отрисовать два
+ * варианта одних и тех же данных: широкий на 12 месяцев для десктопа и
+ * короткий на лето–сентябрь для телефона. На узком экране двенадцать
+ * колонок сжимались в нечитаемую полоску, а прогнозные месяцы съедали
+ * место, ничего не добавляя к главному — разрыву между рядами.
+ *
+ * Геометрия считается на этапе сборки — в браузер уезжает готовый SVG.
+ */
+import type { PriceChartPoint } from '../../data/price-chart';
+
+interface Props {
+  data: readonly PriceChartPoint[];
+  anchorMonth: string;
+  title: string;
+  /** Суффикс для id градиентов: два SVG на странице не должны их делить */
+  uid: string;
+  /** Показывать каждую вторую подпись месяца на узком экране */
+  thinTicks?: boolean;
+  /**
+   * Размер системы координат. У короткого варианта холст уже и выше:
+   * при той же ширине на экране подписи и точки получаются крупнее,
+   * потому что масштабируются меньше.
+   */
+  width?: number;
+  height?: number;
+  class?: string;
+}
+
+const {
+  data,
+  anchorMonth,
+  title,
+  uid,
+  thinTicks = false,
+  width: W = 660,
+  height: H = 320,
+  class: className,
+} = Astro.props;
+
+// ── Геометрия ───────────────────────────────────────────────
+const PAD = { top: 16, right: 12, bottom: 40, left: 60 };
+const plotW = W - PAD.left - PAD.right;
+const plotH = H - PAD.top - PAD.bottom;
+
+/**
+ * Шкала начинается не с нуля, а с 16 тыс., и заканчивается на 32 тыс. —
+ * вплотную к рядам (19 900–30 800 ₽).
+ *
+ * От нуля помесячные шаги (100–1 600 ₽) сжимались в пару пикселей и обе
+ * линии выглядели прямыми. Обычно у диаграмм с областями усечённая база
+ * недопустима — заливка своим размером врёт о величине. Здесь это смягчено:
+ * заливка уходит в прозрачность к низу, на каждом месяце стоит точка,
+ * а ось подписана — значения читаются, а не угадываются по площади.
+ */
+const Y_MIN = 16000;
+const Y_MAX = 32000;
+const yTicks = [16000, 20000, 24000, 28000, 32000];
+
+const x = (i: number) => PAD.left + (plotW * i) / (data.length - 1);
+const y = (v: number) => PAD.top + plotH - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * plotH;
+
+/**
+ * Плавная кривая через точки (Catmull-Rom → кубические Безье).
+ * Тот же тип сглаживания, что `type="monotone"` у Recharts/Tremor.
+ */
+function smoothPath(values: readonly number[]): string {
+  const pts = values.map((v, i) => [x(i), y(v)] as const);
+  if (pts.length < 2) return '';
+
+  let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+
+    d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2[0]} ${p2[1]}`;
+  }
+  return d;
+}
+
+const baseline = PAD.top + plotH;
+const closeArea = (line: string) =>
+  `${line} L ${x(data.length - 1)} ${baseline} L ${x(0)} ${baseline} Z`;
+
+const marketLine = smoothPath(data.map((d) => d.market));
+const clinicLine = smoothPath(data.map((d) => d.clinic));
+
+const anchorIndex = data.findIndex((d) => d.month === anchorMonth);
+const rub = new Intl.NumberFormat('ru-RU');
+const last = data[data.length - 1];
+const first = data[0];
+
+const marketFill = `dcMarketFill-${uid}`;
+const clinicFill = `dcClinicFill-${uid}`;
+---
+
+<div class:list={['dc-chart__plot', className]} data-chart data-w={W}>
+  <svg
+    viewBox={`0 0 ${W} ${H}`}
+    role="img"
+    aria-label={`${title} за 2026 год: средняя цена по Москве растёт с ${rub.format(first.market)} до ${rub.format(last.market)} ₽, цена клиники «Дентал Круиз» снижается с ${rub.format(first.clinic)} ₽ до ${rub.format(last.clinic)} ₽ — заметнее всего в конце лета`}
+  >
+    <defs>
+      <linearGradient id={marketFill} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--dc-white-caps)" stop-opacity="0.45"></stop>
+        <stop offset="100%" stop-color="var(--dc-white-caps)" stop-opacity="0"></stop>
+      </linearGradient>
+      <linearGradient id={clinicFill} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--dc-turquoise)" stop-opacity="0.55"></stop>
+        <stop offset="100%" stop-color="var(--dc-turquoise)" stop-opacity="0"></stop>
+      </linearGradient>
+    </defs>
+
+    {/* Сетка и подписи значений */}
+    {
+      yTicks.map((tick) => (
+        <>
+          <line
+            x1={PAD.left}
+            x2={W - PAD.right}
+            y1={y(tick)}
+            y2={y(tick)}
+            class="dc-chart__grid"
+          />
+          <text x={PAD.left - 14} y={y(tick) + 5} class="dc-chart__tick" text-anchor="end">
+            {tick / 1000} тыс
+          </text>
+        </>
+      ))
+    }
+
+    {/* Месяцы */}
+    {
+      data.map((point, i) => (
+        <text
+          x={x(i)}
+          y={H - 14}
+          class:list={['dc-chart__tick', thinTicks && i % 2 === 1 && 'dc-chart__tick--odd']}
+          text-anchor="middle"
+        >
+          {point.month}
+        </text>
+      ))
+    }
+
+    {/* Рынок — приглушённый нейтральный */}
+    <path d={closeArea(marketLine)} fill={`url(#${marketFill})`}></path>
+    <path d={marketLine} class="dc-chart__line dc-chart__line--market"></path>
+
+    {/* Наша цена — акцентная бирюза поверх */}
+    <path d={closeArea(clinicLine)} fill={`url(#${clinicFill})`}></path>
+    <path d={clinicLine} class="dc-chart__line dc-chart__line--clinic"></path>
+
+    {/* Точки по месяцам: рынок */}
+    {
+      data.map((point, i) => (
+        <circle
+          cx={x(i)}
+          cy={y(point.market)}
+          r={i === anchorIndex ? 5 : 3.5}
+          class:list={['dc-chart__dot', 'dc-chart__dot--market', i === anchorIndex && 'is-key']}
+        />
+      ))
+    }
+
+    {/* Точки по месяцам: наша цена, месяц акции крупнее */}
+    {
+      data.map((point, i) => (
+        <circle
+          cx={x(i)}
+          cy={y(point.clinic)}
+          r={point.promo ? 6 : 3.5}
+          class:list={['dc-chart__dot', 'dc-chart__dot--clinic', point.promo && 'is-key']}
+        />
+      ))
+    }
+
+    {/* Наведение: невидимые полосы ловят курсор над каждым месяцем */}
+    <g class="dc-chart__hit">
+      {
+        data.map((point, i) => (
+          <rect
+            x={x(i) - plotW / (data.length - 1) / 2}
+            y={PAD.top}
+            width={plotW / (data.length - 1)}
+            height={plotH}
+            data-hit={i}
+            data-month={point.month}
+            data-market={point.market}
+            data-clinic={point.clinic}
+            data-forecast={String(point.forecast)}
+            data-cx={x(i)}
+          />
+        ))
+      }
+    </g>
+
+    <line class="dc-chart__cursor" y1={PAD.top} y2={baseline} data-on="false"></line>
+  </svg>
+
+  <div class="dc-chart__tip" data-chart-tip hidden></div>
+</div>
+
+<style>
+  /* Два варианта одних данных: лишний прячем целиком, чтобы его подсказки
+     и полосы наведения не ловили курсор. Классы приходят пропсом, но лежат
+     на корне этого же компонента — область видимости совпадает. */
+  .dc-chart__plot--narrow {
+    display: none;
+  }
+  @media (max-width: 640px) {
+    .dc-chart__plot--wide {
+      display: none;
+    }
+    .dc-chart__plot--narrow {
+      display: block;
+      /* Свои пропорции: глобальные 660/320 сплющили бы короткий холст */
+      aspect-ratio: 400 / 300;
+    }
+  }
+
+  .dc-chart__grid {
+    stroke: var(--line-hairline);
+    stroke-dasharray: 4 4;
+  }
+  .dc-chart__tick {
+    fill: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 13px;
+  }
+  /* На телефоне 12 подписей сливаются — оставляем каждую вторую */
+  @media (max-width: 640px) {
+    .dc-chart__tick--odd {
+      display: none;
+    }
+  }
+  .dc-chart__line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .dc-chart__line--market {
+    stroke: var(--dc-white-caps);
+    stroke-width: 2;
+  }
+  .dc-chart__line--clinic {
+    stroke: var(--dc-turquoise-ink);
+    stroke-width: 3;
+  }
+  .dc-chart__dot {
+    fill: var(--dc-white);
+    stroke-width: 2;
+  }
+  .dc-chart__dot--market {
+    stroke: var(--dc-white-caps);
+  }
+  .dc-chart__dot--clinic {
+    stroke: var(--dc-turquoise-ink);
+    stroke-width: 2.5;
+  }
+  /* Ключевые точки — фактический замер рынка и месяц начала акции */
+  .dc-chart__dot--market.is-key {
+    stroke-width: 2.5;
+  }
+  .dc-chart__dot--clinic.is-key {
+    fill: var(--dc-turquoise-ink);
+    stroke: var(--dc-white);
+    stroke-width: 3;
+  }
+  .dc-chart__hit rect {
+    fill: transparent;
+  }
+  .dc-chart__cursor {
+    stroke: var(--line-strong);
+    stroke-dasharray: 4 4;
+    visibility: hidden;
+  }
+  .dc-chart__cursor[data-on='true'] {
+    visibility: visible;
+  }
+</style>

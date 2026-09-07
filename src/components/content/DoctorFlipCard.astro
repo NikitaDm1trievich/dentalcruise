@@ -99,6 +99,24 @@ const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[
   .dc-doc[data-flipped='true'] .dc-doc__inner {
     transform: rotateY(180deg);
   }
+  /* Покой изнанкой вверх: вращения нет, слой плоский — текст не мылится */
+  .dc-doc.is-back .dc-doc__inner {
+    transform: none;
+    /* Переворот уже доигран: контейнер и изнанка разворачиваются
+       одновременно и мгновенно, иначе карточка дёрнется второй раз. */
+    transition: none;
+  }
+  /* Тот же стоп-кадр на обратном пути — см. src/lib/flip.ts */
+  .dc-doc.is-no-anim .dc-doc__inner {
+    transition: none;
+  }
+  .dc-doc.is-back .dc-doc__face--front {
+    visibility: hidden;
+  }
+  .dc-doc.is-back .dc-doc__face--back {
+    visibility: visible;
+    transform: none;
+  }
 
   .dc-doc__face {
     position: absolute;

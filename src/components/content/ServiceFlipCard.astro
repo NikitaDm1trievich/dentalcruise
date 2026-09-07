@@ -127,6 +127,24 @@ const {
   .dc-flip[data-flipped='true'] .dc-flip__inner {
     transform: rotateY(180deg);
   }
+  /* Покой изнанкой вверх: вращения нет, слой плоский — текст не мылится */
+  .dc-flip.is-back .dc-flip__inner {
+    transform: none;
+    /* Переворот уже доигран: контейнер и изнанка разворачиваются
+       одновременно и мгновенно, иначе карточка дёрнется второй раз. */
+    transition: none;
+  }
+  /* Тот же стоп-кадр на обратном пути — см. src/lib/flip.ts */
+  .dc-flip.is-no-anim .dc-flip__inner {
+    transition: none;
+  }
+  .dc-flip.is-back .dc-flip__face--front {
+    visibility: hidden;
+  }
+  .dc-flip.is-back .dc-flip__face--back {
+    visibility: visible;
+    transform: none;
+  }
 
   .dc-flip__face {
     position: absolute;
