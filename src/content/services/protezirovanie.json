@@ -9,8 +9,9 @@
     "Коронка из своей лаборатории",
     "План лечения с итоговой суммой"
   ],
-  "photoLabel": "Здесь фото работы: имплант с коронкой",
+  "photoLabel": "Здесь фото работы: имплантация Osstem",
   "category": "implants",
   "featured": true,
-  "order": 30
+  "order": 30,
+  "photo": "/images/services/implants.jpg"
 }

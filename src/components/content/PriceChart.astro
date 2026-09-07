@@ -25,11 +25,18 @@ const PAD = { top: 16, right: 12, bottom: 40, left: 60 };
 const plotW = W - PAD.left - PAD.right;
 const plotH = H - PAD.top - PAD.bottom;
 
-// Шкала от нуля: у диаграмм с областями усечённая база зрительно
-// раздувает разницу. Здесь разрыв и без того двукратный — приукрашивать нечего.
-const Y_MIN = 0;
-const Y_MAX = 60000;
-const yTicks = [0, 15000, 30000, 45000, 60000];
+/**
+ * Шкала начинается не с нуля, а с 15 тыс.
+ *
+ * От нуля помесячные шаги (200–1 600 ₽) сжимались в пару пикселей и обе
+ * линии выглядели прямыми. Обычно у диаграмм с областями усечённая база
+ * недопустима — заливка своим размером врёт о величине. Здесь это смягчено:
+ * заливка уходит в прозрачность к низу, на каждом месяце стоит точка,
+ * а ось подписана — значения читаются, а не угадываются по площади.
+ */
+const Y_MIN = 15000;
+const Y_MAX = 55000;
+const yTicks = [15000, 25000, 35000, 45000, 55000];
 
 const x = (i: number) => PAD.left + (plotW * i) / (data.length - 1);
 const y = (v: number) => PAD.top + plotH - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * plotH;
@@ -67,6 +74,7 @@ const marketLine = smoothPath(data.map((d) => d.market));
 const clinicLine = smoothPath(data.map((d) => d.clinic));
 
 const anchorIndex = data.findIndex((d) => d.month === anchorMonth);
+const promoIndex = data.findIndex((d) => d.promo);
 const gap = data[anchorIndex].market - data[anchorIndex].clinic;
 const rub = new Intl.NumberFormat('ru-RU');
 ---
@@ -84,7 +92,7 @@ const rub = new Intl.NumberFormat('ru-RU');
     <svg
       viewBox={`0 0 ${W} ${H}`}
       role="img"
-      aria-label={`${title}: ${marketLabel} растёт с ${rub.format(data[0].market)} до ${rub.format(data[data.length - 1].market)} ₽ за 2026 год, цена «${clinicLabel}» держится на ${rub.format(data[0].clinic)} ₽`}
+      aria-label={`${title} за 2026 год: средняя цена по Москве растёт с ${rub.format(data[0].market)} до ${rub.format(data[data.length - 1].market)} ₽, цена клиники «Дентал Круиз» снижается с ${rub.format(data[0].clinic)} ₽ до ${rub.format(data[data.length - 1].clinic)} ₽ — заметнее всего в конце лета`}
     >
       <defs>
         <linearGradient id="dcMarketFill" x1="0" y1="0" x2="0" y2="1">
@@ -137,12 +145,45 @@ const rub = new Intl.NumberFormat('ru-RU');
       <path d={closeArea(clinicLine)} fill="url(#dcClinicFill)"></path>
       <path d={clinicLine} class="dc-chart__line dc-chart__line--clinic"></path>
 
-      {/* Точка фактического замера рынка */}
-      <circle
-        cx={x(anchorIndex)}
-        cy={y(data[anchorIndex].market)}
-        r="5"
-        class="dc-chart__anchor"></circle>
+      {/* Точки по месяцам: рынок */}
+      {
+        data.map((point, i) => (
+          <circle
+            cx={x(i)}
+            cy={y(point.market)}
+            r={i === anchorIndex ? 5 : 3.5}
+            class:list={['dc-chart__dot', 'dc-chart__dot--market', i === anchorIndex && 'is-key']}
+          />
+        ))
+      }
+
+      {/* Точки по месяцам: наша цена, месяц акции крупнее */}
+      {
+        data.map((point, i) => (
+          <circle
+            cx={x(i)}
+            cy={y(point.clinic)}
+            r={point.promo ? 6 : 3.5}
+            class:list={['dc-chart__dot', 'dc-chart__dot--clinic', point.promo && 'is-key']}
+          />
+        ))
+      }
+
+      {/* Подпись к месяцу, с которого действует акция.
+          Ставим над точкой: снизу она упирается в названия месяцев,
+          а сверху между линиями свободно. */}
+      {
+        promoIndex >= 0 && (
+          <text
+            x={x(promoIndex)}
+            y={y(data[promoIndex].clinic) - 16}
+            class="dc-chart__promo-label"
+            text-anchor="middle"
+          >
+            акция {rub.format(data[promoIndex].clinic)} ₽
+          </text>
+        )
+      }
 
       {/* Наведение: невидимые полосы ловят курсор над каждым месяцем */}
       <g class="dc-chart__hit">
@@ -206,10 +247,31 @@ const rub = new Intl.NumberFormat('ru-RU');
     stroke: var(--dc-turquoise-ink);
     stroke-width: 3;
   }
-  .dc-chart__anchor {
+  .dc-chart__dot {
     fill: var(--dc-white);
+    stroke-width: 2;
+  }
+  .dc-chart__dot--market {
     stroke: var(--dc-white-caps);
+  }
+  .dc-chart__dot--clinic {
+    stroke: var(--dc-turquoise-ink);
     stroke-width: 2.5;
+  }
+  /* Ключевые точки — фактический замер рынка и месяц начала акции */
+  .dc-chart__dot--market.is-key {
+    stroke-width: 2.5;
+  }
+  .dc-chart__dot--clinic.is-key {
+    fill: var(--dc-turquoise-ink);
+    stroke: var(--dc-white);
+    stroke-width: 3;
+  }
+  .dc-chart__promo-label {
+    fill: var(--dc-turquoise-ink);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: var(--fw-bold);
   }
   .dc-chart__hit rect {
     fill: transparent;
@@ -255,9 +317,11 @@ const rub = new Intl.NumberFormat('ru-RU');
           </span>`;
         tip.hidden = false;
 
-        // Подсказку ставим над колонкой месяца, в долях ширины графика
+        // Подсказку ставим над колонкой месяца, в долях ширины графика.
+        // У крайних месяцев прижимаем к границам, иначе на узком экране
+        // подсказка вылезает за края карточки.
         const ratio = Number(d.cx) / 660;
-        tip.style.left = `${ratio * 100}%`;
+        tip.style.left = `${Math.min(Math.max(ratio, 0.3), 0.7) * 100}%`;
 
         cursor.setAttribute('x1', d.cx!);
         cursor.setAttribute('x2', d.cx!);
