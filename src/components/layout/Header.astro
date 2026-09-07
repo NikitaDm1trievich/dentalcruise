@@ -8,7 +8,7 @@
  */
 import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
-import VkMark from '../core/VkMark.astro';
+import BrandIcon from '../core/BrandIcon.astro';
 import { clinic } from '../../data/site';
 
 interface Props {
@@ -43,14 +43,14 @@ const { vk, max } = clinic.links;
         {
           max && (
             <IconButton label="Написать в Max" href={max} size={44}>
-              <Icon name="message-circle" size={20} />
+              <BrandIcon name="max" size={20} />
             </IconButton>
           )
         }
         {
           vk && (
             <IconButton label="Написать во ВКонтакте" href={vk} size={44}>
-              <VkMark size={20} />
+              <BrandIcon name="vk" size={20} />
             </IconButton>
           )
         }

@@ -1,6 +1,7 @@
 ---
 /** Карточка места: адрес, часы, почта, телефон, кнопки связи. Из Ds2_2d9e23.PlaceCard. */
 import Icon from '../core/Icon.astro';
+import BrandIcon from '../core/BrandIcon.astro';
 import IconButton from '../core/IconButton.astro';
 import Button from '../core/Button.astro';
 import { clinic } from '../../data/site';
@@ -37,7 +38,7 @@ const { max, telegram, yandexOrg } = clinic.links;
     {
       max && (
         <IconButton label="Написать в Max" href={max}>
-          <Icon name="message-circle" size={20} />
+          <BrandIcon name="max" size={20} />
         </IconButton>
       )
     }
