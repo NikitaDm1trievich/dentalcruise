@@ -7,6 +7,7 @@
  * skeleton-подложкой (требование брифа: аудитория мобильная, фото тяжёлые).
  */
 import Icon from '../core/Icon.astro';
+import { withBase } from '../../lib/asset';
 
 interface Props {
   label?: string;
@@ -36,7 +37,7 @@ const style = `--dc-photo-ratio:${ratio};--dc-photo-radius:${radius};`;
 {
   src ? (
     <div class:list={['dc-photo', cover && 'dc-photo--cover', className]} style={style} data-photo>
-      <img src={src} alt={alt} loading="lazy" decoding="async" class="dc-photo__img" />
+      <img src={withBase(src)} alt={alt} loading="lazy" decoding="async" class="dc-photo__img" />
     </div>
   ) : (
     <div

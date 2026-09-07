@@ -12,6 +12,7 @@ import Button from '../components/core/Button.astro';
 import Icon from '../components/core/Icon.astro';
 import Reveal from '../components/core/Reveal.astro';
 import { clinic } from '../data/site';
+import { withBase } from '../lib/asset';
 
 interface Props {
   title: string;
@@ -24,8 +25,7 @@ interface Props {
 }
 
 const { title, description, path, heading, eyebrow, lead, noindex = false } = Astro.props;
-const base = import.meta.env.BASE_URL;
-const asset = (p: string) => `${base}${p}`.replace(/\/{2,}/g, '/');
+const asset = withBase;
 ---
 
 <BaseLayout title={title} description={description} path={path} noindex={noindex}>

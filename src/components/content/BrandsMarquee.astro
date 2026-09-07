@@ -1,5 +1,7 @@
 ---
 /** Бегущая строка поставщиков. Перенесено из Ds2_2d9e23.BrandsMarquee. */
+import { withBase } from '../../lib/asset';
+
 interface Props {
   eyebrow?: string;
   brands: { id: string; name: string; logo?: string; note?: string }[];
@@ -18,7 +20,7 @@ const row = [...brands, ...brands];
       {
         row.map((brand, i) => (
           <span class="dc-marquee__item" title={brand.note ?? brand.name} aria-hidden={i >= brands.length}>
-            {brand.logo ? <img src={brand.logo} alt={brand.name} height="34" /> : brand.name}
+            {brand.logo ? <img src={withBase(brand.logo)} alt={brand.name} height="34" /> : brand.name}
           </span>
         ))
       }

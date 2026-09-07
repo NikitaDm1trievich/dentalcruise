@@ -10,6 +10,7 @@ import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
 import BrandIcon from '../core/BrandIcon.astro';
 import { clinic } from '../../data/site';
+import { withBase } from '../../lib/asset';
 
 interface Props {
   /** true — под шапкой hero-видео: до скролла шапка прозрачная, лого и контакты белые.
@@ -19,8 +20,8 @@ interface Props {
 
 const { overHero = false } = Astro.props;
 
-const base = import.meta.env.BASE_URL;
-const logo = `${base}logo-dentalcruise.svg`.replace(/\/{2,}/g, '/');
+const base = withBase('');
+const logo = withBase('logo-dentalcruise.svg');
 const { vk, max } = clinic.links;
 ---
 

@@ -28,9 +28,9 @@ import PlaceCard from '../components/content/PlaceCard.astro';
 import YandexEmbed from '../components/content/YandexEmbed.astro';
 
 import { clinic } from '../data/site';
+import { withBase } from '../lib/asset';
 
-const base = import.meta.env.BASE_URL;
-const asset = (p: string) => `${base}${p}`.replace(/\/{2,}/g, '/');
+const asset = withBase;
 
 type Ordered = { data: { order: number } };
 const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
@@ -48,10 +48,13 @@ const them = comparison.filter((c) => c.data.side === 'them').map((c) => c.data.
 const us = comparison.filter((c) => c.data.side === 'us').map((c) => c.data.text);
 const faqItems = faq.map((f) => ({ id: f.data.id, q: f.data.q, a: f.data.a }));
 
-/** Интерьеры клиники для тизера «О клинике» */
+/**
+ * Интерьеры клиники для тизера «О клинике».
+ * Пути обычные, как в JSON-контенте: базовый путь подставит сама галерея.
+ */
 const clinicPhotos = Array.from(
   { length: 8 },
-  (_, i) => asset(`images/clinic/clinic-0${i + 1}.jpg`),
+  (_, i) => `/images/clinic/clinic-0${i + 1}.jpg`,
 );
 ---
 

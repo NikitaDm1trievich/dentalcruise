@@ -10,6 +10,7 @@
  */
 import Icon from '../core/Icon.astro';
 import PhotoPlaceholder from './PhotoPlaceholder.astro';
+import { withBase } from '../../lib/asset';
 
 interface Props {
   photos?: string[];
@@ -51,7 +52,7 @@ const many = photos.length > 1;
       <div class="dc-gal__frame">
         {photos.map((src, i) => (
           <img
-            src={src}
+            src={withBase(src)}
             alt={i === 0 ? alt : ''}
             aria-hidden={i === 0 ? undefined : 'true'}
             loading="lazy"

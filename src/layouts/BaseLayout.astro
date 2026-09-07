@@ -6,6 +6,7 @@ import BurgerMenu from '../components/layout/BurgerMenu.astro';
 import Footer from '../components/layout/Footer.astro';
 import AppointmentModal from '../components/forms/AppointmentModal.astro';
 import LicenseDrawer from '../components/content/LicenseDrawer.astro';
+import { withBase } from '../lib/asset';
 
 interface Props {
   title: string;
@@ -18,8 +19,7 @@ interface Props {
 }
 
 const { title, description, path = '/', overHero = false, noindex = false, faq } = Astro.props;
-const base = import.meta.env.BASE_URL;
-const asset = (p: string) => `${base}${p}`.replace(/\/{2,}/g, '/');
+const asset = withBase;
 ---
 
 <!doctype html>
