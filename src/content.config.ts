@@ -170,6 +170,13 @@ const servicePages = defineCollection({
   loader: glob({ pattern: '**/[^_]*.json', base: './src/content/service-pages' }),
   schema: z.object({
     title: z.string(),
+    /**
+     * Точное название строки в прайс-листе, если оно короче и вне контекста
+     * таблицы непонятно (например «На импланте, цементная фиксация»).
+     * По нему цена в pricelist.astro находит эту карточку; не задано —
+     * ищем по `title`.
+     */
+    matchTitle: z.string().optional(),
     /** Короткое пояснение под заголовком — одно-два предложения */
     lead: z.string(),
     /** Слаг категории из service-categories: хлебные крошки и ссылка в прайс */

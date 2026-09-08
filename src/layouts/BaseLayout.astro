@@ -49,6 +49,10 @@ const asset = withBase;
   </head>
 
   <body>
+    <div class="dc-preloader" data-preloader aria-hidden="true">
+      <span class="loader"></span>
+    </div>
+
     <a href="#main" class="dc-skip">Перейти к содержимому</a>
 
     <Header overHero={overHero} />
@@ -74,9 +78,101 @@ const asset = withBase;
       initReveal();
       initFlipCards();
       initCountUp();
+
+      // Прелоадер прячем, когда страница действительно готова — иначе
+      // мелькание на быстрых соединениях выглядит хуже, чем его отсутствие.
+      const preloader = document.querySelector<HTMLElement>('[data-preloader]');
+      if (preloader) {
+        const hide = () => {
+          preloader.classList.add('is-hidden');
+          preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
+        };
+        if (document.readyState === 'complete') hide();
+        else window.addEventListener('load', hide, { once: true });
+      }
     </script>
 
     <style>
+      .dc-preloader {
+        position: fixed;
+        inset: 0;
+        z-index: 300;
+        display: grid;
+        place-items: center;
+        background: var(--dc-white);
+        opacity: 1;
+        transition: opacity 320ms var(--ease-out);
+      }
+      .dc-preloader.is-hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .no-js .dc-preloader {
+        display: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .dc-preloader {
+          transition: none;
+        }
+      }
+
+      /* From Uiverse.io by alexruix */
+      .loader {
+        width: 48px;
+        height: 48px;
+        margin: auto;
+        position: relative;
+      }
+      .loader:before {
+        content: '';
+        width: 48px;
+        height: 5px;
+        background: color-mix(in srgb, var(--dc-coral) 30%, transparent);
+        position: absolute;
+        top: 60px;
+        left: 0;
+        border-radius: 50%;
+        animation: dc-loader-shadow 0.5s linear infinite;
+      }
+      .loader:after {
+        content: '';
+        width: 100%;
+        height: 100%;
+        background: var(--dc-coral);
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 4px;
+        animation: dc-loader-jump 0.5s linear infinite;
+      }
+      @keyframes dc-loader-jump {
+        15% {
+          border-bottom-right-radius: 3px;
+        }
+        25% {
+          transform: translateY(9px) rotate(22.5deg);
+        }
+        50% {
+          transform: translateY(18px) scale(1, 0.9) rotate(45deg);
+          border-bottom-right-radius: 40px;
+        }
+        75% {
+          transform: translateY(9px) rotate(67.5deg);
+        }
+        100% {
+          transform: translateY(0) rotate(90deg);
+        }
+      }
+      @keyframes dc-loader-shadow {
+        0%,
+        100% {
+          transform: scale(1, 1);
+        }
+        50% {
+          transform: scale(1.2, 1);
+        }
+      }
+
       .dc-skip {
         position: absolute;
         left: -9999px;

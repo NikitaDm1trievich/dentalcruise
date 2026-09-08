@@ -86,13 +86,23 @@ const clinicPhotos = Array.from(
     </div>
   </OceanHero>
 
-  <!-- Поставщики: сразу после hero, до акций -->
-  <section id="brands" class="dc-section--tight dc-bg-fade">
+  <!-- Условия: сразу после hero, до акций -->
+  <section id="terms" class="dc-section--tight dc-bg-fade">
     <div class="dc-container">
       <Reveal>
-        <BrandsMarquee
-          eyebrow="Работаем на материалах проверенных поставщиков"
-          brands={brands.map((b) => b.data)}
+        <OfferStrip
+          items={[
+            {
+              icon: 'calendar-check',
+              title: 'Консультация бесплатно',
+              text: 'Осмотр, снимок и план лечения с итоговой суммой — без оплаты и без обязательства лечиться у нас.',
+            },
+            {
+              icon: 'wallet',
+              title: 'Рассрочка без переплат',
+              text: 'Доступная рассрочка без % от клиники и банков-партнёров на масштабные планы лечения.',
+            },
+          ]}
         />
       </Reveal>
     </div>
@@ -145,23 +155,13 @@ const clinicPhotos = Array.from(
     </div>
   </section>
 
-  <!-- Полублок-перебивка между каталогом и врачами -->
-  <section id="terms" class="dc-section--tight dc-bg-fade-aqua">
+  <!-- Полублок-перебивка между каталогом и врачами: поставщики -->
+  <section id="brands" class="dc-section--tight dc-bg-fade-aqua">
     <div class="dc-container">
       <Reveal>
-        <OfferStrip
-          items={[
-            {
-              icon: 'calendar-check',
-              title: 'Консультация бесплатно',
-              text: 'Осмотр, снимок и план лечения с итоговой суммой — без оплаты и без обязательства лечиться у нас.',
-            },
-            {
-              icon: 'wallet',
-              title: 'Рассрочка без переплат',
-              text: 'Протезирование и имплантацию можно разбить на платежи. Условия обсуждаем до начала лечения.',
-            },
-          ]}
+        <BrandsMarquee
+          eyebrow="Работаем на материалах проверенных поставщиков"
+          brands={brands.map((b) => b.data)}
         />
       </Reveal>
     </div>

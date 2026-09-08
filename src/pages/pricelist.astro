@@ -25,18 +25,36 @@ const categories = (await getCollection('service-categories')).sort(byOrder);
 const prices = await getCollection('price-list');
 const servicePages = await getCollection('service-pages');
 
+/** Позиция прайса → своя страница услуги, по совпадению названия и направления */
+const pageByItem = new Map(
+  servicePages.map((page) => [`${page.data.category}__${page.data.matchTitle ?? page.data.title}`, page.id]),
+);
+
 /** Направления в порядке каталога; без цен в прайсе — не показываем */
 const sections = categories
-  .map((category) => ({
-    slug: category.data.slug,
-    title: category.data.title,
-    icon: category.data.icon,
-    price: prices.find((p) => p.data.slug === category.data.slug),
-    /** Страницы услуг этого направления — ссылки под таблицей */
-    pages: servicePages
-      .filter((page) => page.data.category === category.data.slug)
-      .sort(byOrder),
-  }))
+  .map((category) => {
+    const price = prices.find((p) => p.data.slug === category.data.slug);
+    return {
+      slug: category.data.slug,
+      title: category.data.title,
+      icon: category.data.icon,
+      price,
+      /** Каждая позиция — ссылка на свою карточку услуги, если она есть */
+      groups: price?.data.groups.map((group) => ({
+        title: group.title,
+        items: group.items.map((item) => ({
+          ...item,
+          href: pageByItem.has(`${category.data.slug}__${item.title}`)
+            ? withBase(`uslugi/${pageByItem.get(`${category.data.slug}__${item.title}`)}`)
+            : undefined,
+        })),
+      })),
+      /** Страницы услуг этого направления — ссылки под таблицей */
+      pages: servicePages
+        .filter((page) => page.data.category === category.data.slug)
+        .sort(byOrder),
+    };
+  })
   .filter((section) => section.price);
 
 const total = sections.reduce(
@@ -83,7 +101,7 @@ const total = sections.reduce(
             {
               icon: 'wallet',
               title: 'Рассрочка без переплат',
-              text: 'Протезирование и имплантацию можно разбить на платежи. Условия обсуждаем до начала лечения.',
+              text: 'Доступная рассрочка без % от клиники и банков-партнёров на масштабные планы лечения.',
             },
           ]}
         />
@@ -102,7 +120,7 @@ const total = sections.reduce(
               </header>
 
               <div class="dc-price-block__groups">
-                {section.price?.data.groups.map((group) => (
+                {section.groups?.map((group) => (
                   <PriceTable title={group.title} items={group.items} />
                 ))}
               </div>

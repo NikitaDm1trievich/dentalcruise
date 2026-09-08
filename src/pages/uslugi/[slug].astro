@@ -38,6 +38,11 @@ const categories = await getCollection('service-categories');
 const category = categories.find((c) => c.data.slug === s.category);
 const trust = (await getCollection('trust')).sort((a, b) => a.data.order - b.data.order);
 
+/** Другие услуги того же направления — переход между карточками без возврата в прайс */
+const siblings = (await getCollection('service-pages'))
+  .filter((p) => p.data.category === s.category && p.id !== page.id)
+  .sort((a, b) => a.data.order - b.data.order);
+
 const pricelistHref = withBase('pricelist');
 
 /** Короткие факты в шапке — показываем только заполненные */
@@ -228,6 +233,42 @@ const facts = [
     )
   }
 
+  {
+    (siblings.length > 0 || category) && (
+      <section class="dc-section dc-bg-warm">
+        <div class="dc-container">
+          <Reveal>
+            <div class="dc-related__head">
+              <SectionHeading
+                eyebrow={category?.data.title ?? 'Услуги'}
+                title="Другие услуги этого направления"
+              />
+              {category && (
+                <Button variant="secondary" href={`${pricelistHref}#${category.data.slug}`}>
+                  Весь прайс-лист
+                  <Icon slot="icon" name="arrow-right" size={18} />
+                </Button>
+              )}
+            </div>
+          </Reveal>
+
+          {siblings.length > 0 && (
+            <ul class="dc-related__grid" role="list">
+              {siblings.slice(0, 8).map((sibling, i) => (
+                <Reveal as="li" delay={i * 50}>
+                  <a href={withBase(`uslugi/${sibling.id}`)} class="dc-related__card">
+                    <span class="dc-related__title">{sibling.data.title}</span>
+                    {sibling.data.price && <span class="dc-related__price">{sibling.data.price}</span>}
+                  </a>
+                </Reveal>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+    )
+  }
+
   <section class="dc-section--tight dc-bg-white">
     <div class="dc-container">
       <Reveal>
@@ -371,6 +412,50 @@ const facts = [
   .dc-step p {
     color: var(--text-muted);
     font-size: var(--type-small);
+  }
+
+  .dc-related__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-5);
+    margin-bottom: var(--space-8);
+  }
+  .dc-related__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-4);
+    grid-auto-rows: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  }
+  .dc-related__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    height: 100%;
+    padding: var(--space-5) var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    transition: box-shadow var(--dur-mid) var(--ease-out), border-color var(--dur-mid) var(--ease-out);
+  }
+  .dc-related__card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--line-strong);
+  }
+  .dc-related__title {
+    color: var(--text-strong);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-related__price {
+    font-family: var(--font-display);
+    font-weight: var(--fw-black);
+    color: var(--text-accent);
   }
 
   .dc-two-col {

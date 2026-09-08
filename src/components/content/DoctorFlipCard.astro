@@ -32,6 +32,7 @@ const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[
       <div class="dc-doc__body">
         <h3>{name}</h3>
         <p class="dc-doc__spec">{speciality}</p>
+        <span class="dc-doc__exp">Стаж {experience}</span>
         <span class="dc-doc__hint">
           <Icon name="repeat-2" size={16} />
           Подробнее — нажмите на карточку
@@ -153,6 +154,11 @@ const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[
     color: var(--text-body);
     font-size: var(--type-small);
     font-weight: var(--fw-semibold);
+  }
+  .dc-doc__exp {
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
   }
   .dc-doc__hint {
     display: inline-flex;
