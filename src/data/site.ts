@@ -45,6 +45,8 @@ export const clinic = {
 
   links: {
     yandexOrg: 'https://yandex.ru/maps/org/dental_kruiz/154025048590/',
+    /** Короткая ссылка на точку клиники — открывается по адресу в шапке */
+    yandexPin: 'https://yandex.ru/maps/-/CTdFz09l',
     yandexMapWidget: 'https://yandex.ru/map-widget/v1/?ll=37.520284%2C55.774426&z=17',
     yandexReviewsWidget: 'https://yandex.ru/maps-reviews-widget/154025048590?comments',
     vk: 'https://vk.ru/dentalcruise',
@@ -73,6 +75,7 @@ export const navLinks = [
   { label: 'О клинике', href: '/about' },
   { label: 'Врачи', href: '/doctors' },
   { label: 'Галерея работ', href: '/gallery' },
+  { label: 'Контакты', href: '/contacts' },
 ] as const;
 
 /** Якоря внутри главной — показываем только на главной. */

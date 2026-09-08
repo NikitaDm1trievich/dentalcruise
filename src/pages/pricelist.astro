@@ -1,12 +1,310 @@
 ---
-import StubLayout from '../layouts/StubLayout.astro';
+/**
+ * Полный прайс-лист: панель фильтра по направлениям и таблицы цен.
+ *
+ * Источник данных — коллекция price-list (один файл на направление,
+ * внутри группы позиций). Названия и порядок направлений берутся из
+ * service-categories, чтобы фильтр, якоря и каталог на главной не
+ * разъезжались между собой.
+ */
+import { getCollection } from 'astro:content';
+
+import PageLayout from '../layouts/PageLayout.astro';
+import Reveal from '../components/core/Reveal.astro';
+import Button from '../components/core/Button.astro';
+import Icon from '../components/core/Icon.astro';
+import PriceTable from '../components/content/PriceTable.astro';
+import OfferStrip from '../components/content/OfferStrip.astro';
+import { clinic } from '../data/site';
+import { withBase } from '../lib/asset';
+
+type Ordered = { data: { order: number } };
+const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
+
+const categories = (await getCollection('service-categories')).sort(byOrder);
+const prices = await getCollection('price-list');
+const servicePages = await getCollection('service-pages');
+
+/** Направления в порядке каталога; без цен в прайсе — не показываем */
+const sections = categories
+  .map((category) => ({
+    slug: category.data.slug,
+    title: category.data.title,
+    icon: category.data.icon,
+    price: prices.find((p) => p.data.slug === category.data.slug),
+    /** Страницы услуг этого направления — ссылки под таблицей */
+    pages: servicePages
+      .filter((page) => page.data.category === category.data.slug)
+      .sort(byOrder),
+  }))
+  .filter((section) => section.price);
+
+const total = sections.reduce(
+  (sum, s) => sum + (s.price?.data.groups ?? []).reduce((n, g) => n + g.items.length, 0),
+  0,
+);
 ---
 
-<StubLayout
-  title="Прайс-лист стоматологии «Дентал Круиз» — цены на коронки, виниры, импланты"
-  description="Цены клиники «Дентал Круиз»: коронки от 15 000 ₽, виниры E-max от 25 000 ₽, импланты под ключ от 65 000 ₽, All-on-4 от 150 000 ₽. Москва, 4-я Магистральная, 5с1."
+<PageLayout
+  title="Прайс-лист стоматологии «Дентал Круиз» — цены на коронки, виниры и импланты"
+  description="Полные цены клиники «Дентал Круиз»: коронки от 15 000 ₽, виниры E-max от 25 000 ₽, имплантация под ключ от 65 000 ₽, All-on-4 от 150 000 ₽. Консультация бесплатно. Москва, 4-я Магистральная, 5с1."
   path="/pricelist"
   eyebrow="Прайс-лист"
   heading="Цены на лечение"
-  lead="Полная таблица цен по категориям готовится. Актуальные цены на ключевые работы — в разделе «Акции» и «Топ услуг» на главной, либо по телефону."
-/>
+  lead={`${total} позиций по шести направлениям. Цены указаны за единицу работы. Коронки, виниры и протезы делает зуботехническая лаборатория клиники — поэтому в цене нет наценки посредника.`}
+  breadcrumbs={[{ label: 'Прайс-лист' }]}
+>
+  <!-- Панель фильтра: липнет под шапкой при прокрутке -->
+  <div class="dc-filter" data-price-filter>
+    <div class="dc-filter__inner">
+      <button type="button" class="dc-filter__chip" data-filter="all" aria-pressed="true">
+        Все направления
+      </button>
+      {
+        sections.map((section) => (
+          <button type="button" class="dc-filter__chip" data-filter={section.slug} aria-pressed="false">
+            {section.title}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <section class="dc-section dc-price-page">
+    <div class="dc-container">
+      <Reveal>
+        <OfferStrip
+          items={[
+            {
+              icon: 'calendar-check',
+              title: 'Консультация бесплатно',
+              text: 'Осмотр, снимок и план лечения с итоговой суммой — до того, как вы что-то оплатите.',
+            },
+            {
+              icon: 'wallet',
+              title: 'Рассрочка без переплат',
+              text: 'Протезирование и имплантацию можно разбить на платежи. Условия обсуждаем до начала лечения.',
+            },
+          ]}
+        />
+      </Reveal>
+
+      {
+        sections.map((section, i) => (
+          <Reveal delay={i * 60}>
+            <section class="dc-price-block" id={section.slug} data-price-section={section.slug}>
+              <header class="dc-price-block__head">
+                <span class="dc-price-block__icon">
+                  <Icon name={section.icon} size={24} strokeWidth={1.75} color="var(--text-accent)" />
+                </span>
+                <h2>{section.title}</h2>
+                {section.price?.data.note && <p>{section.price.data.note}</p>}
+              </header>
+
+              <div class="dc-price-block__groups">
+                {section.price?.data.groups.map((group) => (
+                  <PriceTable title={group.title} items={group.items} />
+                ))}
+              </div>
+
+              {section.pages.length > 0 && (
+                <div class="dc-price-block__links">
+                  {section.pages.map((page) => (
+                    <a href={withBase(`uslugi/${page.id}`)} class="dc-price-block__link">
+                      Подробно об услуге: {page.data.title}
+                      <Icon name="arrow-right" size={16} />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </section>
+          </Reveal>
+        ))
+      }
+
+      <Reveal>
+        <div class="dc-price-page__foot">
+          <p>
+            Цены действуют на сентябрь 2026 года и не являются публичной офертой: итоговую сумму
+            врач называет после осмотра и снимка — до начала лечения и без доплат по ходу.
+          </p>
+          <div class="dc-actions">
+            <Button variant="primary" size="lg" data-open="dc-book">
+              <Icon slot="icon" name="calendar" size={20} />
+              Записаться на консультацию
+            </Button>
+            <Button variant="secondary" size="lg" href={clinic.phoneHref}>
+              <Icon slot="icon" name="phone" size={20} />
+              {clinic.phone}
+            </Button>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .dc-filter {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 20;
+    padding: var(--space-3) var(--gutter);
+    background: color-mix(in srgb, var(--dc-white) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line-hairline);
+  }
+  .dc-filter__inner {
+    max-width: var(--container);
+    margin-inline: auto;
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    /* Полоса прокручивается на телефоне, но полосу прокрутки не показываем */
+    scrollbar-width: none;
+  }
+  .dc-filter__inner::-webkit-scrollbar {
+    display: none;
+  }
+  .dc-filter__chip {
+    flex: 0 0 auto;
+    padding: 9px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line-hairline);
+    background: var(--surface-card);
+    color: var(--text-body);
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+    cursor: pointer;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .dc-filter__chip:hover {
+    border-color: var(--line-strong);
+  }
+  .dc-filter__chip[aria-pressed='true'] {
+    background: var(--cta-bg);
+    border-color: var(--cta-bg);
+    color: var(--cta-fg);
+  }
+
+  .dc-price-page {
+    background: var(--dc-white);
+  }
+  .dc-price-block {
+    display: grid;
+    gap: var(--space-6);
+    padding: var(--space-8);
+    border-radius: var(--radius-xl);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+    /* Якорь не должен уезжать под шапку и панель фильтра */
+    scroll-margin-top: calc(var(--header-h) + 72px);
+  }
+  .dc-price-block__head {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+  }
+  .dc-price-block__icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-price-block__head h2 {
+    font-size: var(--type-h2);
+  }
+  .dc-price-block__head p {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+    max-width: min(var(--measure), 100%);
+  }
+  .dc-price-block__groups {
+    display: grid;
+    gap: var(--space-8);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    align-items: start;
+  }
+  .dc-price-block__links {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--line-hairline);
+  }
+  .dc-price-block__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+    text-decoration: none;
+  }
+
+  .dc-price-page__foot {
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
+  }
+  .dc-price-page__foot p {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+    max-width: min(var(--measure), 100%);
+  }
+  .dc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+</style>
+
+<script>
+  const panel = document.querySelector<HTMLElement>('[data-price-filter]');
+  if (panel) {
+    const chips = Array.from(panel.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+    const sections = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-price-section]'),
+    );
+
+    const apply = (value: string) => {
+      for (const chip of chips) {
+        chip.setAttribute('aria-pressed', String(chip.dataset.filter === value));
+      }
+      for (const section of sections) {
+        // Прячем обёртку появления целиком, иначе от скрытого блока
+        // остаётся его отступ в сетке контейнера.
+        const wrapper = section.closest<HTMLElement>('.dc-reveal') ?? section;
+        wrapper.hidden = value !== 'all' && section.dataset.priceSection !== value;
+      }
+    };
+
+    for (const chip of chips) {
+      chip.addEventListener('click', () => {
+        const value = chip.dataset.filter ?? 'all';
+        apply(value);
+        // Адрес отражает выбор: ссылкой можно поделиться
+        const url = value === 'all' ? window.location.pathname : `#${value}`;
+        history.replaceState(null, '', url);
+      });
+    }
+
+    // Пришли по якорю из каталога или из акции — сразу нужный раздел.
+    // Слушаем и hashchange: на страницу можно попасть и без перезагрузки.
+    const applyHash = () => {
+      const value = window.location.hash.replace('#', '');
+      if (!value || !chips.some((chip) => chip.dataset.filter === value)) return;
+      apply(value);
+      document.getElementById(value)?.scrollIntoView();
+    };
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+  }
+</script>

@@ -1,0 +1,88 @@
+---
+/**
+ * Группа позиций прайса: подзаголовок и строки «название — цена».
+ * Строка со старой ценой показывает её зачёркнутой рядом с новой.
+ */
+interface Props {
+  title?: string;
+  items: { title: string; price: string; was?: string; note?: string }[];
+}
+
+const { title, items } = Astro.props;
+---
+
+<div class="dc-price">
+  {title && <h3 class="dc-price__title">{title}</h3>}
+  <ul class="dc-price__list" role="list">
+    {
+      items.map((item) => (
+        <li class="dc-price__row">
+          <span class="dc-price__name">
+            {item.title}
+            {item.note && <span class="dc-price__note">{item.note}</span>}
+          </span>
+          <span class="dc-price__values">
+            {item.was && <s class="dc-price__was">{item.was}</s>}
+            <b class="dc-price__value">{item.price}</b>
+          </span>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .dc-price {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .dc-price__title {
+    font-size: var(--type-h4);
+    color: var(--text-strong);
+  }
+  .dc-price__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+  }
+  .dc-price__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-hairline);
+  }
+  .dc-price__row:last-child {
+    border-bottom: 0;
+  }
+  .dc-price__name {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    color: var(--text-body);
+  }
+  .dc-price__note {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-price__values {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    flex: 0 0 auto;
+  }
+  .dc-price__was {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+    text-decoration-thickness: 1px;
+  }
+  .dc-price__value {
+    font-family: var(--font-display);
+    font-weight: var(--fw-black);
+    color: var(--text-accent);
+    white-space: nowrap;
+  }
+</style>

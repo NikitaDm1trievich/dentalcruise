@@ -71,7 +71,16 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
 
       <div class="dc-header__contacts">
         <div class="dc-header__place">
-          <span class="dc-header__address">{clinic.address.streetShort}</span>
+          <a
+            href={clinic.links.yandexPin}
+            target="_blank"
+            rel="noopener"
+            class="dc-header__address"
+            title="Открыть на Яндекс Картах"
+          >
+            <Icon name="map-pin" size={14} />
+            {clinic.address.streetShort}
+          </a>
           <span class="dc-header__schedule">{clinic.scheduleShort}</span>
         </div>
         <a href={clinic.phoneHref} class="dc-header__phone">{clinic.phone}</a>
@@ -296,9 +305,16 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     font-family: var(--font-body);
   }
   .dc-header__address {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     font-size: var(--type-small);
     font-weight: var(--fw-semibold);
     color: var(--text-body);
+    text-decoration: none;
+  }
+  .dc-header__address:hover {
+    color: var(--text-accent);
   }
   .dc-header__schedule {
     font-size: var(--type-small);

@@ -23,6 +23,18 @@ const doctors = defineCollection({
     photo: z.string().optional(),
     photoLabel: z.string().default('Здесь фото врача'),
     featured: z.boolean().default(false),
+    /* ── Поля персональной страницы /doctors/<файл>. Все необязательные:
+          пустые блоки на странице не рисуются. ───────────────────────── */
+    /** Пара абзацев о подходе врача */
+    about: z.array(z.string()).default([]),
+    /** Образование и курсы: год + что именно */
+    education: z.array(z.object({ year: z.string(), text: z.string() })).default([]),
+    /** Что делает: короткие пункты для списка */
+    skills: z.array(z.string()).default([]),
+    /** Слаги услуг из service-pages, которые ведёт врач */
+    services: z.array(z.string()).default([]),
+    seoTitle: z.string().optional(),
+    seoDescription: z.string().optional(),
     ...orderable,
   }),
 });
@@ -114,23 +126,72 @@ const brands = defineCollection({
   }),
 });
 
+/** Позиция прайса: название, цена и, если есть, старая цена и сноска. */
+const priceItem = z.object({
+  title: z.string(),
+  price: z.string(),
+  was: z.string().optional(),
+  note: z.string().optional(),
+});
+
 /**
- * Полный прайс — одна запись на категорию, внутри позиции.
- * Заполняется на этапе страницы «Прайс-лист»; схема заложена сразу.
+ * Полный прайс — один файл на категорию, внутри группы позиций.
+ * `slug` совпадает со слагом из service-categories: по нему собираются
+ * якоря, фильтр на странице прайса и ссылки из каталога на главной.
+ *
+ * Чтобы добавить позицию — допишите объект в нужную группу. Новая группа —
+ * ещё один объект в `groups`. Вёрстку трогать не нужно.
  */
 const priceList = defineCollection({
   loader: glob({ pattern: '**/*.json', base: './src/content/price-list' }),
   schema: z.object({
+    slug: z.string(),
     category: z.string(),
     note: z.string().optional(),
-    items: z.array(
+    groups: z.array(
       z.object({
         title: z.string(),
-        price: z.string(),
-        was: z.string().optional(),
-        note: z.string().optional(),
+        items: z.array(priceItem),
       }),
     ),
+    ...orderable,
+  }),
+});
+
+/**
+ * Страницы отдельных услуг (/uslugi/<slug>).
+ *
+ * Шаблон для заполнения — src/content/service-pages/_template.json;
+ * файлы, имя которых начинается с подчёркивания, в коллекцию не попадают.
+ * Все блоки, кроме заголовка и лида, необязательные: чего нет — того не
+ * будет и на странице, пустых заглушек не появится.
+ */
+const servicePages = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.json', base: './src/content/service-pages' }),
+  schema: z.object({
+    title: z.string(),
+    /** Короткое пояснение под заголовком — одно-два предложения */
+    lead: z.string(),
+    /** Слаг категории из service-categories: хлебные крошки и ссылка в прайс */
+    category: z.string(),
+    price: z.string().optional(),
+    priceNote: z.string().optional(),
+    duration: z.string().optional(),
+    warranty: z.string().optional(),
+    photo: z.string().optional(),
+    photoLabel: z.string().default('Здесь фото работы'),
+    /** «Что входит в цену» */
+    includes: z.array(z.string()).default([]),
+    /** «Когда подходит» / показания */
+    indications: z.array(z.string()).default([]),
+    /** Этапы работы: заголовок + описание */
+    steps: z.array(z.object({ title: z.string(), text: z.string() })).default([]),
+    /** Позиции прайса, которые показываем прямо на странице */
+    prices: z.array(priceItem).default([]),
+    /** Вопросы конкретно по этой услуге */
+    faq: z.array(z.object({ q: z.string(), a: z.string() })).default([]),
+    seoTitle: z.string().optional(),
+    seoDescription: z.string().optional(),
     ...orderable,
   }),
 });
@@ -190,6 +251,7 @@ export const collections = {
   brands,
   'price-list': priceList,
   'service-categories': serviceCategories,
+  'service-pages': servicePages,
   trust,
   comparison,
 };

@@ -1,0 +1,267 @@
+---
+/**
+ * Контакты: карточка места и карта (те же компоненты, что в блоке контактов
+ * на главной) плюс мелкие блоки — как доехать, режим приёма, связь, реквизиты.
+ */
+import PageLayout from '../layouts/PageLayout.astro';
+import Reveal from '../components/core/Reveal.astro';
+import Button from '../components/core/Button.astro';
+import Icon from '../components/core/Icon.astro';
+import SectionHeading from '../components/core/SectionHeading.astro';
+import PlaceCard from '../components/content/PlaceCard.astro';
+import YandexEmbed from '../components/content/YandexEmbed.astro';
+import { clinic } from '../data/site';
+
+const { yandexPin, yandexOrg, vk, max } = clinic.links;
+
+/** Мелкие блоки под картой — каждый отвечает на один вопрос */
+const blocks = [
+  {
+    icon: 'train',
+    title: 'На метро',
+    lines: [
+      'Полежаевская — 5 минут пешком.',
+      'Выход к 4-й Магистральной улице, дальше вдоль домов до дома 5с1.',
+    ],
+  },
+  {
+    icon: 'car',
+    title: 'На машине',
+    lines: [
+      'Съезд с Хорошёвского шоссе на 4-ю Магистральную.',
+      'Парковка вдоль улицы рядом со входом.',
+    ],
+  },
+  {
+    icon: 'clock',
+    title: 'Режим приёма',
+    lines: [clinic.scheduleLong, 'Приём по записи, в день обращения — по свободному времени.'],
+  },
+  {
+    icon: 'phone',
+    title: 'Как записаться',
+    lines: [
+      'Позвоните или оставьте заявку — администратор перезвонит и подберёт время.',
+      'Первичная консультация со снимком и планом лечения — бесплатно.',
+    ],
+  },
+];
+---
+
+<PageLayout
+  title="Контакты стоматологии «Дентал Круиз» — Москва, 4-я Магистральная, 5с1"
+  description="Как добраться до клиники «Дентал Круиз»: 5 минут пешком от метро Полежаевская, Москва, 4-я Магистральная улица, 5с1, 2 этаж. Пн–сб 10:00–22:00. Телефон +7 925 577-76-77."
+  path="/contacts"
+  eyebrow="Контакты"
+  heading="Приезжайте или позвоните"
+  lead={`${clinic.metroNote}: ${clinic.address.locality}, ${clinic.address.street}. ${clinic.scheduleLong}.`}
+  breadcrumbs={[{ label: 'Контакты' }]}
+>
+  <div slot="head-extra" class="dc-actions">
+    <Button variant="primary" size="lg" data-open="dc-book">
+      <Icon slot="icon" name="calendar" size={20} />
+      Записаться на приём
+    </Button>
+    <Button variant="secondary" size="lg" href={clinic.phoneHref}>
+      <Icon slot="icon" name="phone" size={20} />
+      {clinic.phone}
+    </Button>
+    <Button variant="ghost" size="lg" href={yandexPin}>
+      <Icon slot="icon" name="navigation" size={20} />
+      Построить маршрут
+    </Button>
+  </div>
+
+  <section class="dc-section dc-bg-white">
+    <div class="dc-container dc-two-col">
+      <Reveal>
+        <PlaceCard />
+      </Reveal>
+      <Reveal delay={90}>
+        <YandexEmbed
+          src={clinic.links.yandexMapWidget}
+          title="Дентал Круиз на Яндекс Картах"
+          height={440}
+          linkHref={yandexOrg}
+          linkLabel={`${clinic.address.streetShort} · ${clinic.metro} — открыть в Яндекс Картах`}
+        />
+      </Reveal>
+    </div>
+  </section>
+
+  <section class="dc-section dc-bg-warm">
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading eyebrow="Дорога" title="Как до нас добраться" />
+      </Reveal>
+
+      <ul class="dc-info" role="list">
+        {
+          blocks.map((block, i) => (
+            <Reveal as="li" delay={i * 70}>
+              <div class="dc-info__card">
+                <span class="dc-info__icon">
+                  <Icon name={block.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
+                </span>
+                <h3>{block.title}</h3>
+                {block.lines.map((line) => (
+                  <p>{line}</p>
+                ))}
+              </div>
+            </Reveal>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="dc-section dc-bg-aqua">
+    <div class="dc-container dc-two-col">
+      <Reveal>
+        <div class="dc-panel">
+          <h2>Написать нам</h2>
+          <p>
+            Если звонить неудобно — напишите в мессенджер или на почту. Отвечаем в рабочие часы
+            клиники.
+          </p>
+          <ul class="dc-links" role="list">
+            <li>
+              <Icon name="mail" size={20} color="var(--text-accent)" />
+              <a href={`mailto:${clinic.email}`}>{clinic.email}</a>
+            </li>
+            {
+              max && (
+                <li>
+                  <Icon name="message-circle" size={20} color="var(--text-accent)" />
+                  <a href={max} target="_blank" rel="noopener">
+                    Написать в Max
+                  </a>
+                </li>
+              )
+            }
+            {
+              vk && (
+                <li>
+                  <Icon name="users" size={20} color="var(--text-accent)" />
+                  <a href={vk} target="_blank" rel="noopener">
+                    Группа ВКонтакте
+                  </a>
+                </li>
+              )
+            }
+          </ul>
+        </div>
+      </Reveal>
+
+      <Reveal delay={90}>
+        <div class="dc-panel">
+          <h2>Документы</h2>
+          <p>
+            Клиника работает по лицензии на медицинскую деятельность. Скан лицензии и приложение
+            показываем по запросу на приёме и в отдельном окне на сайте.
+          </p>
+          <div class="dc-actions">
+            <Button variant="secondary" data-open="dc-license">Посмотреть лицензию</Button>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .dc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+  .dc-two-col {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    align-items: start;
+  }
+
+  .dc-info {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-5);
+    grid-auto-rows: 1fr;
+    /* 230px, а не 260: иначе четвёртая карточка уезжает в свой ряд */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  }
+  .dc-info__card {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+    height: 100%;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-info__icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-info__card h3 {
+    font-size: var(--type-h4);
+  }
+  .dc-info__card p {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+
+  .dc-panel {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+    height: 100%;
+    padding: var(--space-8);
+    border-radius: var(--radius-xl);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-panel h2 {
+    font-size: var(--type-h3);
+  }
+  .dc-panel p {
+    color: var(--text-body);
+    max-width: min(var(--measure), 100%);
+  }
+
+  .dc-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .dc-links li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .dc-links a {
+    color: var(--text-accent);
+    font-weight: var(--fw-semibold);
+  }
+
+  .dc-bg-white {
+    background: var(--dc-white);
+  }
+  .dc-bg-warm {
+    background: var(--surface-warm);
+  }
+  .dc-bg-aqua {
+    background: var(--grad-aqua);
+  }
+</style>

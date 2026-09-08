@@ -1,0 +1,328 @@
+---
+/**
+ * Страница одного врача. Одна вёрстка на всех — содержимое берётся из
+ * коллекции doctors, один JSON на человека.
+ *
+ * Блоки «О враче», «Что делает», «Образование» и «Услуги» рисуются только
+ * если соответствующие поля заполнены: у нового врача можно указать имя и
+ * специальность, а остальное дописать позже.
+ */
+import type { GetStaticPaths } from 'astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+import PageLayout from '../../layouts/PageLayout.astro';
+import Reveal from '../../components/core/Reveal.astro';
+import Button from '../../components/core/Button.astro';
+import Icon from '../../components/core/Icon.astro';
+import SectionHeading from '../../components/core/SectionHeading.astro';
+import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
+import ServiceCatalogCard from '../../components/content/ServiceCatalogCard.astro';
+import { clinic } from '../../data/site';
+import { withBase } from '../../lib/asset';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const doctors = await getCollection('doctors');
+  return doctors.map((doctor) => ({ params: { slug: doctor.id }, props: { doctor } }));
+};
+
+interface Props {
+  doctor: CollectionEntry<'doctors'>;
+}
+
+const { doctor } = Astro.props as unknown as Props;
+const d = doctor.data;
+
+const servicePages = await getCollection('service-pages');
+const categories = await getCollection('service-categories');
+const prices = await getCollection('price-list');
+
+/** Услуги врача — в том порядке, в каком перечислены в его файле */
+const services = d.services
+  .map((slug) => servicePages.find((page) => page.id === slug))
+  .filter(Boolean) as CollectionEntry<'service-pages'>[];
+
+const doctorsHref = withBase('doctors');
+---
+
+<PageLayout
+  title={d.seoTitle ?? `${d.speciality} — ${clinic.name}, м. Полежаевская`}
+  description={
+    d.seoDescription ??
+    `${d.speciality} клиники «Дентал Круиз», стаж ${d.experience}. ${d.note} Запись по телефону ${clinic.phone}.`
+  }
+  path={`/doctors/${doctor.id}`}
+  eyebrow={`Стаж ${d.experience}`}
+  heading={d.speciality}
+  lead={d.note}
+  breadcrumbs={[{ label: 'Врачи', href: doctorsHref }, { label: d.speciality }]}
+>
+  <div slot="head-extra" class="dc-doc-page__actions">
+    <Button variant="primary" size="lg" data-open="dc-book">
+      <Icon slot="icon" name="calendar" size={20} />
+      Записаться к врачу
+    </Button>
+    <Button variant="secondary" size="lg" href={clinic.phoneHref}>
+      <Icon slot="icon" name="phone" size={20} />
+      {clinic.phone}
+    </Button>
+  </div>
+
+  <section class="dc-section dc-bg-white">
+    <div class="dc-container dc-doc-page__top">
+      <Reveal>
+        <PhotoPlaceholder
+          label={d.photoLabel}
+          src={d.photo}
+          alt={`${d.name}, ${d.speciality}`}
+          ratio="3 / 4"
+        />
+      </Reveal>
+
+      <Reveal delay={90}>
+        <div class="dc-doc-page__body">
+          {
+            d.about.length > 0 && (
+              <div class="dc-doc-page__about">
+                <h2>О враче</h2>
+                {d.about.map((paragraph) => (
+                  <p>{paragraph}</p>
+                ))}
+              </div>
+            )
+          }
+
+          {
+            d.skills.length > 0 && (
+              <div class="dc-panel">
+                <h2>Что делает</h2>
+                <ul class="dc-checklist" role="list">
+                  {d.skills.map((skill) => (
+                    <li>
+                      <Icon name="check" size={18} strokeWidth={2.6} color="var(--text-accent)" />
+                      <span>{skill}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+
+          {d.extra && <p class="dc-doc-page__extra">{d.extra}</p>}
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  {
+    d.education.length > 0 && (
+      <section class="dc-section dc-bg-warm">
+        <div class="dc-container dc-container--aside">
+          <Reveal>
+            <SectionHeading class="dc-aside-heading" eyebrow="Подготовка" title="Образование и курсы" />
+          </Reveal>
+          <Reveal delay={90}>
+            <ol class="dc-timeline" role="list">
+              {d.education.map((row) => (
+                <li>
+                  <span class="dc-timeline__year">{row.year}</span>
+                  <span class="dc-timeline__text">{row.text}</span>
+                </li>
+              ))}
+            </ol>
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    services.length > 0 && (
+      <section class="dc-section dc-bg-aqua">
+        <div class="dc-container">
+          <Reveal>
+            <SectionHeading
+              eyebrow="Услуги"
+              title="Что можно сделать у этого врача"
+              lead="Цены — за единицу работы. Итоговую сумму врач называет после осмотра."
+            />
+          </Reveal>
+          <div class="dc-catalog-grid">
+            {services.map((page, i) => {
+              const category = categories.find((c) => c.data.slug === page.data.category);
+              const price = prices.find((p) => p.data.slug === page.data.category);
+              /* Позиции для карточки берём из самой услуги, а если их нет —
+                 из первой группы прайса по её направлению. */
+              const items =
+                page.data.prices.length > 0
+                  ? page.data.prices
+                  : (price?.data.groups[0]?.items ?? []);
+              return (
+                <Reveal delay={i * 70}>
+                  <ServiceCatalogCard
+                    title={page.data.title}
+                    description={page.data.lead}
+                    icon={category?.data.icon ?? 'sparkles'}
+                    items={items}
+                    href={withBase(`uslugi/${page.id}`)}
+                  />
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="dc-section--tight dc-bg-white">
+    <div class="dc-container">
+      <Reveal>
+        <div class="dc-doc-page__foot">
+          <p>
+            Приём по записи: {clinic.scheduleLong}. {clinic.address.locality},
+            {' '}{clinic.address.street}.
+          </p>
+          <div class="dc-actions">
+            <Button variant="primary" size="lg" data-open="dc-book">Записаться на приём</Button>
+            <Button variant="ghost" size="lg" href={doctorsHref}>Все врачи</Button>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .dc-doc-page__actions,
+  .dc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .dc-doc-page__top {
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .dc-doc-page__top {
+      grid-template-columns: minmax(260px, 0.75fr) 1.25fr;
+      gap: var(--space-8);
+    }
+  }
+  .dc-doc-page__body {
+    display: grid;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+  .dc-doc-page__about {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .dc-doc-page__about h2,
+  .dc-panel h2 {
+    font-size: var(--type-h3);
+  }
+  .dc-doc-page__about p {
+    color: var(--text-body);
+    max-width: min(var(--measure), 100%);
+  }
+  .dc-doc-page__extra {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+  }
+
+  .dc-panel {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-quiet);
+    border: 1px solid var(--line-hairline);
+  }
+  .dc-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .dc-checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    color: var(--text-body);
+  }
+  .dc-checklist :global(svg) {
+    flex: 0 0 auto;
+    margin-top: 3px;
+  }
+
+  .dc-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+  }
+  .dc-timeline li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--line-hairline);
+  }
+  .dc-timeline li:last-child {
+    border-bottom: 0;
+  }
+  .dc-timeline__year {
+    flex: 0 0 72px;
+    font-family: var(--font-display);
+    font-weight: var(--fw-black);
+    color: var(--text-accent);
+  }
+  .dc-timeline__text {
+    flex: 1 1 240px;
+    color: var(--text-body);
+  }
+
+  .dc-catalog-grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-auto-rows: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  }
+
+  .dc-container--aside {
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .dc-container--aside {
+      grid-template-columns: minmax(280px, 0.8fr) 1.2fr;
+      gap: var(--space-8);
+    }
+  }
+  :global(.dc-aside-heading .dc-heading__title) {
+    font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+    overflow-wrap: anywhere;
+  }
+
+  .dc-doc-page__foot {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+  }
+  .dc-doc-page__foot p {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+  }
+
+  .dc-bg-white {
+    background: var(--dc-white);
+  }
+  .dc-bg-warm {
+    background: var(--surface-warm);
+  }
+  .dc-bg-aqua {
+    background: var(--grad-aqua);
+  }
+</style>

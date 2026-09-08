@@ -1,0 +1,418 @@
+---
+/**
+ * Страница одной услуги. Одна вёрстка на все услуги — содержимое приходит
+ * из коллекции service-pages, один JSON на услугу.
+ *
+ * Все блоки, кроме заголовка и лида, необязательные: если в JSON нет
+ * `steps` или `faq`, соответствующей секции на странице просто не будет.
+ * Шаблон для заполнения — src/content/service-pages/_template.json.
+ */
+import type { GetStaticPaths } from 'astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+import PageLayout from '../../layouts/PageLayout.astro';
+import Reveal from '../../components/core/Reveal.astro';
+import Button from '../../components/core/Button.astro';
+import Icon from '../../components/core/Icon.astro';
+import SectionHeading from '../../components/core/SectionHeading.astro';
+import PriceTable from '../../components/content/PriceTable.astro';
+import FaqAccordion from '../../components/content/FaqAccordion.astro';
+import TrustBar from '../../components/content/TrustBar.astro';
+import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
+import { clinic } from '../../data/site';
+import { withBase } from '../../lib/asset';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const pages = await getCollection('service-pages');
+  return pages.map((page) => ({ params: { slug: page.id }, props: { page } }));
+};
+
+interface Props {
+  page: CollectionEntry<'service-pages'>;
+}
+
+const { page } = Astro.props as unknown as Props;
+const s = page.data;
+
+const categories = await getCollection('service-categories');
+const category = categories.find((c) => c.data.slug === s.category);
+const trust = (await getCollection('trust')).sort((a, b) => a.data.order - b.data.order);
+
+const pricelistHref = withBase('pricelist');
+
+/** Короткие факты в шапке — показываем только заполненные */
+const facts = [
+  s.price && { icon: 'wallet', label: 'Цена', value: s.price, note: s.priceNote },
+  s.duration && { icon: 'clock', label: 'Сроки', value: s.duration },
+  s.warranty && { icon: 'shield-check', label: 'Гарантия', value: s.warranty },
+].filter(Boolean) as { icon: string; label: string; value: string; note?: string }[];
+---
+
+<PageLayout
+  title={s.seoTitle ?? `${s.title} — цена в стоматологии «Дентал Круиз», м. Полежаевская`}
+  description={s.seoDescription ?? `${s.title}${s.price ? ` — ${s.price}` : ''}. ${s.lead}`}
+  path={`/uslugi/${page.id}`}
+  eyebrow={category?.data.title ?? 'Услуги'}
+  heading={s.title}
+  lead={s.lead}
+  breadcrumbs={[
+    { label: 'Прайс-лист', href: pricelistHref },
+    ...(category ? [{ label: category.data.title, href: `${pricelistHref}#${category.data.slug}` }] : []),
+    { label: s.title },
+  ]}
+>
+  <div slot="head-extra" class="dc-service__actions">
+    <Button variant="primary" size="lg" data-open="dc-book">
+      <Icon slot="icon" name="calendar" size={20} />
+      Записаться на консультацию
+    </Button>
+    <Button variant="secondary" size="lg" href={clinic.phoneHref}>
+      <Icon slot="icon" name="phone" size={20} />
+      {clinic.phone}
+    </Button>
+  </div>
+
+  {
+    facts.length > 0 && (
+      <section class="dc-section--tight dc-bg-white">
+        <div class="dc-container">
+          <Reveal>
+            <ul class="dc-facts-row" role="list">
+              {facts.map((fact) => (
+                <li>
+                  <span class="dc-facts-row__icon">
+                    <Icon name={fact.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
+                  </span>
+                  <span class="dc-facts-row__body">
+                    <span class="dc-facts-row__label">{fact.label}</span>
+                    <span class="dc-facts-row__value">{fact.value}</span>
+                    {fact.note && <span class="dc-facts-row__note">{fact.note}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    (s.includes.length > 0 || s.indications.length > 0) && (
+      <section class="dc-section dc-bg-white">
+        <div class="dc-container dc-two-col">
+          {s.includes.length > 0 && (
+            <Reveal>
+              <div class="dc-panel">
+                <h2>Что входит в цену</h2>
+                <ul class="dc-checklist" role="list">
+                  {s.includes.map((item) => (
+                    <li>
+                      <Icon name="check" size={18} strokeWidth={2.6} color="var(--text-accent)" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
+          )}
+
+          {s.indications.length > 0 && (
+            <Reveal delay={90}>
+              <div class="dc-panel dc-panel--quiet">
+                <h2>Когда подходит</h2>
+                <ul class="dc-checklist" role="list">
+                  {s.indications.map((item) => (
+                    <li>
+                      <Icon name="check" size={18} strokeWidth={2.6} color="var(--text-accent)" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    s.steps.length > 0 && (
+      <section class="dc-section dc-bg-warm">
+        <div class="dc-container">
+          <Reveal>
+            <SectionHeading eyebrow="Как проходит" title="Этапы работы" />
+          </Reveal>
+          <ol class="dc-steps" role="list">
+            {s.steps.map((step, i) => (
+              <Reveal as="li" delay={i * 70}>
+                <div class="dc-step">
+                  <span class="dc-step__num">{i + 1}</span>
+                  <h3>{step.title}</h3>
+                  <p>{step.text}</p>
+                </div>
+              </Reveal>
+            ))}
+          </ol>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    s.prices.length > 0 && (
+      <section class="dc-section dc-bg-white">
+        <div class="dc-container dc-container--aside">
+          <Reveal>
+            <div class="dc-aside-col">
+              <SectionHeading
+                class="dc-aside-heading"
+                eyebrow="Цены"
+                title="Сколько это стоит"
+                lead="Итоговую сумму врач называет после осмотра — до начала лечения и без доплат по ходу."
+              />
+              <Button variant="secondary" href={`${pricelistHref}#${s.category}`}>
+                Весь раздел прайса
+              </Button>
+            </div>
+          </Reveal>
+          <Reveal delay={90}>
+            <div class="dc-panel">
+              <PriceTable items={s.prices} />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="dc-section dc-bg-aqua">
+    <div class="dc-container dc-two-col">
+      <Reveal>
+        <PhotoPlaceholder label={s.photoLabel} src={s.photo} alt={s.title} ratio="4 / 3" />
+      </Reveal>
+      <Reveal delay={90}>
+        <div class="dc-panel">
+          <h2>Почему у нас дешевле</h2>
+          <p>
+            Коронки, виниры и протезы делает зуботехническая лаборатория клиники — с 2013 года и в
+            том же здании, где ведут приём врачи. Между вами и техником нет подрядчика с наценкой, а
+            правки по форме и цвету вносятся на месте, часто в тот же визит.
+          </p>
+          <div class="dc-actions">
+            <Button variant="primary" size="lg" data-open="dc-book">Записаться на приём</Button>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  {
+    s.faq.length > 0 && (
+      <section class="dc-section dc-bg-cool">
+        <div class="dc-container dc-container--aside">
+          <Reveal>
+            <SectionHeading
+              class="dc-aside-heading"
+              eyebrow="Вопросы"
+              title={`Что спрашивают про «${s.title.toLowerCase()}»`}
+              lead="Если вашего вопроса тут нет — задайте его администратору по телефону."
+            />
+          </Reveal>
+          <Reveal delay={90}>
+            <FaqAccordion items={s.faq.map((item, i) => ({ id: `svc-${i}`, q: item.q, a: item.a }))} />
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="dc-section--tight dc-bg-white">
+    <div class="dc-container">
+      <Reveal>
+        <TrustBar items={trust.map((t) => t.data)} />
+      </Reveal>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .dc-service__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .dc-facts-row {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .dc-facts-row li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-facts-row__icon {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-facts-row__body {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+  .dc-facts-row__label {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-facts-row__value {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: var(--fw-black);
+    color: var(--text-strong);
+  }
+  .dc-facts-row__note {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+
+  .dc-panel {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+    padding: var(--space-8);
+    border-radius: var(--radius-xl);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+    height: 100%;
+  }
+  .dc-panel--quiet {
+    background: var(--surface-quiet);
+  }
+  .dc-panel h2 {
+    font-size: var(--type-h3);
+  }
+  .dc-panel p {
+    color: var(--text-body);
+    max-width: min(var(--measure), 100%);
+  }
+
+  .dc-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .dc-checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    color: var(--text-body);
+  }
+  .dc-checklist :global(svg) {
+    flex: 0 0 auto;
+    margin-top: 3px;
+  }
+
+  /* 230px, а не 260: при четырёх этапах четвёртый иначе уезжал в свой ряд */
+  .dc-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-5);
+    grid-auto-rows: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  }
+  .dc-step {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    height: 100%;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-step__num {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+    font-family: var(--font-display);
+    font-weight: var(--fw-black);
+    color: var(--text-accent);
+  }
+  .dc-step h3 {
+    font-size: var(--type-h4);
+  }
+  .dc-step p {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+  }
+
+  .dc-two-col {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    align-items: start;
+  }
+  .dc-container--aside {
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .dc-container--aside {
+      grid-template-columns: minmax(280px, 0.8fr) 1.2fr;
+      gap: var(--space-8);
+    }
+  }
+  .dc-aside-col {
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
+    min-width: 0;
+  }
+  :global(.dc-aside-heading .dc-heading__title) {
+    font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+    overflow-wrap: anywhere;
+  }
+
+  .dc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .dc-bg-white {
+    background: var(--dc-white);
+  }
+  .dc-bg-warm {
+    background: var(--surface-warm);
+  }
+  .dc-bg-cool {
+    background: var(--surface-cool);
+  }
+  .dc-bg-aqua {
+    background: var(--grad-aqua);
+  }
+</style>
