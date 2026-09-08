@@ -4,8 +4,6 @@
  * Перенесено из Ds2_2d9e23.Footer.
  */
 import BrandIcon from '../core/BrandIcon.astro';
-import Icon from '../core/Icon.astro';
-import YandexEmbed from '../content/YandexEmbed.astro';
 import { clinic, navLinks } from '../../data/site';
 import { withBase } from '../../lib/asset';
 
@@ -25,27 +23,6 @@ const socials = [
 ---
 
 <footer class="dc-footer">
-  <div class="dc-footer__map">
-    <div class="dc-footer__map-text">
-      <h2>Как до нас добраться</h2>
-      <p>
-        <Icon name="map-pin" size={18} color="var(--dc-turquoise)" />
-        {clinic.address.locality}, {clinic.address.street}
-      </p>
-      <p class="dc-footer__map-note">{clinic.metroNote}</p>
-      <a href={clinic.links.yandexPin} target="_blank" rel="noopener" class="dc-footer__map-link">
-        <Icon name="navigation" size={16} />
-        Построить маршрут
-      </a>
-    </div>
-    <YandexEmbed
-      src={clinic.links.yandexMapWidget}
-      title="Дентал Круиз на Яндекс Картах"
-      height={220}
-      class="dc-footer__map-embed"
-    />
-  </div>
-
   <div class="dc-footer__grid">
     <div class="dc-footer__brand">
       <img
@@ -120,63 +97,6 @@ const socials = [
     color: var(--text-on-dark);
     padding: var(--section-y-tight) var(--gutter) var(--space-8);
   }
-  .dc-footer__map {
-    max-width: var(--container);
-    margin: 0 auto var(--space-12);
-    display: grid;
-    gap: var(--space-6);
-    align-items: center;
-    padding-bottom: var(--space-8);
-    border-bottom: 1px solid var(--line-on-dark);
-    grid-template-columns: 1fr;
-  }
-  @media (min-width: 700px) {
-    .dc-footer__map {
-      grid-template-columns: minmax(220px, 0.9fr) 1.4fr;
-    }
-  }
-  .dc-footer__map-text {
-    display: grid;
-    gap: var(--space-2);
-    align-content: start;
-  }
-  .dc-footer__map-text h2 {
-    font-family: var(--font-body);
-    font-size: var(--type-eyebrow);
-    font-weight: var(--fw-bold);
-    letter-spacing: var(--ls-eyebrow);
-    color: var(--text-on-dark-muted);
-    margin-bottom: var(--space-1);
-  }
-  .dc-footer__map-text p {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-on-dark);
-    font-weight: var(--fw-semibold);
-  }
-  .dc-footer__map-note {
-    color: var(--text-on-dark-muted) !important;
-    font-weight: var(--fw-regular) !important;
-    font-size: var(--type-small);
-  }
-  .dc-footer__map-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: var(--space-2);
-    color: var(--dc-turquoise);
-    font-weight: var(--fw-bold);
-    font-size: var(--type-small);
-    text-decoration: none;
-  }
-  .dc-footer__map-link:hover {
-    text-decoration: underline;
-  }
-  .dc-footer__map :global(.dc-footer__map-embed) {
-    border-radius: var(--radius-lg);
-  }
-
   .dc-footer__grid {
     max-width: var(--container);
     margin: 0 auto;

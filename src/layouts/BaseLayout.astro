@@ -4,6 +4,7 @@ import Seo from '../components/seo/Seo.astro';
 import Header from '../components/layout/Header.astro';
 import BurgerMenu from '../components/layout/BurgerMenu.astro';
 import Footer from '../components/layout/Footer.astro';
+import FooterMap from '../components/layout/FooterMap.astro';
 import AppointmentModal from '../components/forms/AppointmentModal.astro';
 import LicenseDrawer from '../components/content/LicenseDrawer.astro';
 import ScrollToTop from '../components/core/ScrollToTop.astro';
@@ -62,6 +63,7 @@ const asset = withBase;
       <slot />
     </main>
 
+    <FooterMap />
     <Footer />
 
     <AppointmentModal />
