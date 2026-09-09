@@ -44,7 +44,7 @@ const many = photos.length > 1;
     <PhotoPlaceholder label={label} ratio={ratio} radius={radius} cover={cover} class={className} />
   ) : (
     <div
-      class:list={['dc-gal', cover && 'dc-gal--cover', className]}
+      class:list={['dc-gal', cover && 'dc-gal--cover', many && 'dc-gal--swipeable', className]}
       style={`--dc-gal-ratio:${ratio};--dc-gal-radius:${radius}`}
       data-gallery
       data-interval={many ? interval : 0}
@@ -100,6 +100,13 @@ const many = photos.length > 1;
     overflow: hidden;
     /* skeleton, пока кадр не догрузился */
     background: var(--grad-shallow);
+  }
+  .dc-gal--swipeable {
+    cursor: grab;
+    touch-action: pan-y;
+  }
+  .dc-gal--swipeable:active {
+    cursor: grabbing;
   }
   .dc-gal--cover {
     height: 100%;
@@ -249,6 +256,46 @@ const many = photos.length > 1;
     gallery.addEventListener('mouseleave', start);
     gallery.addEventListener('focusin', stop);
     document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    // Свайп/перетаскивание по фото — тот же переход, что у стрелок.
+    // stopPropagation нужен, чтобы жест не улетал дальше вверх: галерея
+    // иногда лежит внутри другой карусели (например, карточки преимуществ),
+    // и без этого один свайп переключал бы сразу оба уровня.
+    let dragging = false;
+    let horizontal = false;
+    let startX = 0;
+    let startY = 0;
+
+    gallery.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      horizontal = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      stop();
+      e.stopPropagation();
+    });
+    gallery.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (!horizontal && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) horizontal = true;
+      if (horizontal) e.preventDefault();
+      e.stopPropagation();
+    });
+    const endDrag = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      const dx = e.clientX - startX;
+      if (horizontal && Math.abs(dx) > 40) show(current + (dx < 0 ? 1 : -1));
+      start();
+      e.stopPropagation();
+    };
+    gallery.addEventListener('pointerup', endDrag);
+    gallery.addEventListener('pointercancel', (e) => {
+      dragging = false;
+      start();
+      e.stopPropagation();
+    });
 
     start();
   });
