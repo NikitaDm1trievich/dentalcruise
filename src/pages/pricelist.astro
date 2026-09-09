@@ -49,10 +49,6 @@ const sections = categories
             : undefined,
         })),
       })),
-      /** Страницы услуг этого направления — ссылки под таблицей */
-      pages: servicePages
-        .filter((page) => page.data.category === category.data.slug)
-        .sort(byOrder),
     };
   })
   .filter((section) => section.price);
@@ -124,17 +120,6 @@ const total = sections.reduce(
                   <PriceTable title={group.title} items={group.items} />
                 ))}
               </div>
-
-              {section.pages.length > 0 && (
-                <div class="dc-price-block__links">
-                  {section.pages.map((page) => (
-                    <a href={withBase(`uslugi/${page.id}`)} class="dc-price-block__link">
-                      Подробно об услуге: {page.data.title}
-                      <Icon name="arrow-right" size={16} />
-                    </a>
-                  ))}
-                </div>
-              )}
             </section>
           </Reveal>
         ))
@@ -251,22 +236,6 @@ const total = sections.reduce(
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
     align-items: start;
   }
-  .dc-price-block__links {
-    display: grid;
-    gap: var(--space-2);
-    justify-items: start;
-    padding-top: var(--space-2);
-    border-top: 1px solid var(--line-hairline);
-  }
-  .dc-price-block__link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: var(--fw-bold);
-    color: var(--text-accent);
-    text-decoration: none;
-  }
-
   .dc-price-page__foot {
     display: grid;
     gap: var(--space-6);
