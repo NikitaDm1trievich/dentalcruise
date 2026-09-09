@@ -98,8 +98,10 @@ const asset = withBase;
       // (видео в hero, шрифты), дольше него человека не держим.
       const preloader = document.querySelector<HTMLElement>('[data-preloader]');
       if (preloader) {
-        const MIN_MS = 1500;
-        const MAX_MS = 3200;
+        // Анимация играет один раз и замирает ровно на 2.0 с — держим слой
+        // до этой отметки, чтобы волна доигрывала целиком.
+        const MIN_MS = 2000;
+        const MAX_MS = 3500;
         const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const started =
           (window as Window & { __dcPreloaderStart?: number }).__dcPreloaderStart ??

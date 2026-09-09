@@ -1,8 +1,9 @@
 ---
 /**
- * Заставка на время загрузки страницы: гипсовая модель челюсти, зубы
- * поднимаются волной и возвращаются на место. Прячется из BaseLayout —
- * не раньше, чем цикл анимации доиграет до конца (--dc-preloader-cycle).
+ * Заставка на время загрузки: гипсовая модель челюсти, зубы поднимаются
+ * волной, оборачиваются и садятся обратно в лунки. Анимация играет один
+ * раз и замирает на 2.0 с (1.74 с движения + 0.26 с задержки последнего
+ * зуба) — BaseLayout держит слой до этой отметки и растворяет его.
  */
 ---
 
@@ -30,7 +31,7 @@
         </g>
         <g transform="translate(163 207) rotate(-24) scale(1)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.07s; --drift: -30.1px; --turn: -18deg">
+          <g class="tooth-flight" style="--delay: 0.02s; --drift: -30.1px; --turn: -18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -40,7 +41,7 @@
         </g>
         <g transform="translate(166 242) rotate(-19) scale(0.94)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.14s; --drift: -29.5px; --turn: -18deg">
+          <g class="tooth-flight" style="--delay: 0.04s; --drift: -29.5px; --turn: -18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -50,7 +51,7 @@
         </g>
         <g transform="translate(183 274) rotate(-16) scale(0.85)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.21s; --drift: -25.7px; --turn: -18deg">
+          <g class="tooth-flight" style="--delay: 0.06s; --drift: -25.7px; --turn: -18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -60,7 +61,7 @@
         </g>
         <g transform="translate(214 298) rotate(-10) scale(0.76)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.28s; --drift: -18.9px; --turn: -18deg">
+          <g class="tooth-flight" style="--delay: 0.08s; --drift: -18.9px; --turn: -18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -70,7 +71,7 @@
         </g>
         <g transform="translate(248 312) rotate(-5) scale(0.7)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.35s; --drift: -11.4px; --turn: -18deg">
+          <g class="tooth-flight" style="--delay: 0.10s; --drift: -11.4px; --turn: -18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -80,7 +81,7 @@
         </g>
         <g transform="translate(283 318) rotate(-2) scale(0.67)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.42s; --drift: -3.7px; --turn: -18deg">
+          <g class="tooth-flight" style="--delay: 0.12s; --drift: -3.7px; --turn: -18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -90,7 +91,7 @@
         </g>
         <g transform="translate(318 318) rotate(2) scale(0.67)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.49s; --drift: 4.0px; --turn: 18deg">
+          <g class="tooth-flight" style="--delay: 0.14s; --drift: 4.0px; --turn: 18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -100,7 +101,7 @@
         </g>
         <g transform="translate(353 312) rotate(5) scale(0.7)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.56s; --drift: 11.7px; --turn: 18deg">
+          <g class="tooth-flight" style="--delay: 0.16s; --drift: 11.7px; --turn: 18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -110,7 +111,7 @@
         </g>
         <g transform="translate(387 298) rotate(10) scale(0.76)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.63s; --drift: 19.1px; --turn: 18deg">
+          <g class="tooth-flight" style="--delay: 0.18s; --drift: 19.1px; --turn: 18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -120,7 +121,7 @@
         </g>
         <g transform="translate(418 274) rotate(16) scale(0.85)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.70s; --drift: 26.0px; --turn: 18deg">
+          <g class="tooth-flight" style="--delay: 0.20s; --drift: 26.0px; --turn: 18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -130,7 +131,7 @@
         </g>
         <g transform="translate(435 242) rotate(19) scale(0.94)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.77s; --drift: 29.7px; --turn: 18deg">
+          <g class="tooth-flight" style="--delay: 0.22s; --drift: 29.7px; --turn: 18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -140,7 +141,7 @@
         </g>
         <g transform="translate(438 207) rotate(24) scale(1)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.84s; --drift: 30.4px; --turn: 18deg">
+          <g class="tooth-flight" style="--delay: 0.24s; --drift: 30.4px; --turn: 18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -150,7 +151,7 @@
         </g>
         <g transform="translate(425 174) rotate(28) scale(1)">
           <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
-          <g class="tooth-flight" style="--delay: 0.91s; --drift: 27.5px; --turn: 18deg">
+          <g class="tooth-flight" style="--delay: 0.26s; --drift: 27.5px; --turn: 18deg">
             <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
             <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
@@ -230,14 +231,14 @@
   .loader-content { position: relative; width: min(100%, 700px); padding: 52px 20px; text-align: center; }
   .sculpture { width: min(100%, 570px); margin: 20px auto -10px; }
   .dental-model { display: block; width: 100%; overflow: visible; }
-  .ground-shadow { fill: #0E5566; opacity: .14; filter: blur(12px); transform-origin: 300px 370px; animation: shadow-breathe 5.8s ease-in-out infinite; }
-  .jaw { animation: model-float 5.8s ease-in-out infinite; }
+  .ground-shadow { fill: #0E5566; opacity: .14; filter: blur(12px); transform-origin: 300px 370px; animation: shadow-breathe 2s ease-in-out both; }
+  .jaw { animation: model-float 2s ease-in-out both; }
   .plaster-side { fill: #d5e2e2; stroke: #c2d5d7; stroke-width: 1; }
   .plaster-top { fill: #FAF7F5; stroke: #FFFFFF; stroke-width: 2; }
   .plaster-inner { fill: #9bbdc1; opacity: .65; }
   .plaster-edge { stroke: #FFFFFF; stroke-width: 2; opacity: .65; }
   .socket { fill: #007C88; opacity: .58; }
-  .tooth-flight { transform-box: fill-box; transform-origin: center; animation: tooth-dance 5.8s cubic-bezier(.45,0,.2,1) infinite; animation-delay: var(--delay); }
+  .tooth-flight { transform-box: fill-box; transform-origin: center; animation: tooth-dance 1.74s cubic-bezier(.45,0,.2,1) both; animation-delay: var(--delay); }
   .tooth-side { fill: #e5eeec; stroke: #b6cccb; stroke-width: .7; }
   .tooth-front { fill: #cfdfdd; }
   .tooth-crown { fill: #FFFFFF; stroke: #d5e5e0; stroke-width: 1; }
@@ -245,7 +246,7 @@
   .tooth-shine { stroke: white; stroke-width: 2; stroke-linecap: round; }
   .loader-title { margin: 0; font-family: var(--font-display); font-weight: var(--fw-black); font-size: clamp(26px, 4.6vw, 38px); line-height: 1.25; letter-spacing: var(--ls-display); color: var(--text-strong); }
   .loader-progress { width: 108px; height: 2px; margin: 29px auto 16px; overflow: hidden; background: #E8F5F1; border-radius: 2px; }
-  .loader-progress span { display: block; height: 100%; width: 40%; background: #00B189; animation: progress-travel 2.4s ease-in-out infinite; }
+  .loader-progress span { display: block; height: 100%; width: 40%; background: #00B189; animation: progress-travel 2s ease-in-out both; }
   .loader-orbit { position: absolute; z-index: -1; width: min(82vw, 950px); aspect-ratio: 1; border: 1px solid #007C8810; border-radius: 50%; pointer-events: none; }
   .orbit-one { transform: translate(-37%, -5%); }
   .orbit-two { transform: translate(37%, 5%); }
