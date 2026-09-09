@@ -15,8 +15,8 @@ const row = [...brands, ...brands];
 
 <div class="dc-marquee">
   {eyebrow && <span class="dc-marquee__eyebrow">{eyebrow}</span>}
-  <div class="dc-marquee__viewport">
-    <div class="dc-marquee__row" style={`animation-duration:${speed}s`}>
+  <div class="dc-marquee__viewport" data-marquee-viewport tabindex="0" role="group" aria-label="Поставщики материалов, лента прокручивается вручную">
+    <div class="dc-marquee__row" style={`animation-duration:${speed}s`} data-marquee-row>
       {
         row.map((brand, i) => (
           <span class="dc-marquee__item" title={brand.note ?? brand.name} aria-hidden={i >= brands.length}>
@@ -44,9 +44,19 @@ const row = [...brands, ...brands];
   }
   .dc-marquee__viewport {
     position: relative;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    cursor: grab;
+    scrollbar-width: none;
     mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .dc-marquee__viewport::-webkit-scrollbar {
+    display: none;
+  }
+  .dc-marquee__viewport.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
   }
   .dc-marquee__row {
     display: flex;
@@ -56,6 +66,10 @@ const row = [...brands, ...brands];
     animation-name: dc-marquee;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
+  }
+  /* Пока пользователь листает ленту сам, автопрокрутка не мешает */
+  .dc-marquee__row.is-paused {
+    animation-play-state: paused;
   }
   @keyframes dc-marquee {
     from {
@@ -87,3 +101,46 @@ const row = [...brands, ...brands];
     width: auto;
   }
 </style>
+
+<script>
+  // Автопрокрутка не должна мешать: как только пользователь листает ленту
+  // сам (мышью, тачем или колесом), анимация ставится на паузу и
+  // возвращается только после того, как он оставит ленту в покое.
+  document.querySelectorAll<HTMLElement>('[data-marquee-viewport]').forEach((viewport) => {
+    const row = viewport.querySelector<HTMLElement>('[data-marquee-row]');
+    if (!row) return;
+
+    let resumeTimer: number | undefined;
+    const pause = () => {
+      row.classList.add('is-paused');
+      window.clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(() => row.classList.remove('is-paused'), 2000);
+    };
+
+    viewport.addEventListener('scroll', pause, { passive: true });
+
+    let dragging = false;
+    let startX = 0;
+    let startScroll = 0;
+
+    viewport.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      startX = e.clientX;
+      startScroll = viewport.scrollLeft;
+      viewport.classList.add('is-dragging');
+      viewport.setPointerCapture(e.pointerId);
+      pause();
+    });
+    viewport.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      viewport.scrollLeft = startScroll - (e.clientX - startX);
+    });
+    const stopDrag = (e: PointerEvent) => {
+      dragging = false;
+      viewport.classList.remove('is-dragging');
+      if (viewport.hasPointerCapture(e.pointerId)) viewport.releasePointerCapture(e.pointerId);
+    };
+    viewport.addEventListener('pointerup', stopDrag);
+    viewport.addEventListener('pointercancel', stopDrag);
+  });
+</script>

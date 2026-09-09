@@ -150,7 +150,10 @@ const total = sections.reduce(
 <style>
   .dc-filter {
     position: sticky;
-    top: var(--header-h);
+    /* Шапка на прокрученной странице ниже, чем --header-h (тот держит
+       высоту непрокрученного состояния) — фиксируем фактическую высоту,
+       иначе между шапкой и панелью фильтра остаётся видимая щель. */
+    top: 60px;
     z-index: 20;
     padding: var(--space-3) var(--gutter);
     background: color-mix(in srgb, var(--dc-white) 88%, transparent);
@@ -205,8 +208,9 @@ const total = sections.reduce(
     background: var(--surface-card);
     border: 1px solid var(--line-hairline);
     box-shadow: var(--shadow-sm);
-    /* Якорь не должен уезжать под шапку и панель фильтра */
-    scroll-margin-top: calc(var(--header-h) + 72px);
+    /* Глобальный scroll-padding-top на <html> уже учитывает шапку —
+       здесь добавляем только высоту липкой панели фильтра. */
+    scroll-margin-top: 64px;
   }
   .dc-price-block__head {
     display: grid;
@@ -280,6 +284,8 @@ const total = sections.reduce(
         // Адрес отражает выбор: ссылкой можно поделиться
         const url = value === 'all' ? window.location.pathname : `#${value}`;
         history.replaceState(null, '', url);
+        // Выбранная кнопка не должна оставаться за краем прокручиваемой полосы
+        chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       });
     }
 
