@@ -4,7 +4,7 @@ import Seo from '../components/seo/Seo.astro';
 import Header from '../components/layout/Header.astro';
 import BurgerMenu from '../components/layout/BurgerMenu.astro';
 import Footer from '../components/layout/Footer.astro';
-import FooterMap from '../components/layout/FooterMap.astro';
+import ContactsCta from '../components/layout/ContactsCta.astro';
 import AppointmentModal from '../components/forms/AppointmentModal.astro';
 import LicenseDrawer from '../components/content/LicenseDrawer.astro';
 import ScrollToTop from '../components/core/ScrollToTop.astro';
@@ -18,9 +18,19 @@ interface Props {
   overHero?: boolean;
   noindex?: boolean;
   faq?: { q: string; a: string }[];
+  /** На странице контактов этот блок уже есть в основном содержимом */
+  hideContactsCta?: boolean;
 }
 
-const { title, description, path = '/', overHero = false, noindex = false, faq } = Astro.props;
+const {
+  title,
+  description,
+  path = '/',
+  overHero = false,
+  noindex = false,
+  faq,
+  hideContactsCta = false,
+} = Astro.props;
 const asset = withBase;
 ---
 
@@ -63,7 +73,7 @@ const asset = withBase;
       <slot />
     </main>
 
-    <FooterMap />
+    {!hideContactsCta && <ContactsCta />}
     <Footer />
 
     <AppointmentModal />

@@ -1,0 +1,73 @@
+---
+/**
+ * Блок «Приезжайте или позвоните»: карточка контактов + карта.
+ * Тот же блок, что на главной в разделе #contacts — здесь вынесен в
+ * компонент, чтобы дублировать его на каждой странице перед подвалом.
+ */
+import SectionHeading from '../core/SectionHeading.astro';
+import Reveal from '../core/Reveal.astro';
+import Button from '../core/Button.astro';
+import Icon from '../core/Icon.astro';
+import PlaceCard from '../content/PlaceCard.astro';
+import YandexEmbed from '../content/YandexEmbed.astro';
+import { clinic } from '../../data/site';
+
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+}
+
+const {
+  eyebrow = 'Контакты',
+  title = 'Приезжайте или позвоните',
+  lead = '5 минут пешком от метро Полежаевская: Москва, 4-я Магистральная, 5с1, 2 этаж. Пн–сб 10:00–22:00, вс — выходной. Позвоните — администратор подберёт время, или оставьте заявку, и мы перезвоним сами.',
+} = Astro.props;
+---
+
+<section id="contacts" class="dc-section dc-contacts-cta">
+  <div class="dc-container">
+    <Reveal>
+      <SectionHeading eyebrow={eyebrow} title={title} lead={lead} />
+    </Reveal>
+
+    <Reveal delay={90}>
+      <div class="dc-contacts-cta__actions">
+        <Button variant="primary" size="lg" data-open="dc-book">
+          <Icon slot="icon" name="calendar" size={20} />
+          Записаться на приём
+        </Button>
+      </div>
+    </Reveal>
+
+    <div class="dc-contacts-cta__grid">
+      <Reveal delay={140}>
+        <PlaceCard />
+      </Reveal>
+      <Reveal delay={220}>
+        <YandexEmbed
+          src={clinic.links.yandexMapWidget}
+          title="Дентал Круиз на Яндекс Картах"
+          height={400}
+          linkHref={clinic.links.yandexOrg}
+          linkLabel={`${clinic.address.streetShort} · ${clinic.metro} — открыть в Яндекс Картах`}
+        />
+      </Reveal>
+    </div>
+  </div>
+</section>
+
+<style>
+  .dc-contacts-cta {
+    background: var(--grad-aqua);
+  }
+  .dc-contacts-cta__actions {
+    display: flex;
+  }
+  .dc-contacts-cta__grid {
+    display: grid;
+    gap: var(--space-6);
+    align-items: stretch;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  }
+</style>

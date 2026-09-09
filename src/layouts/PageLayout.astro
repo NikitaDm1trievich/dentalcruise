@@ -21,6 +21,7 @@ interface Props {
   /** Хлебные крошки без «Главная» — она добавляется сама */
   breadcrumbs?: { label: string; href?: string }[];
   noindex?: boolean;
+  hideContactsCta?: boolean;
 }
 
 const {
@@ -32,10 +33,17 @@ const {
   lead,
   breadcrumbs = [],
   noindex = false,
+  hideContactsCta = false,
 } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} path={path} noindex={noindex}>
+<BaseLayout
+  title={title}
+  description={description}
+  path={path}
+  noindex={noindex}
+  hideContactsCta={hideContactsCta}
+>
   <header class="dc-page__top">
     <div class="dc-page__inner">
       <nav class="dc-crumbs" aria-label="Хлебные крошки">
