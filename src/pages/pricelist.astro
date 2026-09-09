@@ -310,6 +310,14 @@ const total = sections.reduce(
       }
     };
 
+    // Выбранная кнопка не должна оставаться за краем прокручиваемой полосы —
+    // нужно и при клике по чипу, и при приходе по ссылке-якорю (с главной,
+    // из блока акции), иначе полоса фильтра остаётся на месте, а контент уезжает.
+    const scrollChipIntoView = (value: string) => {
+      const chip = chips.find((c) => c.dataset.filter === value);
+      chip?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    };
+
     for (const chip of chips) {
       chip.addEventListener('click', () => {
         const value = chip.dataset.filter ?? 'all';
@@ -317,8 +325,7 @@ const total = sections.reduce(
         // Адрес отражает выбор: ссылкой можно поделиться
         const url = value === 'all' ? window.location.pathname : `#${value}`;
         history.replaceState(null, '', url);
-        // Выбранная кнопка не должна оставаться за краем прокручиваемой полосы
-        chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        scrollChipIntoView(value);
       });
     }
 
@@ -329,6 +336,7 @@ const total = sections.reduce(
       if (!value || !chips.some((chip) => chip.dataset.filter === value)) return;
       apply(value);
       document.getElementById(value)?.scrollIntoView();
+      scrollChipIntoView(value);
     };
     applyHash();
     window.addEventListener('hashchange', applyHash);

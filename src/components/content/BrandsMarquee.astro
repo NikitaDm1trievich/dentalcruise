@@ -23,7 +23,7 @@ const row = [...brands, ...brands];
     role="group"
     aria-label="Поставщики материалов, лента прокручивается вручную"
   >
-    <div class="dc-marquee__row" data-marquee-row>
+    <div class="dc-marquee__row" data-marquee-row data-marquee-set-count={brands.length}>
       {
         row.map((brand, i) => (
           <span class="dc-marquee__item" title={brand.note ?? brand.name} aria-hidden={i >= brands.length}>
@@ -51,29 +51,32 @@ const row = [...brands, ...brands];
   }
   .dc-marquee__viewport {
     position: relative;
-    overflow: hidden;
-    cursor: grab;
-    touch-action: pan-y;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    /* Обычный скролл — тачем как страницу, колесом/трекпадом, полосой
+       прокрутки; авто-игра и «бесшовное» зацикливание крутят тот же
+       scrollLeft поверх, а не отдельный жест поверх скролла. */
+    -webkit-overflow-scrolling: touch;
     mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   }
-  .dc-marquee__viewport.is-dragging {
-    cursor: grabbing;
+  .dc-marquee__viewport::-webkit-scrollbar {
+    display: none;
   }
   .dc-marquee__row {
     display: flex;
     width: max-content;
     gap: clamp(32px, 6vw, 80px);
     align-items: center;
-    /* Позицию двигает JS (src/components/content/BrandsMarquee.astro скрипт
-       ниже): один и тот же сдвиг обслуживает и автопрокрутку, и перетаскивание
-       мышью/тачем, поэтому лента крутится бесконечно в любую сторону и без
-       швов возвращается к автоигре, а не упирается в край контейнера. */
-    will-change: transform;
   }
   @media (prefers-reduced-motion: reduce) {
+    .dc-marquee__viewport {
+      overflow: visible;
+      mask-image: none;
+      -webkit-mask-image: none;
+    }
     .dc-marquee__row {
-      transform: none !important;
       justify-content: center;
       flex-wrap: wrap;
       width: 100%;
@@ -96,13 +99,13 @@ const row = [...brands, ...brands];
 
 <script>
   /**
-   * Лента крутится сама, но её же можно листать вручную (мышью, тачем,
-   * колесом) в любую сторону — без конца, без швов и без «упора в край»:
-   * позиция — это один и тот же счётчик по модулю ширины одного набора
-   * карточек (набор задублирован в разметке ровно для этого). Автоигра
-   * просто прибавляет к нему постоянную скорость, drag — разницу курсора;
-   * оба крутят одно и то же число, поэтому после отпускания лента без
-   * рывка продолжает катиться дальше сама.
+   * Лента листается как обычный горизонтальный скролл — тачем, трекпадом,
+   * колесом, полосой прокрутки — а не отдельным жестом перетаскивания.
+   * Автопрокрутка просто прибавляет к тому же scrollLeft каждый кадр, а
+   * «бесконечность» держится на том, что список задублирован (в разметке)
+   * и при подходе к любому краю мы молча переносим scrollLeft на ширину
+   * одного набора назад/вперёд — стык совпадает пиксель в пиксель, поэтому
+   * скачка не видно.
    */
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -110,26 +113,49 @@ const row = [...brands, ...brands];
     const row = viewport.querySelector<HTMLElement>('[data-marquee-row]');
     if (!row || reduced) return;
 
-    // Половина ширины ленты — ровно один (недублированный) набор карточек
-    const setWidth = () => row.scrollWidth / 2;
+    // В разметке лежит два набора карточек (см. .astro выше). Если карточек
+    // мало (широкий экран, короткий список поставщиков), двух наборов не
+    // хватает: край прокрутки упирается раньше, чем доедет до точки
+    // «бесшовной» перемотки, и лента залипает. Досклеиваем ещё наборов,
+    // пока по обе стороны от текущей позиции не останется солидный запас.
+    const setCount = Number(row.dataset.marqueeSetCount ?? 1) || 1;
+    const originals = Array.from(row.children).slice(0, setCount);
+    let sets = Math.round(row.children.length / setCount) || 1;
+
+    while ((sets < 3 || row.scrollWidth < viewport.clientWidth * (sets + 2)) && sets < 20) {
+      for (const node of originals) {
+        const clone = node.cloneNode(true) as HTMLElement;
+        // Это чисто декоративный повтор ради бесшовной перемотки —
+        // скринридеру достаточно назвать поставщиков один раз
+        clone.setAttribute('aria-hidden', 'true');
+        row.appendChild(clone);
+      }
+      sets += 1;
+    }
+
+    // Ширина одного набора карточек
+    const setWidth = () => row.scrollWidth / sets;
     // px/сек: время на полный цикл задаётся тем же числом, что раньше шло в animation-duration
     const speedSetting = Number(viewport.dataset.marqueeSpeed ?? 38);
-    const velocity = setWidth() / speedSetting;
 
-    let position = 0;
-    let dragging = false;
     let paused = false;
     let resumeTimer: number | undefined;
     let lastFrame: number | undefined;
+    let programmatic = false;
 
-    const wrap = (value: number, width: number) => {
-      if (width <= 0) return 0;
-      const wrapped = value % width;
-      return wrapped < 0 ? wrapped + width : wrapped;
+    const setScroll = (v: number) => {
+      programmatic = true;
+      viewport.scrollLeft = v;
     };
 
-    const render = () => {
-      row.style.transform = `translate3d(${-position}px, 0, 0)`;
+    // Стартуем на один набор от края: со всех сторон есть запас на перемотку
+    setScroll(setWidth());
+
+    const wrapIfNeeded = () => {
+      const width = setWidth();
+      if (width <= 0) return;
+      if (viewport.scrollLeft >= width * (sets - 1)) setScroll(viewport.scrollLeft - width);
+      else if (viewport.scrollLeft < width) setScroll(viewport.scrollLeft + width);
     };
 
     const pauseAutoplay = () => {
@@ -138,43 +164,18 @@ const row = [...brands, ...brands];
       resumeTimer = window.setTimeout(() => (paused = false), 1800);
     };
 
-    let startX = 0;
-    let startPosition = 0;
-
-    viewport.addEventListener('pointerdown', (e) => {
-      dragging = true;
-      startX = e.clientX;
-      startPosition = position;
-      viewport.classList.add('is-dragging');
-      viewport.setPointerCapture(e.pointerId);
-      pauseAutoplay();
-    });
-    viewport.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      position = wrap(startPosition - (e.clientX - startX), setWidth());
-      render();
-    });
-    const stopDrag = (e: PointerEvent) => {
-      if (!dragging) return;
-      dragging = false;
-      viewport.classList.remove('is-dragging');
-      if (viewport.hasPointerCapture(e.pointerId)) viewport.releasePointerCapture(e.pointerId);
-    };
-    viewport.addEventListener('pointerup', stopDrag);
-    viewport.addEventListener('pointercancel', stopDrag);
-
-    // Колесо/трекпад — тоже листает ленту, а не страницу целиком
     viewport.addEventListener(
-      'wheel',
-      (e) => {
-        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-        if (delta === 0) return;
-        e.preventDefault();
-        position = wrap(position + delta, setWidth());
-        render();
+      'scroll',
+      () => {
+        if (programmatic) {
+          programmatic = false;
+          return;
+        }
+        // Настоящий скролл пользователя — тач, колесо, трекпад, полоса
         pauseAutoplay();
+        wrapIfNeeded();
       },
-      { passive: false },
+      { passive: true },
     );
 
     const tick = (now: number) => {
@@ -182,9 +183,9 @@ const row = [...brands, ...brands];
       const dt = (now - lastFrame) / 1000;
       lastFrame = now;
 
-      if (!dragging && !paused && !document.hidden) {
-        position = wrap(position + velocity * dt, setWidth());
-        render();
+      if (!paused && !document.hidden) {
+        setScroll(viewport.scrollLeft + (setWidth() / speedSetting) * dt);
+        wrapIfNeeded();
       }
       requestAnimationFrame(tick);
     };
