@@ -374,6 +374,16 @@ const clinicPhotos = Array.from(
   .dc-bg-fade-aqua {
     background: linear-gradient(180deg, var(--dc-aqua-tint) 0%, var(--dc-white) 100%);
   }
+  /* Полублок с рассрочкой и консультацией: --section-y-tight на широких
+     экранах разрастается почти до 90px и выглядит непропорционально
+     двум невысоким карточкам. На телефоне тот же отступ уже у нижней
+     границы clamp и смотрится нормально — трогаем только desktop. */
+  @media (min-width: 900px) {
+    #terms {
+      padding-top: var(--space-8);
+      padding-bottom: var(--space-8);
+    }
+  }
 
   .dc-hero__lead {
     margin: var(--space-8) auto 0;

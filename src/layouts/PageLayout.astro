@@ -15,7 +15,7 @@ interface Props {
   title: string;
   description: string;
   path: string;
-  eyebrow: string;
+  eyebrow?: string;
   heading: string;
   lead?: string;
   /** Хлебные крошки без «Главная» — она добавляется сама */
@@ -60,7 +60,7 @@ const {
 
       <Reveal>
         <div class="dc-page__head">
-          <span class="dc-page__eyebrow">{eyebrow}</span>
+          {eyebrow && <span class="dc-page__eyebrow">{eyebrow}</span>}
           <h1 class="dc-page__title">{heading}</h1>
           {lead && <p class="dc-page__lead">{lead}</p>}
           <slot name="head-extra" />

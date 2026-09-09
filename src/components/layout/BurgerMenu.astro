@@ -44,7 +44,7 @@ const pricelistHref = href('pricelist');
           aria-expanded="false"
           aria-controls="burger-services"
         >
-          Услуги
+          Прайс-лист
           <Icon name="chevron-down" size={22} />
         </button>
         <div class="dc-burger__accordion-body" id="burger-services">
@@ -64,7 +64,7 @@ const pricelistHref = href('pricelist');
 
       {
         navLinks
-          .filter((l) => l.href !== '/')
+          .filter((l) => l.href !== '/' && l.href !== '/pricelist')
           .map((link) => (
             <li>
               <a href={href(link.href.replace(/^\//, ''))} data-close>
