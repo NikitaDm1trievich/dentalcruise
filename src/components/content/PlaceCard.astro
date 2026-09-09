@@ -5,6 +5,7 @@ import BrandIcon from '../core/BrandIcon.astro';
 import IconButton from '../core/IconButton.astro';
 import Button from '../core/Button.astro';
 import { clinic } from '../../data/site';
+import { withBase } from '../../lib/asset';
 
 const { max, telegram, yandexOrg } = clinic.links;
 ---
@@ -52,6 +53,17 @@ const { max, telegram, yandexOrg } = clinic.links;
     <Button variant="secondary" size="sm" href={yandexOrg} target="_blank" rel="noopener">
       <Icon slot="icon" name="navigation" size={18} />
       Как добраться
+    </Button>
+    <Button
+      variant="ghost"
+      size="sm"
+      href={withBase('images/map/route-to-clinic.png')}
+      target="_blank"
+      rel="noopener"
+      download="Дентал Круиз — схема проезда.png"
+    >
+      <Icon slot="icon" name="image" size={18} />
+      Схема проезда картинкой
     </Button>
   </div>
 </div>
