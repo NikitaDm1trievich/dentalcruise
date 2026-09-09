@@ -10,6 +10,7 @@ import Icon from '../components/core/Icon.astro';
 import SectionHeading from '../components/core/SectionHeading.astro';
 import PlaceCard from '../components/content/PlaceCard.astro';
 import MetroStations from '../components/core/MetroStations.astro';
+import BrandIcon from '../components/core/BrandIcon.astro';
 import YandexEmbed from '../components/content/YandexEmbed.astro';
 import { clinic } from '../data/site';
 
@@ -57,10 +58,14 @@ const blocks = [
   path="/contacts"
   eyebrow="Контакты"
   heading="Приезжайте или позвоните"
-  lead={`${clinic.metroNote}: ${clinic.address.locality}, ${clinic.address.street}. ${clinic.scheduleLong}.`}
+  lead={`${clinic.address.locality}, ${clinic.address.street}. ${clinic.scheduleLong}.`}
   breadcrumbs={[{ label: 'Контакты' }]}
   hideContactsCta
 >
+  <p slot="head-extra" class="dc-lead-metro">
+    <MetroStations note="5 минут пешком" />
+  </p>
+
   <div slot="head-extra" class="dc-actions">
     <Button variant="primary" size="lg" data-open="dc-book">
       <Icon slot="icon" name="calendar" size={20} />
@@ -141,7 +146,7 @@ const blocks = [
             {
               max && (
                 <li>
-                  <Icon name="message-circle" size={20} color="var(--text-accent)" />
+                  <span class="dc-links__mark"><BrandIcon name="max" size={20} /></span>
                   <a href={max} target="_blank" rel="noopener">
                     Написать в Max
                   </a>
@@ -151,7 +156,7 @@ const blocks = [
             {
               vk && (
                 <li>
-                  <Icon name="users" size={20} color="var(--text-accent)" />
+                  <span class="dc-links__mark"><BrandIcon name="vk" size={20} /></span>
                   <a href={vk} target="_blank" rel="noopener">
                     Группа ВКонтакте
                   </a>
@@ -183,6 +188,10 @@ const blocks = [
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-4);
+  }
+  .dc-lead-metro {
+    margin: 0;
+    color: var(--text-body);
   }
   .dc-two-col {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
@@ -253,6 +262,12 @@ const blocks = [
     padding: 0;
     display: grid;
     gap: var(--space-3);
+  }
+  /* Фирменные знаки красятся в currentColor — держим их в одном тоне
+     с иконкой почты, иначе ряд распадается на разноцветные строки. */
+  .dc-links__mark {
+    display: inline-flex;
+    color: var(--text-accent);
   }
   .dc-links li {
     display: flex;
