@@ -61,7 +61,9 @@ const asset = withBase;
   </head>
 
   <body>
-    <Preloader />
+    {/* Заставка — только на входе в сайт; на внутренних страницах она
+        превращается в лишнюю задержку между кликом и содержимым. */}
+    {path === '/' && <Preloader />}
 
     <a href="#main" class="dc-skip">Перейти к содержимому</a>
 
@@ -90,31 +92,38 @@ const asset = withBase;
       initFlipCards();
       initCountUp();
 
-      // Прелоадер уходит, когда сошлись два условия: страница готова и
-      // волна на модели челюсти доиграла свой круг до конца. Обрывать её
-      // на середине хуже, чем подождать: полукадр читается как сбой.
+      // Заставка уходит по готовности страницы, но живёт не меньше MIN_MS:
+      // иначе на быстром соединении она мелькает одним кадром и читается
+      // как сбой отрисовки. MAX_MS — предохранитель: что бы ни грузилось
+      // (видео в hero, шрифты), дольше него человека не держим.
       const preloader = document.querySelector<HTMLElement>('[data-preloader]');
       if (preloader) {
-        // Цикл 5.8s + задержка последнего зуба 0.91s, с запасом на посадку.
-        const CYCLE_MS = 6200;
+        const MIN_MS = 1500;
+        const MAX_MS = 3200;
         const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const started = (window as Window & { __dcPreloaderStart?: number }).__dcPreloaderStart ?? performance.now();
+        const started =
+          (window as Window & { __dcPreloaderStart?: number }).__dcPreloaderStart ??
+          performance.now();
 
+        let done = false;
         const hide = () => {
+          if (done) return;
+          done = true;
           preloader.classList.add('is-hidden');
           // В фоновой вкладке таймлайн заморожен и transitionend не приходит —
           // подстраховываемся таймером, иначе слой навсегда остаётся в DOM.
           const drop = () => preloader.remove();
           preloader.addEventListener('transitionend', drop, { once: true });
-          window.setTimeout(drop, 1200);
+          window.setTimeout(drop, 900);
         };
-        const hideWhenCycleEnds = () => {
-          const left = calm ? 0 : Math.max(0, CYCLE_MS - (performance.now() - started));
-          window.setTimeout(hide, left);
+        const hideAfterMinimum = () => {
+          const shown = performance.now() - started;
+          window.setTimeout(hide, calm ? 0 : Math.max(0, MIN_MS - shown));
         };
 
-        if (document.readyState === 'complete') hideWhenCycleEnds();
-        else window.addEventListener('load', hideWhenCycleEnds, { once: true });
+        if (document.readyState === 'complete') hideAfterMinimum();
+        else window.addEventListener('load', hideAfterMinimum, { once: true });
+        window.setTimeout(hide, Math.max(0, MAX_MS - (performance.now() - started)));
       }
     </script>
 
