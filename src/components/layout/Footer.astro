@@ -4,6 +4,7 @@
  * Перенесено из Ds2_2d9e23.Footer.
  */
 import BrandIcon from '../core/BrandIcon.astro';
+import MetroStations from '../core/MetroStations.astro';
 import { clinic, navLinks } from '../../data/site';
 import { withBase } from '../../lib/asset';
 
@@ -75,7 +76,8 @@ const socials = [
     <div class="dc-footer__col">
       <h2>Контакты</h2>
       <a href={clinic.phoneHref} class="dc-footer__phone">{clinic.phone}</a>
-      <p>{clinic.address.locality}, {clinic.address.street} · {clinic.metro}</p>
+      <p>{clinic.address.locality}, {clinic.address.street}</p>
+      <p><MetroStations /></p>
       <p>{clinic.scheduleLong}</p>
       <a href={`mailto:${clinic.email}`}>{clinic.email}</a>
     </div>

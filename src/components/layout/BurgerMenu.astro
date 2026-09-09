@@ -8,6 +8,7 @@
 import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
 import BrandIcon from '../core/BrandIcon.astro';
+import MetroStations from '../core/MetroStations.astro';
 import Button from '../core/Button.astro';
 import { clinic, navLinks } from '../../data/site';
 import { withBase } from '../../lib/asset';
@@ -100,7 +101,7 @@ const pricelistHref = href('pricelist');
       <p>{clinic.scheduleLong}</p>
       <p>{clinic.address.locality}, {clinic.address.street}</p>
       <a href={`mailto:${clinic.email}`} class="dc-burger__mail">{clinic.email}</a>
-      <p class="dc-burger__route">{clinic.metroNote}</p>
+      <p class="dc-burger__route"><MetroStations note="5 минут пешком" /></p>
       <a href={clinic.links.yandexOrg} target="_blank" rel="noopener" class="dc-burger__map">
         <Icon name="map-pin" size={18} />
         Как добраться?

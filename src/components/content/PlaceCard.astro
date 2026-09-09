@@ -1,6 +1,7 @@
 ---
 /** Карточка места: адрес, часы, почта, телефон, кнопки связи. Из Ds2_2d9e23.PlaceCard. */
 import Icon from '../core/Icon.astro';
+import MetroStations from '../core/MetroStations.astro';
 import BrandIcon from '../core/BrandIcon.astro';
 import IconButton from '../core/IconButton.astro';
 import Button from '../core/Button.astro';
@@ -17,7 +18,7 @@ const { max, telegram, yandexOrg } = clinic.links;
     <Icon name="map-pin" size={22} color="var(--text-accent)" />
     <div>
       <span class="dc-place__main">{clinic.address.locality}, {clinic.address.street}</span>
-      <span class="dc-place__sub">{clinic.metroNote}</span>
+      <span class="dc-place__sub"><MetroStations note="5 минут пешком" /></span>
     </div>
   </div>
 

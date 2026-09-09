@@ -1,0 +1,81 @@
+---
+/**
+ * Станции метро рядом с клиникой: знак метрополитена и станции с кругами
+ * в цветах своих линий — по кругу человек понимает, с какой ветки ехать.
+ *
+ * Знак взят как есть с Викисклада (File:Moscow Metro.svg), перекрашивается
+ * через currentColor: в подвале он на тёмном фоне, а фирменный красный
+ * метро столкнулся бы с коралловым, который у нас закреплён за акциями.
+ */
+import { clinic } from '../../data/site';
+
+interface Props {
+  /** Приписка вроде «5 минут пешком» — идёт после списка станций */
+  note?: string;
+}
+
+const { note } = Astro.props;
+const stations = clinic.metroStations;
+---
+
+<span class="dc-metro">
+  <svg class="dc-metro__logo" viewBox="337.5 232.3 125 85.9" role="img" aria-label="метро">
+    <polygon
+      fill="currentColor"
+      points="453.9,306.2 424.7,232.3 400,275.5 375.4,232.3 346.1,306.2 337.5,306.2 337.5,317.4 381.7,317.4
+      381.7,306.2 375.1,306.2 381.5,287.8 400,318.2 418.5,287.8 424.9,306.2 418.3,306.2 418.3,317.4 462.5,317.4 462.5,306.2 "
+    />
+  </svg>
+
+  {
+    stations.map((station, i) => (
+      <span class="dc-metro__station">
+        <span class="dc-metro__dot" style={`--dc-line:${station.color}`} title={station.line} />
+        {station.name}
+        {/* Разделитель уезжает в конец строки, а не в начало следующей */}
+        {i < stations.length - 1 && <span class="dc-metro__sep">/</span>}
+      </span>
+    ))
+  }
+
+  {note && <span class="dc-metro__note">{note}</span>}
+</span>
+
+<style>
+  .dc-metro {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .dc-metro__logo {
+    width: 1.05em;
+    height: auto;
+    flex: 0 0 auto;
+  }
+  .dc-metro__station {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .dc-metro__sep {
+    margin-left: 5px;
+    opacity: 0.45;
+  }
+  .dc-metro__dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--dc-line);
+    /* Бирюза БКЛ на светлом фоне почти сливается — обводка держит форму */
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+  }
+  /* Приписка всегда с новой строки: в узкой карточке она всё равно
+     переносится, а точка-разделитель в начале строки читается мусором. */
+  .dc-metro__note {
+    flex-basis: 100%;
+    opacity: 0.85;
+  }
+</style>

@@ -9,6 +9,7 @@ import Button from '../components/core/Button.astro';
 import Icon from '../components/core/Icon.astro';
 import SectionHeading from '../components/core/SectionHeading.astro';
 import PlaceCard from '../components/content/PlaceCard.astro';
+import MetroStations from '../components/core/MetroStations.astro';
 import YandexEmbed from '../components/content/YandexEmbed.astro';
 import { clinic } from '../data/site';
 
@@ -19,14 +20,14 @@ const blocks = [
   {
     icon: 'train',
     title: 'На метро',
-    lines: [
-      'Полежаевская — 5 минут пешком.',
-      'Выход к 4-й Магистральной улице, дальше вдоль домов до дома 5с1.',
-    ],
+    /** Станции выводим знаком метро с кругами линий, а не строкой */
+    metro: true,
+    lines: ['Выход к 4-й Магистральной улице, дальше вдоль домов до дома 5с1.'],
   },
   {
     icon: 'car',
     title: 'На машине',
+    metro: false,
     lines: [
       'Съезд с Хорошёвского шоссе на 4-ю Магистральную.',
       'Парковка вдоль улицы рядом со входом.',
@@ -35,11 +36,13 @@ const blocks = [
   {
     icon: 'clock',
     title: 'Режим приёма',
+    metro: false,
     lines: [clinic.scheduleLong, 'Приём по записи, в день обращения — по свободному времени.'],
   },
   {
     icon: 'phone',
     title: 'Как записаться',
+    metro: false,
     lines: [
       'Позвоните или оставьте заявку — администратор перезвонит и подберёт время.',
       'Первичная консультация со снимком и планом лечения — бесплатно.',
@@ -105,6 +108,11 @@ const blocks = [
                   <Icon name={block.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
                 </span>
                 <h3>{block.title}</h3>
+                {block.metro && (
+                  <p>
+                    <MetroStations note="5 минут пешком" />
+                  </p>
+                )}
                 {block.lines.map((line) => (
                   <p>{line}</p>
                 ))}
