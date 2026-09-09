@@ -1,0 +1,253 @@
+---
+/**
+ * Заставка на время загрузки страницы: гипсовая модель челюсти, зубы
+ * поднимаются волной и возвращаются на место. Прячется из BaseLayout —
+ * не раньше, чем цикл анимации доиграет до конца (--dc-preloader-cycle).
+ */
+---
+
+<section class="dc-preloader dental-loader" data-preloader aria-label="Загрузка страницы" aria-busy="true">
+  <div class="loader-orbit orbit-one" aria-hidden="true"></div>
+  <div class="loader-orbit orbit-two" aria-hidden="true"></div>
+  <div class="loader-content">
+    <div class="sculpture">
+      <svg class="dental-model" viewBox="0 0 600 450" fill="none" aria-hidden="true">
+        <ellipse class="ground-shadow" cx="300" cy="370" rx="158" ry="24" />
+        <g class="jaw">
+          <path class="plaster-side" d="M138 161 Q130 139 152 137 L190 146 Q203 151 198 174 C157 275 220 305 300 309 C380 305 443 275 402 174 Q397 151 410 146 L448 137 Q470 139 462 161 L470 248 C470 330 399 381 300 383 C201 381 130 330 130 248Z" />
+          <path class="plaster-top" d="M138 142 Q134 129 151 130 L188 139 Q204 141 198 157 C165 241 222 280 300 284 C378 280 435 241 402 157 Q396 141 412 139 L449 130 Q466 129 462 142 C494 256 446 352 300 357 C154 352 106 256 138 142Z" />
+          <path class="plaster-inner" d="M198 157 C165 241 222 280 300 284 C378 280 435 241 402 157 C420 224 382 259 300 262 C218 259 180 224 198 157Z" />
+          <path class="plaster-edge" d="M141 256 C159 318 223 348 300 350 C377 348 441 318 459 256" />
+        <g transform="translate(176 174) rotate(-28) scale(1)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.00s; --drift: -27.3px; --turn: -18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(163 207) rotate(-24) scale(1)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.07s; --drift: -30.1px; --turn: -18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(166 242) rotate(-19) scale(0.94)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.14s; --drift: -29.5px; --turn: -18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(183 274) rotate(-16) scale(0.85)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.21s; --drift: -25.7px; --turn: -18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(214 298) rotate(-10) scale(0.76)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.28s; --drift: -18.9px; --turn: -18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(248 312) rotate(-5) scale(0.7)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.35s; --drift: -11.4px; --turn: -18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(283 318) rotate(-2) scale(0.67)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.42s; --drift: -3.7px; --turn: -18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(318 318) rotate(2) scale(0.67)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.49s; --drift: 4.0px; --turn: 18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(353 312) rotate(5) scale(0.7)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.56s; --drift: 11.7px; --turn: 18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(387 298) rotate(10) scale(0.76)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.63s; --drift: 19.1px; --turn: 18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(418 274) rotate(16) scale(0.85)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.70s; --drift: 26.0px; --turn: 18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(435 242) rotate(19) scale(0.94)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.77s; --drift: 29.7px; --turn: 18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(438 207) rotate(24) scale(1)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.84s; --drift: 30.4px; --turn: 18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        <g transform="translate(425 174) rotate(28) scale(1)">
+          <ellipse class="socket" cx="0" cy="5" rx="22" ry="14" />
+          <g class="tooth-flight" style="--delay: 0.91s; --drift: 27.5px; --turn: 18deg">
+            <path class="tooth-side" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-front" d="M-23-7 Q-12 6 1 4 Q18 5 24-10 L22 8 Q18 22 3 25 Q-14 25-21 13Z" />
+            <path class="tooth-crown" d="M-24-15 Q-27-27-13-30 Q-3-35 3-30 Q22-34 25-19 Q27-7 15-2 Q8 5 0 0 Q-16 6-23-6Z" />
+            <path class="tooth-ridge" d="M-15-23 Q-5-27 0-20 Q8-26 16-19 M0-20 L-3-10 M-3-10 L-12-7 M-3-10 L7-6" />
+            <path class="tooth-shine" d="M-19-18 Q-19-25-11-25" />
+          </g>
+        </g>
+        </g>
+      </svg>
+    </div>
+    <div class="loader-copy" role="status" aria-live="polite">
+      <p class="loader-title">Дентал Круиз</p>
+    </div>
+    <div class="loader-progress" aria-hidden="true"><span></span></div>
+  </div>
+</section>
+
+<script is:inline>
+  // Момент старта CSS-анимации: BaseLayout отсчитывает от него полный цикл,
+  // чтобы не оборвать волну на полпути. Модульный скрипт выполняется заметно
+  // позже отрисовки — его собственный отсчёт врал бы на сотни миллисекунд.
+  window.__dcPreloaderStart = performance.now();
+</script>
+
+<style>
+  .dc-preloader {
+    --ink: var(--dc-depths);
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    isolation: isolate;
+    background: radial-gradient(
+      ellipse at 50% 40%,
+      var(--dc-white) 0%,
+      var(--dc-seashell) 55%,
+      var(--dc-mist) 100%
+    );
+    color: var(--ink);
+    opacity: 1;
+    transition: opacity 620ms var(--ease-out);
+  }
+  .dc-preloader.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* :global — иначе Astro повесит cid-атрибут и на <html>, где его нет */
+  :global(.no-js) .dc-preloader {
+    display: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-preloader {
+      transition: opacity 200ms linear;
+    }
+  }
+
+  .dental-loader *, .dental-loader *::before, .dental-loader *::after { box-sizing: border-box; }
+  .loader-content { position: relative; width: min(100%, 700px); padding: 52px 20px; text-align: center; }
+  .sculpture { width: min(100%, 570px); margin: 20px auto -10px; }
+  .dental-model { display: block; width: 100%; overflow: visible; }
+  .ground-shadow { fill: #0E5566; opacity: .14; filter: blur(12px); transform-origin: 300px 370px; animation: shadow-breathe 5.8s ease-in-out infinite; }
+  .jaw { animation: model-float 5.8s ease-in-out infinite; }
+  .plaster-side { fill: #d5e2e2; stroke: #c2d5d7; stroke-width: 1; }
+  .plaster-top { fill: #FAF7F5; stroke: #FFFFFF; stroke-width: 2; }
+  .plaster-inner { fill: #9bbdc1; opacity: .65; }
+  .plaster-edge { stroke: #FFFFFF; stroke-width: 2; opacity: .65; }
+  .socket { fill: #007C88; opacity: .58; }
+  .tooth-flight { transform-box: fill-box; transform-origin: center; animation: tooth-dance 5.8s cubic-bezier(.45,0,.2,1) infinite; animation-delay: var(--delay); }
+  .tooth-side { fill: #e5eeec; stroke: #b6cccb; stroke-width: .7; }
+  .tooth-front { fill: #cfdfdd; }
+  .tooth-crown { fill: #FFFFFF; stroke: #d5e5e0; stroke-width: 1; }
+  .tooth-ridge { stroke: #9bbfbb; stroke-width: 1.5; stroke-linecap: round; opacity: .7; }
+  .tooth-shine { stroke: white; stroke-width: 2; stroke-linecap: round; }
+  .loader-title { margin: 0; font-family: var(--font-display); font-weight: var(--fw-black); font-size: clamp(26px, 4.6vw, 38px); line-height: 1.25; letter-spacing: var(--ls-display); color: var(--text-strong); }
+  .loader-progress { width: 108px; height: 2px; margin: 29px auto 16px; overflow: hidden; background: #E8F5F1; border-radius: 2px; }
+  .loader-progress span { display: block; height: 100%; width: 40%; background: #00B189; animation: progress-travel 2.4s ease-in-out infinite; }
+  .loader-orbit { position: absolute; z-index: -1; width: min(82vw, 950px); aspect-ratio: 1; border: 1px solid #007C8810; border-radius: 50%; pointer-events: none; }
+  .orbit-one { transform: translate(-37%, -5%); }
+  .orbit-two { transform: translate(37%, 5%); }
+  @keyframes tooth-dance {
+    0%, 8%, 92%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(var(--drift), -82px) rotate(calc(var(--turn) * -1)); }
+    52% { transform: translate(var(--drift), -112px) rotate(360deg); }
+    68% { transform: translate(0, -37px) rotate(355deg); }
+    79% { transform: translate(0, 2px) rotate(360deg); }
+    83% { transform: translate(0, -2px) rotate(360deg); }
+    88% { transform: translate(0, 0) rotate(360deg); }
+    88.01% { transform: translate(0, 0) rotate(0deg); }
+  }
+  @keyframes model-float { 0%,100% { transform: translateY(0); } 48% { transform: translateY(-7px); } }
+  @keyframes shadow-breathe { 0%,100% { transform: scaleX(1); opacity: .14; } 48% { transform: scaleX(.9); opacity: .09; } }
+  @keyframes progress-travel { 0% { transform: translateX(-110%); } 100% { transform: translateX(360%); } }
+  @media (max-width: 480px) { .loader-content { padding: 36px 16px; } .sculpture { margin-top: 35px; margin-bottom: 12px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .dental-loader *, .dental-loader *::before, .dental-loader *::after { animation: none !important; }
+    .loader-progress span { width: 100%; opacity: .55; }
+  }
+</style>
