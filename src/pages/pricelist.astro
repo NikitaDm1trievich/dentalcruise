@@ -200,6 +200,26 @@ const total = sections.reduce(
   .dc-price-page {
     background: var(--dc-white);
   }
+  /* Появление блока при переключении фильтра — отдельно от общего
+     scroll-reveal (тот у уже показанных блоков не повторяется). */
+  @keyframes dc-filter-enter {
+    from {
+      opacity: 0;
+      transform: translateY(var(--reveal-shift, 26px));
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .dc-filter-enter {
+    animation: dc-filter-enter 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-filter-enter {
+      animation: none;
+    }
+  }
   .dc-price-block {
     display: grid;
     gap: var(--space-6);
@@ -265,7 +285,7 @@ const total = sections.reduce(
       document.querySelectorAll<HTMLElement>('[data-price-section]'),
     );
 
-    const apply = (value: string) => {
+    const apply = (value: string, animateShown = false) => {
       for (const chip of chips) {
         chip.setAttribute('aria-pressed', String(chip.dataset.filter === value));
       }
@@ -273,14 +293,27 @@ const total = sections.reduce(
         // Прячем обёртку появления целиком, иначе от скрытого блока
         // остаётся его отступ в сетке контейнера.
         const wrapper = section.closest<HTMLElement>('.dc-reveal') ?? section;
-        wrapper.hidden = value !== 'all' && section.dataset.priceSection !== value;
+        const shouldShow = value === 'all' || section.dataset.priceSection === value;
+        const wasHidden = wrapper.hidden;
+        wrapper.hidden = !shouldShow;
+
+        // Появление по скролл-наблюдателю у блока обычно уже сыграно один раз
+        // и больше не повторится — а при переключении фильтра блок должен
+        // заново «появляться» каждый раз, иначе после первого клика он просто
+        // мгновенно выскакивает без анимации.
+        if (animateShown && shouldShow && wasHidden) {
+          wrapper.classList.remove('dc-filter-enter');
+          // eslint-disable-next-line no-unused-expressions
+          wrapper.offsetWidth;
+          wrapper.classList.add('dc-filter-enter');
+        }
       }
     };
 
     for (const chip of chips) {
       chip.addEventListener('click', () => {
         const value = chip.dataset.filter ?? 'all';
-        apply(value);
+        apply(value, true);
         // Адрес отражает выбор: ссылкой можно поделиться
         const url = value === 'all' ? window.location.pathname : `#${value}`;
         history.replaceState(null, '', url);

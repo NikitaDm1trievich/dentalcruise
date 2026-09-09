@@ -15,8 +15,15 @@ const row = [...brands, ...brands];
 
 <div class="dc-marquee">
   {eyebrow && <span class="dc-marquee__eyebrow">{eyebrow}</span>}
-  <div class="dc-marquee__viewport" data-marquee-viewport tabindex="0" role="group" aria-label="Поставщики материалов, лента прокручивается вручную">
-    <div class="dc-marquee__row" style={`animation-duration:${speed}s`} data-marquee-row>
+  <div
+    class="dc-marquee__viewport"
+    data-marquee-viewport
+    data-marquee-speed={speed}
+    tabindex="0"
+    role="group"
+    aria-label="Поставщики материалов, лента прокручивается вручную"
+  >
+    <div class="dc-marquee__row" data-marquee-row>
       {
         row.map((brand, i) => (
           <span class="dc-marquee__item" title={brand.note ?? brand.name} aria-hidden={i >= brands.length}>
@@ -44,44 +51,29 @@ const row = [...brands, ...brands];
   }
   .dc-marquee__viewport {
     position: relative;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: hidden;
     cursor: grab;
-    scrollbar-width: none;
+    touch-action: pan-y;
     mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   }
-  .dc-marquee__viewport::-webkit-scrollbar {
-    display: none;
-  }
   .dc-marquee__viewport.is-dragging {
     cursor: grabbing;
-    scroll-snap-type: none;
   }
   .dc-marquee__row {
     display: flex;
     width: max-content;
     gap: clamp(32px, 6vw, 80px);
     align-items: center;
-    animation-name: dc-marquee;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-  }
-  /* Пока пользователь листает ленту сам, автопрокрутка не мешает */
-  .dc-marquee__row.is-paused {
-    animation-play-state: paused;
-  }
-  @keyframes dc-marquee {
-    from {
-      transform: translate3d(0, 0, 0);
-    }
-    to {
-      transform: translate3d(-50%, 0, 0);
-    }
+    /* Позицию двигает JS (src/components/content/BrandsMarquee.astro скрипт
+       ниже): один и тот же сдвиг обслуживает и автопрокрутку, и перетаскивание
+       мышью/тачем, поэтому лента крутится бесконечно в любую сторону и без
+       швов возвращается к автоигре, а не упирается в край контейнера. */
+    will-change: transform;
   }
   @media (prefers-reduced-motion: reduce) {
     .dc-marquee__row {
-      animation: none;
+      transform: none !important;
       justify-content: center;
       flex-wrap: wrap;
       width: 100%;
@@ -103,44 +95,99 @@ const row = [...brands, ...brands];
 </style>
 
 <script>
-  // Автопрокрутка не должна мешать: как только пользователь листает ленту
-  // сам (мышью, тачем или колесом), анимация ставится на паузу и
-  // возвращается только после того, как он оставит ленту в покое.
+  /**
+   * Лента крутится сама, но её же можно листать вручную (мышью, тачем,
+   * колесом) в любую сторону — без конца, без швов и без «упора в край»:
+   * позиция — это один и тот же счётчик по модулю ширины одного набора
+   * карточек (набор задублирован в разметке ровно для этого). Автоигра
+   * просто прибавляет к нему постоянную скорость, drag — разницу курсора;
+   * оба крутят одно и то же число, поэтому после отпускания лента без
+   * рывка продолжает катиться дальше сама.
+   */
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   document.querySelectorAll<HTMLElement>('[data-marquee-viewport]').forEach((viewport) => {
     const row = viewport.querySelector<HTMLElement>('[data-marquee-row]');
-    if (!row) return;
+    if (!row || reduced) return;
 
+    // Половина ширины ленты — ровно один (недублированный) набор карточек
+    const setWidth = () => row.scrollWidth / 2;
+    // px/сек: время на полный цикл задаётся тем же числом, что раньше шло в animation-duration
+    const speedSetting = Number(viewport.dataset.marqueeSpeed ?? 38);
+    const velocity = setWidth() / speedSetting;
+
+    let position = 0;
+    let dragging = false;
+    let paused = false;
     let resumeTimer: number | undefined;
-    const pause = () => {
-      row.classList.add('is-paused');
-      window.clearTimeout(resumeTimer);
-      resumeTimer = window.setTimeout(() => row.classList.remove('is-paused'), 2000);
+    let lastFrame: number | undefined;
+
+    const wrap = (value: number, width: number) => {
+      if (width <= 0) return 0;
+      const wrapped = value % width;
+      return wrapped < 0 ? wrapped + width : wrapped;
     };
 
-    viewport.addEventListener('scroll', pause, { passive: true });
+    const render = () => {
+      row.style.transform = `translate3d(${-position}px, 0, 0)`;
+    };
 
-    let dragging = false;
+    const pauseAutoplay = () => {
+      paused = true;
+      window.clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(() => (paused = false), 1800);
+    };
+
     let startX = 0;
-    let startScroll = 0;
+    let startPosition = 0;
 
     viewport.addEventListener('pointerdown', (e) => {
       dragging = true;
       startX = e.clientX;
-      startScroll = viewport.scrollLeft;
+      startPosition = position;
       viewport.classList.add('is-dragging');
       viewport.setPointerCapture(e.pointerId);
-      pause();
+      pauseAutoplay();
     });
     viewport.addEventListener('pointermove', (e) => {
       if (!dragging) return;
-      viewport.scrollLeft = startScroll - (e.clientX - startX);
+      position = wrap(startPosition - (e.clientX - startX), setWidth());
+      render();
     });
     const stopDrag = (e: PointerEvent) => {
+      if (!dragging) return;
       dragging = false;
       viewport.classList.remove('is-dragging');
       if (viewport.hasPointerCapture(e.pointerId)) viewport.releasePointerCapture(e.pointerId);
     };
     viewport.addEventListener('pointerup', stopDrag);
     viewport.addEventListener('pointercancel', stopDrag);
+
+    // Колесо/трекпад — тоже листает ленту, а не страницу целиком
+    viewport.addEventListener(
+      'wheel',
+      (e) => {
+        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        if (delta === 0) return;
+        e.preventDefault();
+        position = wrap(position + delta, setWidth());
+        render();
+        pauseAutoplay();
+      },
+      { passive: false },
+    );
+
+    const tick = (now: number) => {
+      if (lastFrame === undefined) lastFrame = now;
+      const dt = (now - lastFrame) / 1000;
+      lastFrame = now;
+
+      if (!dragging && !paused && !document.hidden) {
+        position = wrap(position + velocity * dt, setWidth());
+        render();
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   });
 </script>

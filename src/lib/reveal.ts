@@ -31,8 +31,13 @@ export function initReveal(): void {
   if (nodes.length === 0) return;
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Пришли по ссылке-якорю (например, «Смотреть все услуги» → /pricelist#slug):
+  // браузер сразу прыгает вглубь страницы, и до того как IntersectionObserver
+  // и плавная прокрутка успеют доиграть, блок в кадре ещё выглядит пустым.
+  // Появление тут не нужно — контент и так открывается не «с нуля».
+  const jumpedToAnchor = Boolean(window.location.hash);
 
-  if (reduced || !('IntersectionObserver' in window)) {
+  if (reduced || jumpedToAnchor || !('IntersectionObserver' in window)) {
     nodes.forEach(finish);
     return;
   }

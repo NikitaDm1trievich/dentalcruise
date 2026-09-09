@@ -69,6 +69,11 @@ const { slides, interval = 6000 } = Astro.props;
     aspect-ratio: 4 / 3;
     border-radius: var(--radius-xl);
     overflow: hidden;
+    cursor: grab;
+    touch-action: pan-y;
+  }
+  .dc-carousel__media:active {
+    cursor: grabbing;
   }
   .dc-carousel__layer {
     position: absolute;
@@ -178,6 +183,44 @@ const { slides, interval = 6000 } = Astro.props;
     root.addEventListener('mouseenter', stop);
     root.addEventListener('mouseleave', start);
     root.addEventListener('focusin', stop);
+
+    // Свайп/перетаскивание по фото — тот же переход, что у стрелок,
+    // просто ещё один способ его вызвать, без него на телефоне можно
+    // листать только кнопками.
+    const media = root.querySelector<HTMLElement>('.dc-carousel__media');
+    if (media) {
+      let dragging = false;
+      let horizontal = false;
+      let startX = 0;
+      let startY = 0;
+
+      media.addEventListener('pointerdown', (e) => {
+        dragging = true;
+        horizontal = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        stop();
+      });
+      media.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (!horizontal && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) horizontal = true;
+        if (horizontal) e.preventDefault();
+      });
+      const endDrag = (e: PointerEvent) => {
+        if (!dragging) return;
+        dragging = false;
+        const dx = e.clientX - startX;
+        if (horizontal && Math.abs(dx) > 40) show(current + (dx < 0 ? 1 : -1));
+        start();
+      };
+      media.addEventListener('pointerup', endDrag);
+      media.addEventListener('pointercancel', () => {
+        dragging = false;
+        start();
+      });
+    }
 
     // На фоновой вкладке крутить нечего
     document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
