@@ -8,7 +8,7 @@ import Button from '../core/Button.astro';
 import { clinic } from '../../data/site';
 import { withBase } from '../../lib/asset';
 
-const { max, telegram, yandexOrg } = clinic.links;
+const { max, telegram, instagram, yandexOrg } = clinic.links;
 ---
 
 <div class="dc-place">
@@ -48,6 +48,13 @@ const { max, telegram, yandexOrg } = clinic.links;
       telegram && (
         <IconButton label="Написать в Telegram" href={telegram}>
           <Icon name="send" size={20} />
+        </IconButton>
+      )
+    }
+    {
+      instagram && (
+        <IconButton label="Мы в Instagram" href={instagram}>
+          <BrandIcon name="instagram" size={20} />
         </IconButton>
       )
     }

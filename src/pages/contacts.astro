@@ -14,7 +14,7 @@ import BrandIcon from '../components/core/BrandIcon.astro';
 import YandexEmbed from '../components/content/YandexEmbed.astro';
 import { clinic } from '../data/site';
 
-const { yandexPin, yandexOrg, vk, max } = clinic.links;
+const { yandexPin, yandexOrg, vk, max, instagram } = clinic.links;
 
 /** Мелкие блоки под картой — каждый отвечает на один вопрос */
 const blocks = [
@@ -159,6 +159,18 @@ const blocks = [
                   <span class="dc-links__mark"><BrandIcon name="vk" size={20} /></span>
                   <a href={vk} target="_blank" rel="noopener">
                     Группа ВКонтакте
+                  </a>
+                </li>
+              )
+            }
+            {
+              instagram && (
+                <li>
+                  <span class="dc-links__mark">
+                    <BrandIcon name="instagram" size={20} />
+                  </span>
+                  <a href={instagram} target="_blank" rel="noopener">
+                    Мы в Instagram
                   </a>
                 </li>
               )

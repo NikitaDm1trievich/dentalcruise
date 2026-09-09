@@ -58,6 +58,12 @@ export const clinic = {
     yandexMapWidget: 'https://yandex.ru/map-widget/v1/?ll=37.520284%2C55.774426&z=17',
     yandexReviewsWidget: 'https://yandex.ru/maps-reviews-widget/154025048590?comments',
     vk: 'https://vk.ru/dentalcruise',
+    /**
+     * Instagram принадлежит Meta, признанной в России экстремистской, и
+     * заблокирован — поэтому ссылку не поднимаем в шапку и бургер-меню,
+     * она живёт только в блоках «где нас найти».
+     */
+    instagram: 'https://www.instagram.com/dentalcruise',
     /** Max открывает чат по рабочему номеру клиники */
     max: 'https://max.ru/+79255777677',
     /** Отдельного Telegram у клиники нет — кнопка не выводится, пока поле пустое */
