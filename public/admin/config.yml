@@ -11,11 +11,25 @@ backend:
   name: github
   repo: NikitaDm1trievich/dentalcruise
   branch: main
-  # Вход сейчас — по личному токену доступа GitHub (кнопка «Войти с помощью
-  # токена доступа»), инфраструктура для этого не нужна. Если позже поднимете
-  # OAuth-прокси, добавьте сюда строку `base_url: https://<ваш>.workers.dev` —
-  # тогда заработает кнопка «Войти через GitHub». Подробности — в admin.md
-  # в корне репозитория.
+
+  # Вход только по личному токену GitHub.
+  #
+  # Способ «Войти через GitHub» намеренно отключён: без своего OAuth-прокси
+  # он уходит на сервис Netlify (api.netlify.com), которого у этого сайта нет,
+  # и заканчивается страницей «Not found». Нерабочей кнопке в панели не место.
+  #
+  # Чтобы включить его обратно, нужно развернуть sveltia-cms-auth, прописать
+  # сюда `base_url: https://<ваш>.workers.dev` и вернуть `oauth` в список
+  # ниже. Подробности — в admin.md в корне репозитория.
+  auth_methods: [token]
+
+  # Иначе история репозитория заполняется английскими сообщениями по умолчанию
+  commit_messages:
+    create: 'Добавить {{collection}}: {{slug}}'
+    update: 'Обновить {{collection}}: {{slug}}'
+    delete: 'Удалить {{collection}}: {{slug}}'
+    uploadMedia: 'Загрузить файл: {{path}}'
+    deleteMedia: 'Удалить файл: {{path}}'
 
 media_folder: public/images
 public_folder: /images
@@ -49,47 +63,47 @@ collections:
               - name: ink
                 label: Кнопки и ссылки
                 widget: color
-                enable_alpha: false
+                allowInput: true
                 hint: Заливка кнопок записи, цвет ссылок и цен. Текст на кнопке белый.
-              - { name: press, label: Кнопка при наведении, widget: color, enable_alpha: false }
+              - { name: press, label: Кнопка при наведении, widget: color, allowInput: true }
               - name: base
                 label: Иконки, звёзды, рамки
                 widget: color
-                enable_alpha: false
+                allowInput: true
                 hint: Светлый фирменный оттенок. Кнопки им не красятся.
-              - { name: soft, label: Мягкая заливка, widget: color, enable_alpha: false }
-              - { name: mark, label: Цвет знака в логотипе, widget: color, enable_alpha: false }
+              - { name: soft, label: Мягкая заливка, widget: color, allowInput: true }
+              - { name: mark, label: Цвет знака в логотипе, widget: color, allowInput: true }
           - name: promo
             label: Цвет акций
             widget: object
             fields:
-              - { name: base, label: Основной, widget: color, enable_alpha: false }
-              - { name: press, label: При нажатии, widget: color, enable_alpha: false }
-              - { name: soft, label: Мягкая заливка, widget: color, enable_alpha: false }
+              - { name: base, label: Основной, widget: color, allowInput: true }
+              - { name: press, label: При нажатии, widget: color, allowInput: true }
+              - { name: soft, label: Мягкая заливка, widget: color, allowInput: true }
           - name: ink
             label: Цвет текста
             widget: object
             hint: Тёмные оттенки. Светлые сделают сайт нечитаемым.
             fields:
-              - { name: heading, label: Заголовки, widget: color, enable_alpha: false }
-              - { name: body, label: Основной текст, widget: color, enable_alpha: false }
-              - { name: muted, label: Второстепенный текст, widget: color, enable_alpha: false }
+              - { name: heading, label: Заголовки, widget: color, allowInput: true }
+              - { name: body, label: Основной текст, widget: color, allowInput: true }
+              - { name: muted, label: Второстепенный текст, widget: color, allowInput: true }
           - name: dark
             label: Тёмные блоки
             widget: object
             fields:
-              - { name: base, label: Основной, widget: color, enable_alpha: false }
-              - { name: lift, label: Светлее (верх градиента), widget: color, enable_alpha: false }
-              - { name: footer, label: Подвал, widget: color, enable_alpha: false }
+              - { name: base, label: Основной, widget: color, allowInput: true }
+              - { name: lift, label: Светлее (верх градиента), widget: color, allowInput: true }
+              - { name: footer, label: Подвал, widget: color, allowInput: true }
           - name: tint
             label: Подложки секций
             widget: object
             hint: Очень светлые оттенки, на них идёт основной текст.
             fields:
-              - { name: warm, label: Тёплая, widget: color, enable_alpha: false }
-              - { name: cool, label: Холодная, widget: color, enable_alpha: false }
-              - { name: aqua, label: Мятная, widget: color, enable_alpha: false }
-              - { name: breeze, label: Голубая, widget: color, enable_alpha: false }
+              - { name: warm, label: Тёплая, widget: color, allowInput: true }
+              - { name: cool, label: Холодная, widget: color, allowInput: true }
+              - { name: aqua, label: Мятная, widget: color, allowInput: true }
+              - { name: breeze, label: Голубая, widget: color, allowInput: true }
 
   # ── Тексты главной страницы ──────────────────────────────────────────
   - name: home
