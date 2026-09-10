@@ -1,0 +1,782 @@
+# Конфигурация редактора сайта (Sveltia CMS).
+#
+# Каждая коллекция ниже — это реальный JSON-файл в репозитории. Правка в
+# редакторе = коммит в ветку main = пересборка сайта через GitHub Actions.
+#
+# ВАЖНО про поле «Служебный ID»: по нему Astro отличает записи друг от
+# друга. Он должен быть уникальным внутри своего списка и латиницей.
+# У существующих записей его менять нельзя — сломаются ссылки и якоря.
+
+backend:
+  name: github
+  repo: NikitaDm1trievich/dentalcruise
+  branch: main
+  # Вход сейчас — по личному токену доступа GitHub (кнопка «Войти с помощью
+  # токена доступа»), инфраструктура для этого не нужна. Если позже поднимете
+  # OAuth-прокси, добавьте сюда строку `base_url: https://<ваш>.workers.dev` —
+  # тогда заработает кнопка «Войти через GitHub». Подробности — в admin.md
+  # в корне репозитория.
+
+media_folder: public/images
+public_folder: /images
+
+site_url: https://dentalcruise.ru
+display_url: https://dentalcruise.ru
+# Путь относительный намеренно: на GitHub Pages сайт лежит в подпапке
+# /dentalcruise/, и корневой «/logo-...» там указывал бы мимо. Относительный
+# путь одинаково верен и в подпапке, и на своём домене в корне.
+logo_url: ../logo-dentalcruise.svg
+
+collections:
+  # ── Цвета сайта ──────────────────────────────────────────────────────
+  # Правится только фирменная часть палитры. Остальные оттенки (белый фон,
+  # оттенки границ) считаются от неё в styles/tokens/colors.css и меняться
+  # владельцем не должны. Сборка проверяет контраст и пишет предупреждение
+  # в лог, если сочетание становится нечитаемым.
+  - name: theme
+    label: Цвета сайта
+    icon: palette
+    files:
+      - name: palette
+        label: Палитра
+        file: src/data/theme.json
+        fields:
+          - name: accent
+            label: Фирменный цвет
+            widget: object
+            hint: Удобнее править в Студии темы — там сразу видно результат.
+            fields:
+              - name: ink
+                label: Кнопки и ссылки
+                widget: color
+                enable_alpha: false
+                hint: Заливка кнопок записи, цвет ссылок и цен. Текст на кнопке белый.
+              - { name: press, label: Кнопка при наведении, widget: color, enable_alpha: false }
+              - name: base
+                label: Иконки, звёзды, рамки
+                widget: color
+                enable_alpha: false
+                hint: Светлый фирменный оттенок. Кнопки им не красятся.
+              - { name: soft, label: Мягкая заливка, widget: color, enable_alpha: false }
+              - { name: mark, label: Цвет знака в логотипе, widget: color, enable_alpha: false }
+          - name: promo
+            label: Цвет акций
+            widget: object
+            fields:
+              - { name: base, label: Основной, widget: color, enable_alpha: false }
+              - { name: press, label: При нажатии, widget: color, enable_alpha: false }
+              - { name: soft, label: Мягкая заливка, widget: color, enable_alpha: false }
+          - name: ink
+            label: Цвет текста
+            widget: object
+            hint: Тёмные оттенки. Светлые сделают сайт нечитаемым.
+            fields:
+              - { name: heading, label: Заголовки, widget: color, enable_alpha: false }
+              - { name: body, label: Основной текст, widget: color, enable_alpha: false }
+              - { name: muted, label: Второстепенный текст, widget: color, enable_alpha: false }
+          - name: dark
+            label: Тёмные блоки
+            widget: object
+            fields:
+              - { name: base, label: Основной, widget: color, enable_alpha: false }
+              - { name: lift, label: Светлее (верх градиента), widget: color, enable_alpha: false }
+              - { name: footer, label: Подвал, widget: color, enable_alpha: false }
+          - name: tint
+            label: Подложки секций
+            widget: object
+            hint: Очень светлые оттенки, на них идёт основной текст.
+            fields:
+              - { name: warm, label: Тёплая, widget: color, enable_alpha: false }
+              - { name: cool, label: Холодная, widget: color, enable_alpha: false }
+              - { name: aqua, label: Мятная, widget: color, enable_alpha: false }
+              - { name: breeze, label: Голубая, widget: color, enable_alpha: false }
+
+  # ── Тексты главной страницы ──────────────────────────────────────────
+  - name: home
+    label: Главная страница
+    icon: home
+    files:
+      - name: copy
+        label: Тексты главной
+        file: src/data/home.json
+        fields:
+          - name: hero
+            label: Первый экран
+            widget: object
+            fields:
+              - { name: eyebrow, label: Надпись сверху, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - { name: lead, label: Подзаголовок, widget: text }
+
+          - name: terms
+            label: Полоса условий
+            widget: list
+            label_singular: условие
+            summary: '{{fields.title}}'
+            fields:
+              - name: icon
+                label: Иконка
+                widget: select
+                options:
+                  [
+                    calendar-check,
+                    wallet,
+                    shield-check,
+                    badge-check,
+                    clock,
+                    banknote,
+                    percent,
+                    credit-card,
+                    hand-coins,
+                    heart-handshake,
+                    handshake,
+                    star,
+                    award,
+                    sparkles,
+                    smile,
+                    stethoscope,
+                    microscope,
+                    flask-conical,
+                    crown,
+                    anchor,
+                    gem,
+                    users,
+                    thumbs-up,
+                    zap,
+                    circle-check,
+                  ]
+              - { name: title, label: Заголовок, widget: string }
+              - { name: text, label: Описание, widget: text }
+
+          - name: promo
+            label: Блок «Акции»
+            widget: object
+            fields:
+              - { name: title, label: Заголовок, widget: string }
+              - { name: note, label: Пояснение под карточками, widget: text }
+
+          - name: services
+            label: Блок «Услуги»
+            widget: object
+            fields:
+              - { name: eyebrow, label: Надпись сверху, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - { name: lead, label: Описание, widget: text }
+
+          - name: brands
+            label: Лента поставщиков
+            widget: object
+            fields:
+              - { name: eyebrow, label: Подпись над лентой, widget: string }
+
+          - name: doctors
+            label: Блок «Врачи»
+            widget: object
+            fields:
+              - { name: eyebrow, label: Надпись сверху, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - { name: lead, label: Описание, widget: text }
+              - { name: cta, label: Текст кнопки, widget: string }
+
+          - name: advantages
+            label: Блок «Почему выбирают нас»
+            widget: object
+            fields:
+              - { name: eyebrow, label: Надпись сверху, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+
+          - name: why
+            label: Блок «Своя лаборатория»
+            widget: object
+            fields:
+              - { name: eyebrow, label: Надпись сверху, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - { name: lead, label: Описание, widget: text }
+              - name: compare
+                label: Сравнение цены
+                widget: object
+                fields:
+                  - { name: label, label: Что сравниваем, widget: string }
+                  - { name: marketPrice, label: Цена по рынку, widget: string }
+                  - { name: ourPrice, label: Наша цена, widget: string }
+                  - { name: note, label: Пояснение, widget: text }
+
+          - name: about
+            label: Блок «О клинике»
+            widget: object
+            fields:
+              - { name: eyebrow, label: Надпись сверху, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - { name: lead, label: Описание, widget: text }
+              - { name: badge, label: Плашка с цифрой, widget: string }
+              - { name: cta, label: Текст кнопки, widget: string }
+              - { name: galleryLabel, label: Подпись к галерее, widget: string }
+
+          - name: faq
+            label: Блок «Вопросы»
+            widget: object
+            fields:
+              - { name: eyebrow, label: Надпись сверху, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - { name: lead, label: Описание, widget: text }
+              - { name: cta, label: Текст кнопки, widget: string }
+
+          - name: reviews
+            label: Блок «Отзывы»
+            widget: object
+            fields:
+              - { name: eyebrow, label: Надпись сверху, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - name: rating
+                label: Средняя оценка
+                widget: object
+                fields:
+                  - { name: value, label: Значение, widget: number, value_type: float, step: 0.1 }
+                  - { name: caption, label: Подпись, widget: string }
+              - name: count
+                label: Количество отзывов
+                widget: object
+                fields:
+                  - { name: value, label: Значение, widget: number, value_type: int }
+                  - { name: caption, label: Подпись, widget: string }
+              - name: since
+                label: Год начала работы
+                widget: object
+                fields:
+                  - { name: value, label: Значение, widget: number, value_type: int }
+                  - { name: caption, label: Подпись, widget: string }
+              - { name: note, label: Пояснение под цифрами, widget: text }
+              - { name: linkLabel, label: Текст ссылки на Яндекс, widget: string }
+
+  # ── Акции ────────────────────────────────────────────────────────────
+  - name: promos
+    label: Акции
+    icon: local_offer
+    files:
+      - name: list
+        label: Список акций
+        file: src/content/promos/promos.json
+        fields:
+          - name: items
+            label: Акции
+            label_singular: акция
+            widget: list
+            summary: '{{fields.title}} — {{fields.price}}'
+            fields:
+              - name: id
+                label: Служебный ID
+                widget: string
+                pattern:
+                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+                hint: Уникальный, латиницей. У существующих акций не менять.
+              - { name: title, label: Название, widget: string }
+              - { name: price, label: Цена, widget: string, hint: 'Например: 19 900 ₽' }
+              - { name: was, label: Старая цена, widget: string, required: false }
+              - { name: note, label: Сноска, widget: string, required: false }
+              - name: category
+                label: Раздел прайса
+                widget: select
+                required: false
+                hint: Куда ведёт карточка. Пусто — карточка не кликабельна.
+                options:
+                  - { label: Эстетическая реставрация, value: restoration }
+                  - { label: Протезирование, value: protezirovanie }
+                  - { label: Имплантация, value: implantacia }
+                  - { label: Хирургия, value: hirurgiya }
+                  - { label: Терапия, value: terapiya }
+                  - { label: Гигиена и отбеливание, value: gigiena }
+              - name: attributes
+                label: Характеристики
+                label_singular: характеристика
+                widget: list
+                required: false
+                summary: '{{fields.label}}: {{fields.value}}'
+                fields:
+                  - { name: label, label: Название, widget: string }
+                  - { name: value, label: Значение, widget: string }
+              - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Прайс-лист ───────────────────────────────────────────────────────
+  - name: price-list
+    label: Прайс-лист
+    icon: payments
+    folder: src/content/price-list
+    extension: json
+    format: json
+    create: true
+    slug: '{{fields.slug}}'
+    identifier_field: category
+    summary: '{{category}}'
+    description: Полный прайс, один файл на направление. Разделы страницы /pricelist.
+    fields:
+      - name: slug
+        label: Служебный ID раздела
+        widget: string
+        pattern: ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+        hint: Должен совпадать с разделом в «Разделы услуг». У существующих не менять.
+      - { name: category, label: Название раздела, widget: string }
+      - { name: note, label: Сноска к разделу, widget: text, required: false }
+      - name: groups
+        label: Группы позиций
+        label_singular: группа
+        widget: list
+        summary: '{{fields.title}}'
+        fields:
+          - { name: title, label: Название группы, widget: string }
+          - name: items
+            label: Позиции
+            label_singular: позиция
+            widget: list
+            summary: '{{fields.title}} — {{fields.price}}'
+            fields:
+              - { name: title, label: Название, widget: string }
+              - { name: price, label: Цена, widget: string }
+              - { name: was, label: Старая цена, widget: string, required: false }
+              - { name: note, label: Сноска, widget: string, required: false }
+              - name: promo
+                label: Отметить как акцию
+                widget: boolean
+                default: false
+                required: false
+                hint: Если заполнена старая цена, метка появится сама.
+      - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Разделы услуг ────────────────────────────────────────────────────
+  - name: service-categories
+    label: Разделы услуг
+    icon: category
+    files:
+      - name: list
+        label: Каталог на главной
+        file: src/content/service-categories/categories.json
+        fields:
+          - name: items
+            label: Разделы
+            label_singular: раздел
+            widget: list
+            summary: '{{fields.title}}'
+            fields:
+              - name: id
+                label: Служебный ID
+                widget: string
+                pattern:
+                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+              - name: slug
+                label: Якорь в прайсе
+                widget: string
+                pattern:
+                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+                hint: Должен совпадать со «Служебный ID раздела» в Прайс-листе.
+              - { name: title, label: Название, widget: string }
+              - { name: description, label: Описание, widget: text }
+              - name: icon
+                label: Иконка
+                widget: select
+                options:
+                  [
+                    sparkles,
+                    crown,
+                    anchor,
+                    scissors,
+                    stethoscope,
+                    sun,
+                    microscope,
+                    flask-conical,
+                    smile,
+                    gem,
+                    star,
+                    award,
+                    shield-check,
+                    heart,
+                    activity,
+                    syringe,
+                    baby,
+                    ruler,
+                  ]
+              - name: items
+                label: Позиции в карточке
+                label_singular: позиция
+                widget: list
+                summary: '{{fields.title}} — {{fields.price}}'
+                fields:
+                  - { name: title, label: Название, widget: string }
+                  - { name: price, label: Цена, widget: string }
+              - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Страницы отдельных услуг ─────────────────────────────────────────
+  - name: service-pages
+    label: Страницы услуг
+    icon: description
+    folder: src/content/service-pages
+    extension: json
+    format: json
+    create: true
+    identifier_field: title
+    summary: '{{title}}'
+    description: Отдельные страницы /uslugi/… Имя файла становится адресом страницы.
+    fields:
+      - { name: title, label: Название услуги, widget: string }
+      - name: matchTitle
+        label: Точное название в прайсе
+        widget: string
+        required: false
+        hint: Заполнять, только если в прайсе позиция называется иначе.
+      - { name: lead, label: Короткое описание, widget: text }
+      - name: category
+        label: Раздел
+        widget: select
+        options:
+          - { label: Эстетическая реставрация, value: restoration }
+          - { label: Протезирование, value: protezirovanie }
+          - { label: Имплантация, value: implantacia }
+          - { label: Хирургия, value: hirurgiya }
+          - { label: Терапия, value: terapiya }
+          - { label: Гигиена и отбеливание, value: gigiena }
+      - { name: price, label: Цена, widget: string, required: false }
+      - { name: priceNote, label: Сноска к цене, widget: string, required: false }
+      - { name: duration, label: Сколько занимает, widget: string, required: false }
+      - { name: warranty, label: Гарантия, widget: string, required: false }
+      - { name: photo, label: Фото работы, widget: image, required: false }
+      - name: photoLabel
+        label: Подпись, если фото нет
+        widget: string
+        required: false
+        default: Здесь фото работы
+      - name: includes
+        label: Что входит в цену
+        widget: list
+        required: false
+        field: { name: item, label: Пункт, widget: string }
+      - name: indications
+        label: Когда подходит
+        widget: list
+        required: false
+        field: { name: item, label: Пункт, widget: string }
+      - name: steps
+        label: Этапы работы
+        label_singular: этап
+        widget: list
+        required: false
+        summary: '{{fields.title}}'
+        fields:
+          - { name: title, label: Название этапа, widget: string }
+          - { name: text, label: Описание, widget: text }
+      - name: prices
+        label: Цены на странице
+        label_singular: позиция
+        widget: list
+        required: false
+        summary: '{{fields.title}} — {{fields.price}}'
+        fields:
+          - { name: title, label: Название, widget: string }
+          - { name: price, label: Цена, widget: string }
+          - { name: was, label: Старая цена, widget: string, required: false }
+          - { name: note, label: Сноска, widget: string, required: false }
+          - name: promo
+            label: Отметить как акцию
+            widget: boolean
+            default: false
+            required: false
+            hint: Если заполнена старая цена, метка появится сама.
+      - name: faq
+        label: Вопросы по услуге
+        label_singular: вопрос
+        widget: list
+        required: false
+        summary: '{{fields.q}}'
+        fields:
+          - { name: q, label: Вопрос, widget: string }
+          - { name: a, label: Ответ, widget: text }
+      - { name: seoTitle, label: SEO-заголовок, widget: string, required: false }
+      - { name: seoDescription, label: SEO-описание, widget: text, required: false }
+      - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Врачи ────────────────────────────────────────────────────────────
+  - name: doctors
+    label: Врачи
+    icon: badge
+    folder: src/content/doctors
+    extension: json
+    format: json
+    create: true
+    identifier_field: name
+    summary: '{{name}} — {{speciality}}'
+    fields:
+      - { name: name, label: Имя, widget: string }
+      - { name: speciality, label: Специальность, widget: string }
+      - { name: experience, label: Стаж, widget: string }
+      - { name: note, label: Короткая подпись, widget: text }
+      - { name: extra, label: Дополнительно, widget: text, required: false }
+      - { name: photo, label: Фото, widget: image, required: false }
+      - name: photoLabel
+        label: Подпись, если фото нет
+        widget: string
+        required: false
+        default: Здесь фото врача
+      - name: featured
+        label: Показывать на главной
+        widget: boolean
+        default: false
+      - name: about
+        label: О подходе врача
+        widget: list
+        required: false
+        field: { name: item, label: Абзац, widget: text }
+      - name: education
+        label: Образование и курсы
+        label_singular: запись
+        widget: list
+        required: false
+        summary: '{{fields.year}} — {{fields.text}}'
+        fields:
+          - { name: year, label: Год, widget: string }
+          - { name: text, label: Что именно, widget: string }
+      - name: skills
+        label: Что делает
+        widget: list
+        required: false
+        field: { name: item, label: Пункт, widget: string }
+      - name: services
+        label: Услуги врача
+        widget: list
+        required: false
+        hint: Имена файлов страниц услуг, например «cirkonievaya-koronka».
+        field: { name: item, label: Служебное имя услуги, widget: string }
+      - { name: seoTitle, label: SEO-заголовок, widget: string, required: false }
+      - { name: seoDescription, label: SEO-описание, widget: text, required: false }
+      - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Вопросы и ответы ─────────────────────────────────────────────────
+  - name: faq
+    label: Вопросы и ответы
+    icon: help
+    files:
+      - name: list
+        label: FAQ на главной
+        file: src/content/faq/faq.json
+        fields:
+          - name: items
+            label: Вопросы
+            label_singular: вопрос
+            widget: list
+            summary: '{{fields.q}}'
+            fields:
+              - name: id
+                label: Служебный ID
+                widget: string
+                pattern:
+                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+              - { name: q, label: Вопрос, widget: string }
+              - { name: a, label: Ответ, widget: text }
+              - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Полоса доверия ───────────────────────────────────────────────────
+  - name: trust
+    label: Полоса доверия
+    icon: verified
+    files:
+      - name: list
+        label: Блоки перед подвалом
+        file: src/content/trust/trust.json
+        fields:
+          - name: items
+            label: Блоки
+            label_singular: блок
+            widget: list
+            summary: '{{fields.title}}'
+            fields:
+              - name: id
+                label: Служебный ID
+                widget: string
+                pattern:
+                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+              - { name: title, label: Заголовок, widget: string }
+              - { name: text, label: Описание, widget: text }
+              - name: icon
+                label: Иконка
+                widget: select
+                default: shield-check
+                options:
+                  [
+                    shield-check,
+                    badge-check,
+                    award,
+                    file-text,
+                    star,
+                    heart-handshake,
+                    handshake,
+                    circle-check,
+                    clock,
+                    users,
+                    thumbs-up,
+                    map-pin,
+                    phone,
+                  ]
+              - { name: href, label: Ссылка, widget: string, required: false }
+              - name: opensLicense
+                label: Открывает шторку лицензии
+                widget: boolean
+                default: false
+                hint: Если включено, ссылка не используется.
+              - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Мы и обычная клиника ─────────────────────────────────────────────
+  - name: comparison
+    label: Мы и обычная клиника
+    icon: compare_arrows
+    files:
+      - name: list
+        label: Колонки сравнения
+        file: src/content/comparison/comparison.json
+        fields:
+          - name: items
+            label: Пункты
+            label_singular: пункт
+            widget: list
+            summary: '{{fields.side}}: {{fields.text}}'
+            fields:
+              - name: id
+                label: Служебный ID
+                widget: string
+                pattern:
+                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+              - name: side
+                label: Колонка
+                widget: select
+                options:
+                  - { label: Обычная клиника, value: them }
+                  - { label: Мы, value: us }
+              - { name: text, label: Текст, widget: text }
+              - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Карусель преимуществ ─────────────────────────────────────────────
+  - name: carousel-slides
+    label: Карусель преимуществ
+    icon: view_carousel
+    files:
+      - name: list
+        label: Слайды
+        file: src/content/carousel-slides/slides.json
+        fields:
+          - name: items
+            label: Слайды
+            label_singular: слайд
+            widget: list
+            summary: '{{fields.title}}'
+            fields:
+              - name: id
+                label: Служебный ID
+                widget: string
+                pattern:
+                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+              - { name: title, label: Заголовок, widget: string }
+              - { name: text, label: Текст, widget: text }
+              - name: photos
+                label: Фотографии
+                widget: list
+                required: false
+                field: { name: photo, label: Фото, widget: image }
+              - name: photoLabel
+                label: Подпись, если фото нет
+                widget: string
+                required: false
+                default: Здесь фото клиники
+              - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Поставщики ───────────────────────────────────────────────────────
+  - name: brands
+    label: Поставщики
+    icon: inventory
+    files:
+      - name: list
+        label: Лента поставщиков
+        file: src/content/brands/brands.json
+        fields:
+          - name: items
+            label: Поставщики
+            label_singular: поставщик
+            widget: list
+            summary: '{{fields.name}}'
+            fields:
+              - name: id
+                label: Служебный ID
+                widget: string
+                pattern:
+                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+              - { name: name, label: Название, widget: string }
+              - name: logo
+                label: Логотип
+                widget: object
+                required: false
+                collapsed: true
+                hint: Ширину и высоту указывать в пикселях, как у файла — иначе лента дёргается.
+                fields:
+                  - { name: src, label: Файл, widget: image }
+                  - { name: width, label: Ширина, widget: number, value_type: int }
+                  - { name: height, label: Высота, widget: number, value_type: int }
+              - { name: note, label: Подсказка при наведении, widget: string, required: false }
+              - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Карточки услуг ───────────────────────────────────────────────────
+  - name: services
+    label: Карточки услуг
+    icon: medical_services
+    folder: src/content/services
+    extension: json
+    format: json
+    create: true
+    identifier_field: title
+    summary: '{{title}} — {{price}}'
+    fields:
+      - { name: title, label: Название, widget: string }
+      - { name: price, label: Цена, widget: string }
+      - { name: priceNote, label: Сноска к цене, widget: string, required: false }
+      - { name: badge, label: Плашка, widget: string, required: false }
+      - { name: benefit, label: Выгода для пациента, widget: text }
+      - name: features
+        label: Что входит
+        widget: list
+        required: false
+        field: { name: item, label: Пункт, widget: string }
+      - { name: photo, label: Фото работы, widget: image, required: false }
+      - name: photoLabel
+        label: Подпись, если фото нет
+        widget: string
+        required: false
+        default: Здесь фото работы
+      - name: category
+        label: Ключ галереи
+        widget: string
+        pattern: ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+        hint: >-
+          Связывает карточку с работами «до/после». Латиницей, то же значение,
+          что у соответствующих работ. Сейчас используются: crowns, implants, veneers.
+      - name: featured
+        label: Показывать на главной
+        widget: boolean
+        default: false
+      - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
+
+  # ── Кейсы до/после ───────────────────────────────────────────────────
+  - name: cases
+    label: Работы до/после
+    icon: photo_library
+    folder: src/content/cases
+    extension: json
+    format: json
+    create: true
+    identifier_field: title
+    summary: '{{title}}'
+    fields:
+      - { name: title, label: Название работы, widget: string }
+      - name: category
+        label: Ключ галереи
+        widget: string
+        pattern: ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+        hint: >-
+          То же значение, что в «Ключ галереи» у соответствующей карточки услуги.
+          Сейчас используются: crowns, implants, veneers.
+      - { name: before, label: Фото «до», widget: image }
+      - { name: after, label: Фото «после», widget: image }
+      - { name: note, label: Комментарий, widget: text, required: false }
+      - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }

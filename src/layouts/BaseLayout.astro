@@ -9,6 +9,8 @@ import AppointmentModal from '../components/forms/AppointmentModal.astro';
 import LicenseDrawer from '../components/content/LicenseDrawer.astro';
 import ScrollToTop from '../components/core/ScrollToTop.astro';
 import Preloader from '../components/core/Preloader.astro';
+import ThemeVars from '../components/core/ThemeVars.astro';
+import theme from '../data/theme.json';
 import { withBase } from '../lib/asset';
 
 interface Props {
@@ -40,7 +42,7 @@ const asset = withBase;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#00B189" />
+    <meta name="theme-color" content={theme.accent.base} />
     <link rel="icon" type="image/svg+xml" href={asset('favicon.svg')} />
     <link rel="apple-touch-icon" href={asset('apple-touch-icon.png')} />
 
@@ -58,6 +60,8 @@ const asset = withBase;
     />
 
     <Seo title={title} description={description} path={path} noindex={noindex} faq={faq} />
+
+    <ThemeVars />
   </head>
 
   <body>

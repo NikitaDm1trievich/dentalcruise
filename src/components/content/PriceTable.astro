@@ -5,7 +5,14 @@
  */
 interface Props {
   title?: string;
-  items: { title: string; price: string; was?: string; note?: string; href?: string }[];
+  items: {
+    title: string;
+    price: string;
+    was?: string;
+    note?: string;
+    href?: string;
+    promo?: boolean;
+  }[];
 }
 
 const { title, items } = Astro.props;
@@ -27,6 +34,7 @@ const { title, items } = Astro.props;
             )}
             {item.note && <span class="dc-price__note">{item.note}</span>}
           </span>
+          {(item.promo || item.was) && <span class="dc-price__promo">Акция</span>}
           <span class="dc-price__values">
             {item.was && <s class="dc-price__was">{item.was}</s>}
             <b class="dc-price__value">{item.price}</b>
@@ -86,6 +94,22 @@ const { title, items } = Astro.props;
   .dc-price__note {
     font-size: var(--type-small);
     color: var(--text-muted);
+  }
+  /* Метка занимает место в общей строке flex, а не «висит» над ценой:
+     на узком экране строка переносится и метка уезжает вместе с названием. */
+  .dc-price__promo {
+    align-self: center;
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--dc-coral);
+    color: var(--text-on-coral);
+    font-family: var(--font-body);
+    font-size: var(--type-eyebrow);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-eyebrow);
+    white-space: nowrap;
   }
   .dc-price__values {
     display: inline-flex;

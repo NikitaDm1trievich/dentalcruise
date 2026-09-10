@@ -56,10 +56,12 @@
   --focus-ring:var(--dc-turquoise-ink);
 
   /* ── Decorative gradients (White Caps lives here) ──── */
-  --grad-shallow:linear-gradient(180deg,#F3F8F9 0%,#DEEAEC 100%);/* @kind other */
-  --grad-deep:linear-gradient(180deg,#14657A 0%,#0E5566 100%);/* @kind other */
-  --grad-sand:linear-gradient(180deg,#FFFFFF 0%,#FAF7F5 100%);/* @kind other */
-  --grad-aqua:linear-gradient(180deg,#FFFFFF 0%,#E8F5F1 100%);/* @kind other */
+  /* Градиенты собираются из тех же токенов, что и плоские заливки: иначе
+     смена цвета в редакторе темы меняла бы блоки, но не переходы между ними. */
+  --grad-shallow:linear-gradient(180deg,var(--dc-mist) 0%,var(--dc-breeze) 100%);/* @kind other */
+  --grad-deep:linear-gradient(180deg,var(--dc-lagoon-lift) 0%,var(--dc-lagoon) 100%);/* @kind other */
+  --grad-sand:linear-gradient(180deg,var(--dc-white) 0%,var(--dc-seashell) 100%);/* @kind other */
+  --grad-aqua:linear-gradient(180deg,var(--dc-white) 0%,var(--dc-aqua-tint) 100%);/* @kind other */
   --grad-horizon:linear-gradient(180deg,rgba(143,162,172,0) 0%,rgba(143,162,172,.35) 100%);/* @kind other */
   --scrim-photo:linear-gradient(180deg,rgba(7,59,75,.10) 0%,rgba(7,59,75,.62) 100%);/* @kind other */
 }

@@ -1,0 +1,929 @@
+---
+/**
+ * Студия темы: правка фирменной палитры с живым предпросмотром сайта.
+ *
+ * Почему отдельная страница, а не поле в Sveltia: цвет невозможно выбрать
+ * «вслепую» в форме. Здесь палитра слева, настоящий сайт в iframe справа,
+ * и переменные подменяются в нём на лету, без пересборки.
+ *
+ * Сохранение идёт напрямую в GitHub Contents API тем же личным токеном,
+ * что и в редакторе контента. Сайт статический, своего сервера нет, поэтому
+ * коммит — единственный способ что-то записать.
+ *
+ * Страница намеренно не использует BaseLayout: стили лендинга здесь мешали
+ * бы судить о цветах, а интерфейс инструмента живёт по своим правилам.
+ */
+import theme from '../../data/theme.json';
+import { withBase } from '../../lib/asset';
+
+const REPO = 'NikitaDm1trievich/dentalcruise';
+const BRANCH = 'main';
+const FILE = 'src/data/theme.json';
+
+/** Подписи и порядок групп. Ключи совпадают с src/data/theme.json. */
+const groups = [
+  {
+    key: 'accent',
+    title: 'Фирменный цвет',
+    note: 'Кнопки, ссылки, цены',
+    fields: [
+      // Порядок от самого заметного к самому редкому: кнопка и ссылки
+      // бросаются в глаза первыми, знак в логотипе меняют раз в жизни.
+      { key: 'ink', label: 'Кнопки и ссылки' },
+      { key: 'press', label: 'Кнопка при наведении' },
+      { key: 'base', label: 'Иконки, звёзды, рамки' },
+      { key: 'soft', label: 'Мягкая заливка' },
+      { key: 'mark', label: 'Знак в логотипе' },
+    ],
+  },
+  {
+    key: 'promo',
+    title: 'Цвет акций',
+    note: 'Плашки «Акция», старые цены',
+    fields: [
+      { key: 'base', label: 'Основной' },
+      { key: 'press', label: 'При нажатии' },
+      { key: 'soft', label: 'Мягкая заливка' },
+    ],
+  },
+  {
+    key: 'ink',
+    title: 'Цвет текста',
+    note: 'Только тёмные оттенки',
+    fields: [
+      { key: 'heading', label: 'Заголовки' },
+      { key: 'body', label: 'Основной текст' },
+      { key: 'muted', label: 'Второстепенный' },
+    ],
+  },
+  {
+    key: 'dark',
+    title: 'Тёмные блоки',
+    note: 'Первый экран, подвал',
+    fields: [
+      { key: 'base', label: 'Основной' },
+      { key: 'lift', label: 'Верх градиента' },
+      { key: 'footer', label: 'Подвал' },
+    ],
+  },
+  {
+    key: 'tint',
+    title: 'Подложки секций',
+    note: 'Очень светлые, под тёмный текст',
+    fields: [
+      { key: 'warm', label: 'Тёплая' },
+      { key: 'cool', label: 'Холодная' },
+      { key: 'aqua', label: 'Мятная' },
+      { key: 'breeze', label: 'Голубая' },
+    ],
+  },
+] as const;
+
+const previewPages = [
+  { href: withBase(''), label: 'Главная' },
+  { href: withBase('pricelist'), label: 'Прайс-лист' },
+  { href: withBase('doctors'), label: 'Врачи' },
+];
+---
+
+<html lang="ru" data-repo={REPO} data-branch={BRANCH} data-file={FILE}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Студия темы — Дентал Круиз</title>
+    <link rel="icon" href={withBase('favicon.svg')} />
+  </head>
+
+  <body>
+    <div class="app">
+      <header class="bar">
+        <div class="bar__id">
+          <span class="bar__dot" aria-hidden="true"></span>
+          <h1>Студия темы</h1>
+        </div>
+
+        <div class="bar__actions">
+          <span class="state" data-state hidden></span>
+          <button type="button" class="btn btn--ghost" data-reset disabled>Вернуть сохранённое</button>
+          <button type="button" class="btn btn--primary" data-save disabled>Сохранить на сайт</button>
+        </div>
+      </header>
+
+      <div class="body">
+        <aside class="rail" aria-label="Палитра">
+          <section class="auth" data-auth hidden>
+            <h2>Нужен доступ</h2>
+            <p>
+              Вставьте личный токен GitHub с правом записи в репозиторий. Он хранится только в этом
+              браузере и никуда больше не отправляется.
+            </p>
+            <label class="field">
+              <span>Токен доступа</span>
+              <input type="password" data-token-input autocomplete="off" spellcheck="false" placeholder="github_pat_..." />
+            </label>
+            <p class="field__error" data-auth-error hidden role="alert"></p>
+            <button type="button" class="btn btn--primary btn--wide" data-token-save>Подключить</button>
+            <p class="auth__hint">Как выпустить токен, описано в admin.md в репозитории.</p>
+          </section>
+
+          <div data-editor hidden>
+            {
+              groups.map((group) => (
+                <section class="group">
+                  <div class="group__head">
+                    <h2>{group.title}</h2>
+                    <p>{group.note}</p>
+                  </div>
+                  <div class="group__rows">
+                    {group.fields.map((field) => (
+                      <div class="row">
+                        <label class="row__swatch">
+                          <input
+                            type="color"
+                            data-color={`${group.key}.${field.key}`}
+                            value={(theme as Record<string, Record<string, string>>)[group.key][field.key]}
+                            aria-label={`${group.title}: ${field.label}`}
+                          />
+                        </label>
+                        <span class="row__label">{field.label}</span>
+                        <input
+                          type="text"
+                          class="row__hex"
+                          data-hex={`${group.key}.${field.key}`}
+                          value={(theme as Record<string, Record<string, string>>)[group.key][field.key]}
+                          spellcheck="false"
+                          aria-label={`${field.label}, код цвета`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ))
+            }
+
+            <section class="group">
+              <div class="group__head">
+                <h2>Читаемость</h2>
+                <p>Норма WCAG AA для текста 4.5:1</p>
+              </div>
+              <ul class="checks" data-checks role="list"></ul>
+            </section>
+          </div>
+        </aside>
+
+        <main class="preview">
+          <div class="preview__bar">
+            <div class="seg" role="group" aria-label="Страница для просмотра">
+              {
+                previewPages.map((page, i) => (
+                  <button
+                    type="button"
+                    class="seg__btn"
+                    data-page={page.href}
+                    aria-pressed={i === 0 ? 'true' : 'false'}
+                  >
+                    {page.label}
+                  </button>
+                ))
+              }
+            </div>
+
+            <div class="seg" role="group" aria-label="Размер экрана">
+              <button type="button" class="seg__btn" data-view="desktop" aria-pressed="true">Компьютер</button>
+              <button type="button" class="seg__btn" data-view="mobile" aria-pressed="false">Телефон</button>
+            </div>
+          </div>
+
+          <div class="preview__stage" data-stage>
+            <iframe data-frame src={withBase('')} title="Предпросмотр сайта"></iframe>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <style>
+      /* Интерфейс намеренно нейтрально-серый: любой собственный цвет мешал бы
+         оценивать редактируемую палитру. Единственные цветные пятна здесь -
+         это образцы цветов и отметки о непройденном контрасте. */
+      :root {
+        --bg: #15171c;
+        --panel: #1c1f26;
+        --panel-2: #22262e;
+        --line: #2e333d;
+        --line-soft: #262a32;
+        --fg: #e9ebef;
+        --fg-muted: #9ba2ad;
+        --fg-dim: #6f7783;
+        --ok: #4ade80;
+        --warn: #fbbf24;
+        --bad: #f87171;
+        --r: 10px;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1,
+      h2 {
+        margin: 0;
+        font-weight: 500;
+      }
+      p {
+        margin: 0;
+      }
+
+      .app {
+        height: 100dvh;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      /* ── Верхняя панель ─────────────────────────────────────────── */
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 16px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .bar__id {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .bar__dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--fg-dim);
+        transition: background 0.15s ease;
+      }
+      .bar__dot[data-dirty] {
+        background: var(--warn);
+      }
+      .bar h1 {
+        font-size: 15px;
+        letter-spacing: -0.01em;
+      }
+      .bar__actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .state {
+        font-size: 13px;
+        color: var(--fg-muted);
+        margin-right: 4px;
+      }
+      .state[data-tone='bad'] {
+        color: var(--bad);
+      }
+      .state[data-tone='ok'] {
+        color: var(--ok);
+      }
+
+      .btn {
+        appearance: none;
+        border: 1px solid transparent;
+        border-radius: var(--r);
+        padding: 8px 14px;
+        font: inherit;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease,
+          transform 0.08s ease;
+      }
+      .btn:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn:focus-visible {
+        outline: 2px solid var(--fg);
+        outline-offset: 2px;
+      }
+      .btn--primary {
+        background: var(--fg);
+        color: #16181d;
+      }
+      .btn--primary:hover:not(:disabled) {
+        background: #fff;
+      }
+      .btn--ghost {
+        background: transparent;
+        border-color: var(--line);
+        color: var(--fg);
+      }
+      .btn--ghost:hover:not(:disabled) {
+        background: var(--panel-2);
+      }
+      .btn--wide {
+        width: 100%;
+      }
+
+      /* ── Раскладка ──────────────────────────────────────────────── */
+      .body {
+        display: grid;
+        grid-template-columns: 340px minmax(0, 1fr);
+        min-height: 0;
+      }
+      .rail {
+        overflow-y: auto;
+        border-right: 1px solid var(--line);
+        background: var(--panel);
+        padding: 4px 0 32px;
+      }
+
+      /* ── Ввод токена ────────────────────────────────────────────── */
+      .auth {
+        padding: 20px 16px;
+        display: grid;
+        gap: 12px;
+      }
+      .auth h2 {
+        font-size: 14px;
+      }
+      .auth p {
+        color: var(--fg-muted);
+        font-size: 13px;
+      }
+      .auth__hint {
+        font-size: 12px;
+        color: var(--fg-dim);
+      }
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+      .field span {
+        font-size: 12px;
+        color: var(--fg-muted);
+      }
+      .field input {
+        width: 100%;
+        padding: 9px 11px;
+        border-radius: var(--r);
+        border: 1px solid var(--line);
+        background: var(--bg);
+        color: var(--fg);
+        font: inherit;
+      }
+      .field input:focus-visible {
+        outline: 2px solid var(--fg-muted);
+        outline-offset: 1px;
+      }
+      .field__error {
+        color: var(--bad);
+        font-size: 13px;
+      }
+
+      /* ── Группы цветов ──────────────────────────────────────────── */
+      .group {
+        padding: 18px 16px;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .group:last-child {
+        border-bottom: 0;
+      }
+      .group__head {
+        margin-bottom: 12px;
+      }
+      .group__head h2 {
+        font-size: 13px;
+        letter-spacing: 0.01em;
+      }
+      .group__head p {
+        font-size: 12px;
+        color: var(--fg-dim);
+        margin-top: 2px;
+      }
+      .group__rows {
+        display: grid;
+        gap: 6px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) 82px;
+        align-items: center;
+        gap: 10px;
+      }
+      .row__swatch {
+        display: block;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .row__swatch input {
+        appearance: none;
+        display: block;
+        width: 200%;
+        height: 200%;
+        margin: -50% 0 0 -50%;
+        padding: 0;
+        border: 0;
+        background: none;
+        cursor: pointer;
+      }
+      .row__label {
+        font-size: 13px;
+        color: var(--fg-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .row__hex {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        color: var(--fg);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+      .row__hex:focus-visible {
+        outline: 2px solid var(--fg-muted);
+        outline-offset: 1px;
+      }
+      .row__hex[aria-invalid='true'] {
+        border-color: var(--bad);
+      }
+
+      /* ── Проверка контраста ─────────────────────────────────────── */
+      .checks {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 2px;
+      }
+      .check {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        font-size: 12px;
+      }
+      .check[data-pass='false'] {
+        background: rgba(248, 113, 113, 0.12);
+      }
+      .check__label {
+        color: var(--fg-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .check[data-pass='false'] .check__label {
+        color: var(--fg);
+      }
+      .check__ratio {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ok);
+      }
+      .check[data-pass='false'] .check__ratio {
+        color: var(--bad);
+      }
+      .checks__empty {
+        font-size: 12px;
+        color: var(--fg-dim);
+      }
+
+      /* ── Предпросмотр ───────────────────────────────────────────── */
+      .preview {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        min-width: 0;
+        background: var(--bg);
+      }
+      .preview__bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        flex-wrap: wrap;
+      }
+      .seg {
+        display: inline-flex;
+        padding: 2px;
+        gap: 2px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+      }
+      .seg__btn {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--fg-muted);
+        font: inherit;
+        font-size: 13px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition:
+          background 0.15s ease,
+          color 0.15s ease;
+      }
+      .seg__btn:hover {
+        color: var(--fg);
+      }
+      .seg__btn[aria-pressed='true'] {
+        background: var(--panel-2);
+        color: var(--fg);
+      }
+      .seg__btn:focus-visible {
+        outline: 2px solid var(--fg);
+        outline-offset: -2px;
+      }
+
+      .preview__stage {
+        min-height: 0;
+        padding: 16px;
+        display: grid;
+        place-items: center;
+        overflow: auto;
+      }
+      .preview__stage iframe {
+        width: 100%;
+        height: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+        display: block;
+      }
+      .preview__stage[data-view='mobile'] iframe {
+        width: 390px;
+        max-width: 100%;
+        height: min(844px, 100%);
+      }
+
+      @media (max-width: 900px) {
+        .body {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto minmax(320px, 1fr);
+        }
+        .rail {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+          max-height: 45dvh;
+        }
+      }
+    </style>
+
+    <script>
+      import { checkTheme } from '../../lib/contrast';
+
+      type Theme = Record<string, Record<string, string>>;
+
+      const root = document.documentElement;
+      const REPO = root.dataset.repo!;
+      const BRANCH = root.dataset.branch!;
+      const FILE = root.dataset.file!;
+      const TOKEN_KEY = 'dc-theme-studio-token';
+
+      const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
+      const authBox = $<HTMLElement>('[data-auth]');
+      const editor = $<HTMLElement>('[data-editor]');
+      const stateEl = $<HTMLElement>('[data-state]');
+      const dot = $<HTMLElement>('.bar__dot');
+      const saveBtn = $<HTMLButtonElement>('[data-save]');
+      const resetBtn = $<HTMLButtonElement>('[data-reset]');
+      const frame = $<HTMLIFrameElement>('[data-frame]');
+      const stage = $<HTMLElement>('[data-stage]');
+      const checksEl = $<HTMLUListElement>('[data-checks]');
+
+      /** Соответствие ключей темы и CSS-переменных сайта */
+      const VARS: Record<string, string> = {
+        'accent.base': '--dc-turquoise',
+        'accent.press': '--dc-turquoise-press',
+        'accent.ink': '--dc-turquoise-ink',
+        'accent.soft': '--dc-turquoise-soft',
+        'accent.mark': '--dc-turquoise-mark',
+        'promo.base': '--dc-coral',
+        'promo.press': '--dc-coral-press',
+        'promo.soft': '--dc-coral-soft',
+        'ink.heading': '--dc-depths',
+        'ink.body': '--text-body',
+        'ink.muted': '--text-muted',
+        'dark.base': '--dc-lagoon',
+        'dark.lift': '--dc-lagoon-lift',
+        'dark.footer': '--surface-footer',
+        'tint.warm': '--dc-seashell',
+        'tint.cool': '--dc-mist',
+        'tint.aqua': '--dc-aqua-tint',
+        'tint.breeze': '--dc-breeze',
+      };
+
+      let token = localStorage.getItem(TOKEN_KEY) ?? '';
+      let saved: Theme | null = null; // как лежит в репозитории
+      let draft: Theme = {}; // что видно на экране
+      let sha = '';
+
+      const get = (t: Theme, path: string) => {
+        const [g, f] = path.split('.');
+        return t[g]?.[f] ?? '';
+      };
+      const set = (t: Theme, path: string, v: string) => {
+        const [g, f] = path.split('.');
+        (t[g] ??= {})[f] = v;
+      };
+      const clone = (t: Theme): Theme => JSON.parse(JSON.stringify(t));
+      const isHex = (v: string) => /^#[0-9a-f]{6}$/i.test(v.trim());
+
+      const say = (text: string, tone?: 'ok' | 'bad') => {
+        stateEl.textContent = text;
+        stateEl.hidden = !text;
+        if (tone) stateEl.dataset.tone = tone;
+        else delete stateEl.dataset.tone;
+      };
+
+      const dirty = () => saved !== null && JSON.stringify(saved) !== JSON.stringify(draft);
+
+      const syncButtons = () => {
+        const d = dirty();
+        saveBtn.disabled = !d;
+        resetBtn.disabled = !d;
+        if (d) dot.dataset.dirty = '';
+        else delete dot.dataset.dirty;
+      };
+
+      /* ── Живой предпросмотр ────────────────────────────────────── */
+      const paintPreview = () => {
+        const doc = frame.contentDocument;
+        if (!doc?.head) return;
+        let style = doc.getElementById('dc-theme-studio') as HTMLStyleElement | null;
+        if (!style) {
+          style = doc.createElement('style');
+          style.id = 'dc-theme-studio';
+          doc.head.appendChild(style);
+        }
+        // Тройной :root перебивает и токены, и инъекцию ThemeVars (:root:root)
+        const decls = Object.entries(VARS)
+          .map(([path, cssVar]) => `${cssVar}:${get(draft, path)}`)
+          .join(';');
+        style.textContent = `:root:root:root{${decls}}`;
+      };
+
+      frame.addEventListener('load', paintPreview);
+
+      /* ── Контраст ──────────────────────────────────────────────── */
+      const paintChecks = () => {
+        const results = checkTheme(draft as never);
+        const failed = results.filter((c) => !c.passes);
+        checksEl.innerHTML = '';
+
+        if (!failed.length) {
+          const li = document.createElement('li');
+          li.className = 'checks__empty';
+          li.textContent = 'Все сочетания читаемы.';
+          checksEl.appendChild(li);
+          return;
+        }
+
+        for (const c of failed) {
+          const li = document.createElement('li');
+          li.className = 'check';
+          li.dataset.pass = 'false';
+          const label = document.createElement('span');
+          label.className = 'check__label';
+          label.textContent = c.label;
+          const ratio = document.createElement('span');
+          ratio.className = 'check__ratio';
+          ratio.textContent = `${c.ratio}:1`;
+          ratio.title = `Нужно не меньше ${c.min}:1`;
+          li.append(label, ratio);
+          checksEl.appendChild(li);
+        }
+      };
+
+      const refresh = () => {
+        paintPreview();
+        paintChecks();
+        syncButtons();
+      };
+
+      /* ── Ввод цвета ────────────────────────────────────────────── */
+      for (const input of document.querySelectorAll<HTMLInputElement>('[data-color]')) {
+        input.addEventListener('input', () => {
+          const path = input.dataset.color!;
+          const value = input.value.toUpperCase();
+          set(draft, path, value);
+          const hex = document.querySelector<HTMLInputElement>(`[data-hex="${path}"]`);
+          if (hex) {
+            hex.value = value;
+            hex.removeAttribute('aria-invalid');
+          }
+          refresh();
+        });
+      }
+
+      for (const input of document.querySelectorAll<HTMLInputElement>('[data-hex]')) {
+        input.addEventListener('input', () => {
+          const path = input.dataset.hex!;
+          const raw = input.value.trim();
+          const value = raw.startsWith('#') ? raw : `#${raw}`;
+          if (!isHex(value)) {
+            input.setAttribute('aria-invalid', 'true');
+            return;
+          }
+          input.removeAttribute('aria-invalid');
+          set(draft, path, value.toUpperCase());
+          const swatch = document.querySelector<HTMLInputElement>(`[data-color="${path}"]`);
+          if (swatch) swatch.value = value;
+          refresh();
+        });
+      }
+
+      /* ── Переключатели предпросмотра ───────────────────────────── */
+      for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-page]')) {
+        btn.addEventListener('click', () => {
+          document
+            .querySelectorAll<HTMLButtonElement>('[data-page]')
+            .forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          frame.src = btn.dataset.page!;
+        });
+      }
+
+      for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-view]')) {
+        btn.addEventListener('click', () => {
+          document
+            .querySelectorAll<HTMLButtonElement>('[data-view]')
+            .forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          stage.dataset.view = btn.dataset.view!;
+        });
+      }
+
+      /* ── GitHub ────────────────────────────────────────────────── */
+      const api = (path: string, init: RequestInit = {}) =>
+        fetch(`https://api.github.com/repos/${REPO}/${path}`, {
+          ...init,
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: `Bearer ${token}`,
+            ...(init.headers ?? {}),
+          },
+        });
+
+      // Кириллица в JSON не проходит через btoa напрямую: сначала в UTF-8 байты
+      const toBase64 = (text: string) => {
+        const bytes = new TextEncoder().encode(text);
+        let bin = '';
+        bytes.forEach((b) => (bin += String.fromCharCode(b)));
+        return btoa(bin);
+      };
+
+      const load = async () => {
+        say('Загружаем...');
+        const res = await api(`contents/${FILE}?ref=${BRANCH}`);
+        if (!res.ok) {
+          throw new Error(
+            res.status === 401
+              ? 'Токен не подошёл. Проверьте, что он не истёк и даёт доступ к этому репозиторию.'
+              : `GitHub ответил ${res.status}`,
+          );
+        }
+        const json = await res.json();
+        sha = json.sha;
+        const text = new TextDecoder().decode(
+          Uint8Array.from(atob(json.content.replace(/\n/g, '')), (c) => c.charCodeAt(0)),
+        );
+        saved = JSON.parse(text) as Theme;
+        draft = clone(saved);
+
+        // Значения из репозитория могут отличаться от вшитых в страницу
+        for (const [path] of Object.entries(VARS)) {
+          const v = get(draft, path);
+          if (!v) continue;
+          const sw = document.querySelector<HTMLInputElement>(`[data-color="${path}"]`);
+          const hx = document.querySelector<HTMLInputElement>(`[data-hex="${path}"]`);
+          if (sw) sw.value = v;
+          if (hx) hx.value = v.toUpperCase();
+        }
+
+        authBox.hidden = true;
+        editor.hidden = false;
+        say('');
+        refresh();
+      };
+
+      const save = async () => {
+        saveBtn.disabled = true;
+        say('Сохраняем...');
+        try {
+          const res = await api(`contents/${FILE}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              message: 'Обновить палитру сайта через студию темы',
+              content: toBase64(JSON.stringify(draft, null, 2) + '\n'),
+              sha,
+              branch: BRANCH,
+            }),
+          });
+          if (!res.ok) {
+            const detail = await res.json().catch(() => ({}));
+            throw new Error(detail.message ?? `GitHub ответил ${res.status}`);
+          }
+          const json = await res.json();
+          sha = json.content.sha;
+          saved = clone(draft);
+          say('Сохранено. Сайт обновится через 1-2 минуты.', 'ok');
+          syncButtons();
+        } catch (err) {
+          say(err instanceof Error ? err.message : 'Не удалось сохранить', 'bad');
+          syncButtons();
+        }
+      };
+
+      saveBtn.addEventListener('click', save);
+
+      resetBtn.addEventListener('click', () => {
+        if (!saved) return;
+        draft = clone(saved);
+        for (const [path] of Object.entries(VARS)) {
+          const v = get(draft, path);
+          const sw = document.querySelector<HTMLInputElement>(`[data-color="${path}"]`);
+          const hx = document.querySelector<HTMLInputElement>(`[data-hex="${path}"]`);
+          if (sw) sw.value = v;
+          if (hx) {
+            hx.value = v.toUpperCase();
+            hx.removeAttribute('aria-invalid');
+          }
+        }
+        say('');
+        refresh();
+      });
+
+      /* ── Вход ──────────────────────────────────────────────────── */
+      const tokenInput = $<HTMLInputElement>('[data-token-input]');
+      const tokenBtn = $<HTMLButtonElement>('[data-token-save]');
+      const authError = $<HTMLElement>('[data-auth-error]');
+
+      const tryLoad = async () => {
+        try {
+          await load();
+        } catch (err) {
+          token = '';
+          localStorage.removeItem(TOKEN_KEY);
+          authBox.hidden = false;
+          editor.hidden = true;
+          authError.textContent = err instanceof Error ? err.message : 'Не удалось подключиться';
+          authError.hidden = false;
+          say('');
+        }
+      };
+
+      tokenBtn.addEventListener('click', async () => {
+        const value = tokenInput.value.trim();
+        if (!value) {
+          authError.textContent = 'Вставьте токен.';
+          authError.hidden = false;
+          return;
+        }
+        authError.hidden = true;
+        token = value;
+        localStorage.setItem(TOKEN_KEY, token);
+        tokenInput.value = '';
+        await tryLoad();
+      });
+
+      tokenInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') tokenBtn.click();
+      });
+
+      if (token) {
+        void tryLoad();
+      } else {
+        authBox.hidden = false;
+      }
+    </script>
+  </body>
+</html>

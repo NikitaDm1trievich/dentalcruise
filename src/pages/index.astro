@@ -28,6 +28,7 @@ import TrustBar from '../components/content/TrustBar.astro';
 import YandexEmbed from '../components/content/YandexEmbed.astro';
 
 import { clinic } from '../data/site';
+import copy from '../data/home.json';
 import { withBase } from '../lib/asset';
 
 const asset = withBase;
@@ -66,13 +67,13 @@ const clinicPhotos = Array.from(
   faq={faqItems}
 >
   <OceanHero
-    eyebrow="Центр стоматологии"
-    slogan={clinic.name}
+    eyebrow={copy.hero.eyebrow}
+    slogan={copy.hero.title}
     webm={asset('video/ocean-hero.webm')}
     mp4={asset('video/ocean-hero.mp4')}
     poster={asset('video/ocean-hero-poster.jpg')}
   >
-    <p class="dc-hero__lead">{clinic.tagline}</p>
+    <p class="dc-hero__lead">{copy.hero.lead}</p>
     <div class="dc-hero__actions">
       <Button variant="primary" size="lg" data-open="dc-book">
         <Icon slot="icon" name="calendar" size={20} />
@@ -89,20 +90,7 @@ const clinicPhotos = Array.from(
   <section id="terms" class="dc-section--tight dc-bg-fade">
     <div class="dc-container">
       <Reveal>
-        <OfferStrip
-          items={[
-            {
-              icon: 'calendar-check',
-              title: 'Консультация бесплатно',
-              text: 'Осмотр, снимок и план лечения с итоговой суммой — без оплаты и без обязательства лечиться у нас.',
-            },
-            {
-              icon: 'wallet',
-              title: 'Рассрочка без переплат',
-              text: 'Доступная рассрочка без % от клиники и банков-партнёров на масштабные планы лечения.',
-            },
-          ]}
-        />
+        <OfferStrip items={copy.terms} />
       </Reveal>
     </div>
   </section>
@@ -112,14 +100,14 @@ const clinicPhotos = Array.from(
     <div class="dc-container">
       <Reveal>
         <PromoBoard
-          title="Цены, которые видно сразу"
+          title={copy.promo.title}
           items={promos.map((p) => ({
             ...p.data,
             href: p.data.category
               ? `${asset('pricelist')}#${p.data.category}`
               : undefined,
           }))}
-          note="Цены ниже рынка потому, что коронки и виниры делает наша лаборатория — без наценки посредника."
+          note={copy.promo.note}
         />
       </Reveal>
     </div>
@@ -130,9 +118,9 @@ const clinicPhotos = Array.from(
     <div class="dc-container">
       <Reveal>
         <SectionHeading
-          eyebrow="Услуги"
-          title="Что мы лечим и восстанавливаем"
-          lead="Открывайте раздел — там цены на самые частые позиции. Полный прайс по каждому направлению — на отдельной странице."
+          eyebrow={copy.services.eyebrow}
+          title={copy.services.title}
+          lead={copy.services.lead}
         />
       </Reveal>
 
@@ -158,10 +146,7 @@ const clinicPhotos = Array.from(
   <section id="brands" class="dc-section--tight dc-bg-fade-aqua">
     <div class="dc-container">
       <Reveal>
-        <BrandsMarquee
-          eyebrow="Работаем на материалах проверенных поставщиков"
-          brands={brands.map((b) => b.data)}
-        />
+        <BrandsMarquee eyebrow={copy.brands.eyebrow} brands={brands.map((b) => b.data)} />
       </Reveal>
     </div>
   </section>
@@ -171,9 +156,9 @@ const clinicPhotos = Array.from(
     <div class="dc-container">
       <Reveal>
         <SectionHeading
-          eyebrow="Врачи"
-          title="Команда, которая работает вместе"
-          lead="Врач и техник обсуждают вашу работу лично — не через посредника."
+          eyebrow={copy.doctors.eyebrow}
+          title={copy.doctors.title}
+          lead={copy.doctors.lead}
         />
       </Reveal>
 
@@ -197,7 +182,7 @@ const clinicPhotos = Array.from(
 
       <Reveal delay={320}>
         <div class="dc-actions">
-          <Button variant="secondary" size="lg" href={asset('doctors')}>Все врачи</Button>
+          <Button variant="secondary" size="lg" href={asset('doctors')}>{copy.doctors.cta}</Button>
         </div>
       </Reveal>
     </div>
@@ -207,7 +192,7 @@ const clinicPhotos = Array.from(
   <section id="advantages" class="dc-section dc-bg-warm">
     <div class="dc-container">
       <Reveal>
-        <SectionHeading eyebrow="Дентал Круиз" title="Почему пациенты выбирают нас" />
+        <SectionHeading eyebrow={copy.advantages.eyebrow} title={copy.advantages.title} />
       </Reveal>
       <Reveal delay={90}>
         <AdvantageCarousel slides={slides.map((s) => s.data)} />
@@ -219,11 +204,7 @@ const clinicPhotos = Array.from(
   <section id="why" class="dc-section dc-bg-white">
     <div class="dc-container">
       <Reveal>
-        <SectionHeading
-          eyebrow="Почему мы"
-          title="Своя лаборатория — своя цена"
-          lead="Большинство клиник заказывают коронки и виниры на стороне. Мы делаем их сами — поэтому нет наценки посредника и долгого ожидания."
-        />
+        <SectionHeading eyebrow={copy.why.eyebrow} title={copy.why.title} lead={copy.why.lead} />
       </Reveal>
       <Reveal delay={90}>
         <ComparisonColumns theirItems={them} ourItems={us} />
@@ -233,10 +214,10 @@ const clinicPhotos = Array.from(
       </Reveal>
       <Reveal delay={180}>
         <PriceCompare
-          label="Виниры E-max, за зуб"
-          marketPrice="40 000–80 000 ₽"
-          ourPrice="25 000 ₽"
-          note="Дешевле не за счёт качества, а потому что между вами и техником никого нет. Импланты Osstem и Astra Tech — сертифицированные системы сторонних производителей, цена на уровне рынка, без накруток."
+          label={copy.why.compare.label}
+          marketPrice={copy.why.compare.marketPrice}
+          ourPrice={copy.why.compare.ourPrice}
+          note={copy.why.compare.note}
         />
       </Reveal>
     </div>
@@ -257,19 +238,19 @@ const clinicPhotos = Array.from(
       <Reveal>
         <div class="dc-about">
           <SectionHeading
-            eyebrow="О клинике"
-            title="Лаборатория внутри клиники"
-            lead="С 2013 года наши зубные техники работают в том же здании, что и врачи. Более 10 000 изготовленных коронок: мы видим результат своими руками и отвечаем за него сами."
+            eyebrow={copy.about.eyebrow}
+            title={copy.about.title}
+            lead={copy.about.lead}
           />
-          <Badge tone="quiet">10 000+ коронок с 2013 года</Badge>
-          <Button variant="secondary" size="lg" href={asset('about')}>Подробнее о клинике</Button>
+          <Badge tone="quiet">{copy.about.badge}</Badge>
+          <Button variant="secondary" size="lg" href={asset('about')}>{copy.about.cta}</Button>
         </div>
       </Reveal>
       <Reveal delay={120}>
         <PhotoGallery
           photos={clinicPhotos}
           alt="Клиника «Дентал Круиз» изнутри"
-          label="Здесь фото зуботехнического цеха"
+          label={copy.about.galleryLabel}
           ratio="4 / 3"
           interval={4000}
         />
@@ -284,11 +265,11 @@ const clinicPhotos = Array.from(
         <div class="dc-aside-col">
           <SectionHeading
             class="dc-aside-heading"
-            eyebrow="Вопросы"
-            title="Что чаще всего спрашивают"
-            lead="Если вашего вопроса тут нет — задайте его администратору, ответим по телефону или в мессенджере."
+            eyebrow={copy.faq.eyebrow}
+            title={copy.faq.title}
+            lead={copy.faq.lead}
           />
-          <Button variant="primary" data-open="dc-book">Задать вопрос</Button>
+          <Button variant="primary" data-open="dc-book">{copy.faq.cta}</Button>
         </div>
       </Reveal>
       <Reveal delay={90}>
@@ -301,7 +282,7 @@ const clinicPhotos = Array.from(
   <section id="reviews" class="dc-section dc-bg-white">
     <div class="dc-container">
       <Reveal>
-        <SectionHeading eyebrow="Отзывы" title="Настоящие отзывы, а не наши слова" />
+        <SectionHeading eyebrow={copy.reviews.eyebrow} title={copy.reviews.title} />
       </Reveal>
 
       <div class="dc-two-col">
@@ -311,27 +292,24 @@ const clinicPhotos = Array.from(
             <div class="dc-facts">
               <div>
                 <span class="dc-facts__value">
-                  <CountUp value={4.9} decimals={1} />
+                  <CountUp value={copy.reviews.rating.value} decimals={1} />
                 </span>
-                <span class="dc-facts__cap">Средняя оценка на Яндекс Картах</span>
+                <span class="dc-facts__cap">{copy.reviews.rating.caption}</span>
               </div>
               <div>
                 <span class="dc-facts__value">
-                  <CountUp value={120} suffix="+" />
+                  <CountUp value={copy.reviews.count.value} suffix="+" />
                 </span>
-                <span class="dc-facts__cap">Отзывов пациентов района</span>
+                <span class="dc-facts__cap">{copy.reviews.count.caption}</span>
               </div>
               <div>
                 <span class="dc-facts__value">
                   {/* Счёт с 2000, а не с нуля: год, бегущий от нуля, читается как ошибка */}
-                  <CountUp value={2013} from={2000} prefix="с " grouping={false} />
+                  <CountUp value={copy.reviews.since.value} from={2000} prefix="с " grouping={false} />
                 </span>
-                <span class="dc-facts__cap">Года принимаем в этом же здании</span>
+                <span class="dc-facts__cap">{copy.reviews.since.caption}</span>
               </div>
-              <p>
-                Отметка «Хорошее место» от Яндекса даётся клиникам, которых пациенты оценивают выше
-                остальных в районе.
-              </p>
+              <p>{copy.reviews.note}</p>
             </div>
           </div>
         </Reveal>
@@ -342,7 +320,7 @@ const clinicPhotos = Array.from(
             title="Отзывы о клинике «Дентал Круиз» на Яндекс Картах"
             height={526}
             linkHref={clinic.links.yandexOrg}
-            linkLabel="Все отзывы на Яндекс Картах"
+            linkLabel={copy.reviews.linkLabel}
           />
         </Reveal>
       </div>

@@ -1,25 +1,27 @@
-[
-  {
-    "id": "yandex-good-place",
-    "title": "Яндекс Хорошее место",
-    "text": "Отметка за высокие оценки пациентов",
-    "icon": "award",
-    "order": 10
-  },
-  {
-    "id": "license",
-    "title": "Лицензия на медицинскую деятельность",
-    "text": "Нажмите, чтобы посмотреть документ",
-    "icon": "file-text",
-    "opensLicense": true,
-    "order": 20
-  },
-  {
-    "id": "rating",
-    "title": "Рейтинг 4,9 на Яндекс Картах",
-    "text": "Более 120 отзывов пациентов",
-    "icon": "star",
-    "href": "https://yandex.ru/maps/org/dental_kruiz/154025048590/",
-    "order": 30
-  }
-]
+{
+  "items": [
+    {
+      "id": "yandex-good-place",
+      "title": "Яндекс Хорошее место",
+      "text": "Отметка за высокие оценки пациентов",
+      "icon": "award",
+      "order": 10
+    },
+    {
+      "id": "license",
+      "title": "Лицензия на медицинскую деятельность",
+      "text": "Нажмите, чтобы посмотреть документ",
+      "icon": "file-text",
+      "opensLicense": true,
+      "order": 20
+    },
+    {
+      "id": "rating",
+      "title": "Рейтинг 4,9 на Яндекс Картах",
+      "text": "Более 120 отзывов пациентов",
+      "icon": "star",
+      "href": "https://yandex.ru/maps/org/dental_kruiz/154025048590/",
+      "order": 30
+    }
+  ]
+}

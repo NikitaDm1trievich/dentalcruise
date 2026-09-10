@@ -21,7 +21,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       // Служебные страницы в карте сайта не нужны.
-      filter: (page) => !page.includes('/404'),
+      filter: (page) => !page.includes('/404') && !page.includes('/admin'),
     }),
   ],
   vite: {

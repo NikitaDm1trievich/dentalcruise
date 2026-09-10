@@ -1,0 +1,30 @@
+{
+  "accent": {
+    "base": "#00B189",
+    "press": "#00926F",
+    "ink": "#00654E",
+    "soft": "#CDEDE3",
+    "mark": "#007C88"
+  },
+  "promo": {
+    "base": "#D93838",
+    "press": "#C22F2F",
+    "soft": "#FDEDEC"
+  },
+  "ink": {
+    "heading": "#073B4B",
+    "body": "#1F4451",
+    "muted": "#3F6270"
+  },
+  "dark": {
+    "base": "#0E5566",
+    "lift": "#14657A",
+    "footer": "#0B4557"
+  },
+  "tint": {
+    "warm": "#FAF7F5",
+    "cool": "#F3F8F9",
+    "aqua": "#E8F5F1",
+    "breeze": "#DEEAEC"
+  }
+}

@@ -12,6 +12,13 @@ import { file, glob } from 'astro/loaders';
 
 const orderable = { order: z.number().default(100) };
 
+/**
+ * Списочные коллекции лежат в файле как `{ "items": [...] }`, а не голым
+ * массивом: редактор (Sveltia CMS, public/admin) умеет править только
+ * объект в корне файла. Загрузчику отдаём сам массив.
+ */
+const unwrap = (text: string) => JSON.parse(text).items;
+
 const doctors = defineCollection({
   loader: glob({ pattern: '**/*.json', base: './src/content/doctors' }),
   schema: z.object({
@@ -70,7 +77,7 @@ const cases = defineCollection({
 });
 
 const carouselSlides = defineCollection({
-  loader: file('./src/content/carousel-slides/slides.json'),
+  loader: file('./src/content/carousel-slides/slides.json', { parser: unwrap }),
   schema: z.object({
     id: z.string(),
     title: z.string(),
@@ -83,7 +90,7 @@ const carouselSlides = defineCollection({
 });
 
 const faq = defineCollection({
-  loader: file('./src/content/faq/faq.json'),
+  loader: file('./src/content/faq/faq.json', { parser: unwrap }),
   schema: z.object({
     id: z.string(),
     q: z.string(),
@@ -93,7 +100,7 @@ const faq = defineCollection({
 });
 
 const promos = defineCollection({
-  loader: file('./src/content/promos/promos.json'),
+  loader: file('./src/content/promos/promos.json', { parser: unwrap }),
   schema: z.object({
     id: z.string(),
     title: z.string(),
@@ -116,7 +123,7 @@ const promos = defineCollection({
 });
 
 const brands = defineCollection({
-  loader: file('./src/content/brands/brands.json'),
+  loader: file('./src/content/brands/brands.json', { parser: unwrap }),
   schema: z.object({
     id: z.string(),
     name: z.string(),
@@ -139,6 +146,12 @@ const priceItem = z.object({
   price: z.string(),
   was: z.string().optional(),
   note: z.string().optional(),
+  /**
+   * Метка «Акция» у строки прайса. Указана старая цена — метка появляется
+   * сама, отдельно включать не нужно; флаг нужен для позиций, которые
+   * выделяем без скидки.
+   */
+  promo: z.boolean().default(false),
 });
 
 /**
@@ -216,7 +229,7 @@ const servicePages = defineCollection({
  * меню в бургере и десктоп-панели ссылается на эти же id.
  */
 const serviceCategories = defineCollection({
-  loader: file('./src/content/service-categories/categories.json'),
+  loader: file('./src/content/service-categories/categories.json', { parser: unwrap }),
   schema: z.object({
     id: z.string(),
     /** Якорь на будущей странице /pricelist, напр. "protezirovanie" */
@@ -231,7 +244,7 @@ const serviceCategories = defineCollection({
 
 /** Полоса доверия перед подвалом. */
 const trust = defineCollection({
-  loader: file('./src/content/trust/trust.json'),
+  loader: file('./src/content/trust/trust.json', { parser: unwrap }),
   schema: z.object({
     id: z.string(),
     title: z.string(),
@@ -246,7 +259,7 @@ const trust = defineCollection({
 
 /** Колонки «мы vs обычная клиника» в блоке «Почему мы». */
 const comparison = defineCollection({
-  loader: file('./src/content/comparison/comparison.json'),
+  loader: file('./src/content/comparison/comparison.json', { parser: unwrap }),
   schema: z.object({
     id: z.string(),
     side: z.enum(['them', 'us']),

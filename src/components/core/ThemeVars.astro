@@ -1,0 +1,47 @@
+---
+/**
+ * Палитра, которую правит владелец через редактор темы, подмешивается
+ * поверх токенов из styles/tokens/colors.css.
+ *
+ * Селектор `:root:root` намеренно удвоен: так специфичность выше обычного
+ * `:root`, и порядок подключения стилей перестаёт иметь значение. Ключа нет
+ * в JSON — остаётся значение по умолчанию из colors.css.
+ *
+ * Здесь же сборка проверяет контраст: сломанная пара «текст на фоне» пишется
+ * в лог сборки, а не обнаруживается на живом сайте.
+ */
+import theme from '../../data/theme.json';
+import { checkTheme } from '../../lib/contrast';
+
+const failed = checkTheme(theme).filter((c) => !c.passes);
+if (failed.length) {
+  console.warn(
+    `\n[тема] Контраст ниже нормы WCAG AA (${failed.length}):\n` +
+      failed.map((c) => `  ${c.label}: ${c.ratio}:1, нужно ${c.min}:1`).join('\n') +
+      '\n  Поправьте цвета в src/data/theme.json или в редакторе темы.\n',
+  );
+}
+
+const css = `:root:root{
+--dc-turquoise:${theme.accent.base};
+--dc-turquoise-press:${theme.accent.press};
+--dc-turquoise-ink:${theme.accent.ink};
+--dc-turquoise-soft:${theme.accent.soft};
+--dc-turquoise-mark:${theme.accent.mark};
+--dc-coral:${theme.promo.base};
+--dc-coral-press:${theme.promo.press};
+--dc-coral-soft:${theme.promo.soft};
+--dc-depths:${theme.ink.heading};
+--text-body:${theme.ink.body};
+--text-muted:${theme.ink.muted};
+--dc-lagoon:${theme.dark.base};
+--dc-lagoon-lift:${theme.dark.lift};
+--surface-footer:${theme.dark.footer};
+--dc-seashell:${theme.tint.warm};
+--dc-mist:${theme.tint.cool};
+--dc-aqua-tint:${theme.tint.aqua};
+--dc-breeze:${theme.tint.breeze};
+}`;
+---
+
+<style is:inline set:html={css}></style>
