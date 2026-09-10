@@ -4,7 +4,12 @@ import { withBase } from '../../lib/asset';
 
 interface Props {
   eyebrow?: string;
-  brands: { id: string; name: string; logo?: string; note?: string }[];
+  brands: {
+    id: string;
+    name: string;
+    logo?: { src: string; width: number; height: number };
+    note?: string;
+  }[];
   speed?: number;
 }
 
@@ -27,7 +32,18 @@ const row = [...brands, ...brands];
       {
         row.map((brand, i) => (
           <span class="dc-marquee__item" title={brand.note ?? brand.name} aria-hidden={i >= brands.length}>
-            {brand.logo ? <img src={withBase(brand.logo)} alt={brand.name} height="34" /> : brand.name}
+            {
+              brand.logo ? (
+                <img
+                  src={withBase(brand.logo.src)}
+                  alt={brand.name}
+                  width={brand.logo.width}
+                  height={brand.logo.height}
+                />
+              ) : (
+                brand.name
+              )
+            }
           </span>
         ))
       }

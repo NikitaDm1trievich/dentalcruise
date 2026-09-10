@@ -145,6 +145,8 @@ const pricelistHref = href('pricelist');
     box-shadow: var(--shadow-lg);
     padding: var(--space-6);
     overflow-y: auto;
+    /* Иначе скролл панели на телефоне протекает на страницу под ней */
+    overscroll-behavior: contain;
     display: grid;
     align-content: start;
     gap: var(--space-6);

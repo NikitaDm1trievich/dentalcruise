@@ -63,7 +63,7 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
   </p>
 </form>
 
-<div class="dc-form-done" data-booking-done hidden>
+<div class="dc-form-done" data-booking-done hidden tabindex="-1" role="status" aria-live="polite">
   <Icon name="circle-check" size={34} color="var(--text-accent)" />
   <h3>Заявка отправлена</h3>
   <p>Мы перезвоним вам в рабочее время и подберём удобное время приёма.</p>
@@ -225,7 +225,11 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
       if (!response.ok) throw new Error(String(response.status));
 
       form.hidden = true;
-      if (done) done.hidden = false;
+      if (done) {
+        done.hidden = false;
+        // aria-live один не гарантирует объявление — переносим фокус явно
+        done.focus();
+      }
     } catch {
       fail('Не удалось отправить заявку. Попробуйте ещё раз или позвоните нам.');
       if (submit) {

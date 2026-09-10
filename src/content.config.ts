@@ -120,7 +120,14 @@ const brands = defineCollection({
   schema: z.object({
     id: z.string(),
     name: z.string(),
-    logo: z.string().optional(),
+    /**
+     * Реальные ширина/высота файла логотипа в px — обязательны вместе
+     * с logo, иначе браузер не может зарезервировать место под картинку
+     * заранее и лента поставщиков дёргается при догрузке (CLS).
+     */
+    logo: z
+      .object({ src: z.string(), width: z.number(), height: z.number() })
+      .optional(),
     note: z.string().optional(),
     ...orderable,
   }),
