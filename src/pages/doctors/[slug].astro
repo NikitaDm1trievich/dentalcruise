@@ -19,6 +19,7 @@ import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
 import ServiceCatalogCard from '../../components/content/ServiceCatalogCard.astro';
 import { clinic } from '../../data/site';
 import { withBase } from '../../lib/asset';
+import { absolute, clinicRef, experienceYears } from '../../lib/seo';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const doctors = await getCollection('doctors');
@@ -46,6 +47,50 @@ const doctorsHref = withBase('doctors');
    Прочерк вместо года в колонке лет читается как брак вёрстки. */
 const dated = d.education.filter((row) => row.year);
 const undated = d.education.filter((row) => !row.year);
+
+/**
+ * Карточка врача для поисковика. Тип Physician с привязкой к клинике через
+ * общий `@id`: так Яндекс и Google понимают, что врач принимает именно
+ * здесь, и показывают его отдельным результатом по запросу с фамилией и
+ * специальностью. Те же данные уходят в фид /feeds/doctors.xml.
+ */
+const pageUrl = absolute(`doctors/${doctor.id}`, Astro.site);
+const years = experienceYears(d.experience);
+const doctorSchema: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Physician',
+  '@id': `${pageUrl}#physician`,
+  name: d.name,
+  url: pageUrl,
+  jobTitle: d.speciality,
+  medicalSpecialty: 'Dentistry',
+  description: d.note,
+  worksFor: clinicRef(Astro.site, clinic),
+  availableService: services.map((page) => ({
+    '@type': 'MedicalProcedure',
+    name: page.data.title,
+    url: absolute(`uslugi/${page.id}`, Astro.site),
+  })),
+};
+if (d.photo) doctorSchema.image = absolute(d.photo, Astro.site);
+if (d.skills.length > 0) doctorSchema.knowsAbout = d.skills;
+/* Диплом с подтверждённым годом — единственное, что можно назвать
+   образованием. Курсы без даты в alumniOf не идут: выдавать семинар за
+   учебное заведение нельзя. */
+if (dated.length > 0) {
+  doctorSchema.alumniOf = dated.map((row) => ({
+    '@type': 'EducationalOrganization',
+    name: row.text,
+  }));
+}
+if (years) {
+  doctorSchema.additionalProperty = {
+    '@type': 'PropertyValue',
+    name: 'Стаж',
+    value: String(years),
+    unitText: 'YEAR',
+  };
+}
 ---
 
 {/*
@@ -66,6 +111,7 @@ const undated = d.education.filter((row) => !row.year);
   heading={d.name}
   lead={d.note}
   breadcrumbs={[{ label: 'Врачи', href: doctorsHref }, { label: d.name }]}
+  schema={[doctorSchema]}
 >
   <div slot="head-extra" class="dc-doc-page__actions">
     <Button variant="primary" size="lg" data-open="dc-book">

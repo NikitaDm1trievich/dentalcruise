@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Seo from '../components/seo/Seo.astro';
+import Metrika from '../components/seo/Metrika.astro';
 import Header from '../components/layout/Header.astro';
 import BurgerMenu from '../components/layout/BurgerMenu.astro';
 import Footer from '../components/layout/Footer.astro';
@@ -23,6 +24,10 @@ interface Props {
   faq?: { q: string; a: string }[];
   /** На странице контактов этот блок уже есть в основном содержимом */
   hideContactsCta?: boolean;
+  /** Хлебные крошки для микроразметки — те же, что рисует PageLayout */
+  breadcrumbs?: { label: string; path?: string }[];
+  /** Дополнительные блоки JSON-LD страницы: врач, услуга, галерея */
+  schema?: Record<string, unknown>[];
 }
 
 const {
@@ -33,6 +38,8 @@ const {
   noindex = false,
   faq,
   hideContactsCta = false,
+  breadcrumbs,
+  schema,
 } = Astro.props;
 const asset = withBase;
 ---
@@ -59,7 +66,7 @@ const asset = withBase;
       href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Golos+Text:wght@400;500;600;700;800&display=swap"
     />
 
-    <Seo title={title} description={description} path={path} noindex={noindex} faq={faq} />
+    <Seo title={title} description={description} path={path} noindex={noindex} faq={faq} breadcrumbs={breadcrumbs} schema={schema} />
 
     <ThemeVars />
   </head>
@@ -84,6 +91,7 @@ const asset = withBase;
     <AppointmentModal />
     <LicenseDrawer />
     <ScrollToTop />
+    <Metrika />
 
     <script>
       import { initReveal } from '../lib/reveal';

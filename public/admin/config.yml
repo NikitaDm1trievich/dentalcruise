@@ -42,6 +42,73 @@ display_url: https://dentalcruise.ru
 logo_url: ../logo-dentalcruise.svg
 
 collections:
+  # ── Поисковая оптимизация ────────────────────────────────────────────
+  # Коды подтверждения прав на сайт и ключ быстрой индексации. Всё здесь
+  # выдают сами сервисы — придумывать значения нельзя: неверный код просто
+  # не подтвердит права, а неверный ключ IndexNow отключит быструю
+  # индексацию. Пустое поле ничего не выводит на сайт.
+  - name: seo
+    label: Поисковая оптимизация
+    icon: search
+    files:
+      - name: settings
+        label: Коды поисковых систем
+        file: src/data/seo.json
+        fields:
+          - name: verification
+            label: Подтверждение прав на сайт
+            widget: object
+            fields:
+              - name: yandex
+                label: Яндекс Вебмастер
+                widget: string
+                required: false
+                hint: >-
+                  Код из webmaster.yandex.ru → «Добавить сайт» → «Мета-тег».
+                  Вставьте только значение content, без самого тега.
+              - name: google
+                label: Google Search Console
+                widget: string
+                required: false
+                hint: >-
+                  Код из search.google.com/search-console, способ
+                  «HTML-тег». Только значение content.
+              - name: mailru
+                label: Вебмастер Mail.ru
+                widget: string
+                required: false
+                hint: Нужен, только если добавляете сайт в поиск Mail.ru.
+          - name: indexNowKey
+            label: Ключ IndexNow
+            widget: string
+            required: false
+            hint: >-
+              Ускоряет попадание новых страниц в Яндекс и Bing: после
+              публикации они узнают об изменении за минуты, а не за недели.
+              Придумайте строку из 8–128 латинских букв и цифр (например,
+              случайный набор символов) и вставьте сюда. Сайт сам выложит
+              файл с этим ключом. Менять ключ без нужды не стоит.
+          - name: metrikaId
+            label: Номер счётчика Яндекс Метрики
+            widget: string
+            required: false
+            hint: >-
+              Только цифры номера счётчика. Метрика нужна для Яндекс
+              Бизнеса и для отчётов по посещаемости.
+          - name: region
+            label: Регион работы
+            widget: object
+            hint: >-
+              По этим словам поисковик понимает, где вас искать. Меняйте,
+              только если клиника переехала.
+            fields:
+              - { name: city, label: Город, widget: string }
+              - { name: district, label: Район, widget: string }
+              - name: landmarks
+                label: Ориентиры рядом
+                widget: text
+                hint: Метро и районы через запятую — по ним ищут «стоматология рядом».
+
   # ── Цвета сайта ──────────────────────────────────────────────────────
   # Правится только фирменная часть палитры. Остальные оттенки (белый фон,
   # оттенки границ) считаются от неё в styles/tokens/colors.css и меняться

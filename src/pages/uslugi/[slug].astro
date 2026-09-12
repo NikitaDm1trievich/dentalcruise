@@ -21,6 +21,7 @@ import TrustBar from '../../components/content/TrustBar.astro';
 import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
 import { clinic } from '../../data/site';
 import { withBase } from '../../lib/asset';
+import { absolute, clinicRef, isFromPrice, priceValue } from '../../lib/seo';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const pages = await getCollection('service-pages');
@@ -51,6 +52,49 @@ const facts = [
   s.duration && { icon: 'clock', label: 'Сроки', value: s.duration },
   s.warranty && { icon: 'shield-check', label: 'Гарантия', value: s.warranty },
 ].filter(Boolean) as { icon: string; label: string; value: string; note?: string }[];
+
+/**
+ * Карточка услуги для поисковика: тип Service с ценой и исполнителем.
+ * Цена в разметке — то, из-за чего сниппет в выдаче показывает сумму:
+ * по запросу «винир цена Москва» страница выглядит как ответ, а не как
+ * ещё одна ссылка. Исполнитель указан ссылкой на клинику по общему
+ * `@id`, а не копией её карточки.
+ *
+ * Цену отдаём только числом. «от 25 000 ₽» — это нижняя граница, для неё
+ * есть отдельная форма PriceSpecification: подать её как точную цену
+ * значило бы обещать в выдаче сумму, которой на приёме не будет.
+ */
+const servicePageUrl = absolute(`uslugi/${page.id}`, Astro.site);
+const amount = priceValue(s.price);
+const serviceSchema: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  '@id': `${servicePageUrl}#service`,
+  name: s.title,
+  url: servicePageUrl,
+  description: s.lead,
+  serviceType: category?.data.title ?? 'Стоматология',
+  provider: clinicRef(Astro.site, clinic),
+  areaServed: { '@type': 'City', name: clinic.address.locality },
+};
+if (amount) {
+  serviceSchema.offers = {
+    '@type': 'Offer',
+    url: servicePageUrl,
+    priceCurrency: 'RUB',
+    availability: 'https://schema.org/InStock',
+    ...(isFromPrice(s.price)
+      ? {
+          priceSpecification: {
+            '@type': 'PriceSpecification',
+            minPrice: amount,
+            priceCurrency: 'RUB',
+          },
+        }
+      : { price: amount }),
+  };
+}
+
 ---
 
 <PageLayout
@@ -65,6 +109,8 @@ const facts = [
     ...(category ? [{ label: category.data.title, href: `${pricelistHref}#${category.data.slug}` }] : []),
     { label: s.title },
   ]}
+  schema={[serviceSchema]}
+  faq={s.faq}
 >
   <div slot="head-extra" class="dc-service__actions">
     <Button variant="primary" size="lg" data-open="dc-book">

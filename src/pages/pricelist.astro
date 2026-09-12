@@ -17,6 +17,7 @@ import PriceTable from '../components/content/PriceTable.astro';
 import OfferStrip from '../components/content/OfferStrip.astro';
 import { clinic } from '../data/site';
 import { withBase } from '../lib/asset';
+import { absolute, clinicRef, isFromPrice, priceValue } from '../lib/seo';
 
 type Ordered = { data: { order: number } };
 const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
@@ -53,6 +54,51 @@ const sections = categories
   })
   .filter((section) => section.price);
 
+/**
+ * Каталог цен для поисковика.
+ *
+ * Прайс — главная страница под запросы вида «коронка цена Москва»:
+ * человек ищет сумму, и выигрывает тот сайт, который отдаёт её в виде
+ * данных, а не только картинкой таблицы. Каждая позиция уходит
+ * отдельным предложением с ценой, рублями и ссылкой на свою карточку.
+ *
+ * Позиции без распознанной цены пропускаем: «по запросу» в разметке
+ * превращается в ноль и в выдаче читается как бесплатная услуга.
+ */
+const catalogSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'OfferCatalog',
+  '@id': `${absolute('pricelist', Astro.site)}#catalog`,
+  name: `Прайс-лист стоматологии «${clinic.name}»`,
+  url: absolute('pricelist', Astro.site),
+  provider: clinicRef(Astro.site, clinic),
+  itemListElement: sections.map((section) => ({
+    '@type': 'OfferCatalog',
+    name: section.title,
+    url: `${absolute('pricelist', Astro.site)}#${section.slug}`,
+    itemListElement: (section.groups ?? [])
+      .flatMap((group) => group.items)
+      .map((item) => ({ item, amount: priceValue(item.price) }))
+      .filter(({ amount }) => amount !== null)
+      .map(({ item, amount }) => ({
+        '@type': 'Offer',
+        name: item.title,
+        priceCurrency: 'RUB',
+        availability: 'https://schema.org/InStock',
+        ...(item.href ? { url: absolute(item.href, Astro.site) } : {}),
+        ...(isFromPrice(item.price)
+          ? {
+              priceSpecification: {
+                '@type': 'PriceSpecification',
+                minPrice: amount,
+                priceCurrency: 'RUB',
+              },
+            }
+          : { price: amount }),
+      })),
+  })),
+};
+
 const total = sections.reduce(
   (sum, s) => sum + (s.price?.data.groups ?? []).reduce((n, g) => n + g.items.length, 0),
   0,
@@ -66,6 +112,7 @@ const total = sections.reduce(
   heading="Цены на лечение"
   lead={`${total} позиций по шести направлениям. Цены указаны за единицу работы. Коронки, виниры и протезы делает зуботехническая лаборатория клиники — поэтому в цене нет наценки посредника.`}
   breadcrumbs={[{ label: 'Прайс-лист' }]}
+  schema={[catalogSchema]}
 >
   <!-- Панель фильтра: липнет под шапкой при прокрутке -->
   <div class="dc-filter" data-price-filter>

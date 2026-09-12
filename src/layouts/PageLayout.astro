@@ -22,6 +22,10 @@ interface Props {
   breadcrumbs?: { label: string; href?: string }[];
   noindex?: boolean;
   hideContactsCta?: boolean;
+  /** Дополнительные блоки JSON-LD страницы: врач, услуга, галерея */
+  schema?: Record<string, unknown>[];
+  /** Вопросы страницы — уходят в схему FAQPage и в сниппет выдачи */
+  faq?: { q: string; a: string }[];
 }
 
 const {
@@ -34,6 +38,8 @@ const {
   breadcrumbs = [],
   noindex = false,
   hideContactsCta = false,
+  schema,
+  faq,
 } = Astro.props;
 ---
 
@@ -43,6 +49,9 @@ const {
   path={path}
   noindex={noindex}
   hideContactsCta={hideContactsCta}
+  schema={schema}
+  faq={faq}
+  breadcrumbs={breadcrumbs.map((crumb) => ({ label: crumb.label, path: crumb.href }))}
 >
   <header class="dc-page__top">
     <div class="dc-page__inner">

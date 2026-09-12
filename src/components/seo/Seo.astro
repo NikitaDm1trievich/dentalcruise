@@ -6,8 +6,15 @@
  * российскими данными: адрес в Москве, телефон +7, часы пн–сб.
  * Пустые поля (индекс, ИНН/ОГРН, номер лицензии) в разметку не попадают —
  * лучше не отдавать поле, чем отдать выдуманное.
+ *
+ * Организация описана один раз, здесь, и получает постоянный `@id`.
+ * Страницы врачей и услуг не повторяют её, а ссылаются на этот же `@id`:
+ * так поисковик видит одну клинику с врачами и прайсом, а не десяток
+ * независимых организаций с одинаковым адресом.
  */
 import { clinic } from '../../data/site';
+import seo from '../../data/seo.json';
+import { absolute, breadcrumbSchema, clinicId, siteRoot } from '../../lib/seo';
 
 interface Props {
   title: string;
@@ -18,12 +25,33 @@ interface Props {
   noindex?: boolean;
   /** Вопросы FAQ — попадают в схему FAQPage (сниппеты в поиске) */
   faq?: { q: string; a: string }[];
+  /** Хлебные крошки без «Главная» — она добавляется сама */
+  breadcrumbs?: { label: string; path?: string }[];
+  /** Дополнительные блоки JSON-LD страницы: врач, услуга, галерея */
+  schema?: Record<string, unknown>[];
 }
 
-const { title, description, path = '/', ogImage, noindex = false, faq } = Astro.props;
+const {
+  title,
+  description,
+  path = '/',
+  ogImage,
+  noindex = false,
+  faq,
+  breadcrumbs,
+  schema = [],
+} = Astro.props;
 
-const canonical = new URL(path, Astro.site ?? 'https://dentalcruise.ru').toString();
-const image = new URL(ogImage ?? `${import.meta.env.BASE_URL}og-cover.jpg`.replace(/\/{2,}/g, '/'), Astro.site ?? 'https://dentalcruise.ru').toString();
+const site = Astro.site;
+const canonical = absolute(path, site);
+const root = siteRoot(site);
+
+/* Обложка для соцсетей. Отдельного баннера у клиники пока нет, поэтому
+   по умолчанию идёт реальный снимок интерьера 1200×800: ссылка на сайт
+   во ВКонтакте или в мессенджере должна открываться с картинкой, а не
+   с пустым прямоугольником. */
+const OG_FALLBACK = 'images/clinic/clinic-01.jpg';
+const image = absolute(ogImage ?? OG_FALLBACK, site);
 
 const address: Record<string, string> = {
   '@type': 'PostalAddress',
@@ -34,25 +62,37 @@ const address: Record<string, string> = {
 };
 if (clinic.address.postalCode) address.postalCode = clinic.address.postalCode;
 
-const sameAs = [clinic.links.yandexOrg, clinic.links.vk, clinic.links.telegram].filter(Boolean);
+/* sameAs связывает сайт с карточками в справочниках. Для локального
+   поиска это главный сигнал «сайт и организация на картах — одно и то
+   же»: по нему Яндекс и Google подтягивают отзывы и рейтинг. */
+const sameAs = [
+  clinic.links.yandexOrg,
+  clinic.links.vk,
+  clinic.links.telegram,
+  clinic.links.twoGis,
+  clinic.links.googleMaps,
+  clinic.links.prodoctorov,
+  clinic.links.zoon,
+].filter(Boolean);
 
 const business: Record<string, unknown> = {
   '@context': 'https://schema.org',
   '@type': 'Dentist',
-  '@id': new URL('/', Astro.site ?? 'https://dentalcruise.ru').toString() + '#clinic',
+  '@id': clinicId(site),
   name: clinic.name,
   description: clinic.description,
-  url: new URL('/', Astro.site ?? 'https://dentalcruise.ru').toString(),
+  url: root,
   telephone: clinic.phoneE164,
   email: clinic.email,
   image,
-  logo: new URL(`${import.meta.env.BASE_URL}logo-dentalcruise.svg`.replace(/\/{2,}/g, '/'), Astro.site ?? 'https://dentalcruise.ru').toString(),
+  logo: absolute('logo-dentalcruise.svg', site),
   address,
   geo: {
     '@type': 'GeoCoordinates',
     latitude: clinic.geo.lat,
     longitude: clinic.geo.lng,
   },
+  hasMap: clinic.links.yandexPin,
   openingHoursSpecification: clinic.openingHours.map((h) => ({
     '@type': 'OpeningHoursSpecification',
     dayOfWeek: h.days,
@@ -61,19 +101,21 @@ const business: Record<string, unknown> = {
   })),
   priceRange: '₽₽',
   currenciesAccepted: 'RUB',
-  areaServed: { '@type': 'City', name: 'Москва' },
+  paymentAccepted: 'Наличные, банковская карта, рассрочка',
+  medicalSpecialty: 'Dentistry',
+  /* Ближайшее метро — сильный локальный запрос: «стоматология
+     Полежаевская» ищут чаще, чем по улице. */
+  publicAccess: true,
+  areaServed: [
+    { '@type': 'City', name: clinic.address.locality },
+    ...clinic.metroStations.map((s) => ({ '@type': 'Place', name: `м. ${s.name}` })),
+  ],
   aggregateRating: {
     '@type': 'AggregateRating',
     ratingValue: clinic.rating.value,
     reviewCount: clinic.rating.count,
     bestRating: 5,
   },
-  availableService: [
-    { '@type': 'MedicalProcedure', name: 'Виниры' },
-    { '@type': 'MedicalProcedure', name: 'Коронки' },
-    { '@type': 'MedicalProcedure', name: 'Протезирование под ключ' },
-    { '@type': 'MedicalProcedure', name: 'Имплантация зубов' },
-  ],
 };
 if (sameAs.length > 0) business.sameAs = sameAs;
 
@@ -89,12 +131,38 @@ const faqSchema =
         })),
       }
     : null;
+
+const crumbSchema = breadcrumbs && breadcrumbs.length > 0 ? breadcrumbSchema(breadcrumbs, site) : null;
+
+/* Организацию описываем только на главной. На внутренних страницах хватает
+   ссылки по `@id` из блоков врача и услуги: дубль полной карточки на
+   каждой странице поисковику ничего не добавляет, а вес размывает. */
+const blocks = [path === '/' || path === '' ? business : null, crumbSchema, faqSchema, ...schema].filter(
+  Boolean,
+) as Record<string, unknown>[];
 ---
 
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
 {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+{/* Права на индексацию для конкретных роботов: без них Яндекс по
+    умолчанию сокращает сниппет и не показывает быстрые ссылки. */}
+{!noindex && <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />}
+
+{/* Подтверждение прав на сайт. Коды выдают Вебмастер и Search Console,
+    владелец вставляет их в редакторе — раздел «SEO». */}
+{seo.verification.yandex && <meta name="yandex-verification" content={seo.verification.yandex} />}
+{seo.verification.google && <meta name="google-site-verification" content={seo.verification.google} />}
+{seo.verification.mailru && <meta name="mailru-verification" content={seo.verification.mailru} />}
+
+{/* Гео-теги: устаревший, но всё ещё читаемый рядом справочников способ
+    сказать, к какому городу относится сайт. */}
+<meta name="geo.region" content="RU-MOW" />
+<meta name="geo.placename" content={clinic.address.locality} />
+<meta name="geo.position" content={`${clinic.geo.lat};${clinic.geo.lng}`} />
+<meta name="ICBM" content={`${clinic.geo.lat}, ${clinic.geo.lng}`} />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={clinic.name} />
@@ -104,12 +172,13 @@ const faqSchema =
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={image} />
 <meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
+<meta property="og:image:height" content="800" />
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={image} />
 
-<script type="application/ld+json" is:inline set:html={JSON.stringify(business)} />
-{faqSchema && <script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />}
+{blocks.map((block) => (
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(block)} />
+))}

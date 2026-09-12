@@ -51,5 +51,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      # Сообщаем Яндексу и Bing, что сайт обновился: новые страницы
+      # попадают в поиск за часы вместо недель. Шаг не должен ронять
+      # публикацию — сайт к этому моменту уже выложен.
+      - name: Сообщить поисковикам об обновлении
+        continue-on-error: true
+        run: node scripts/indexnow.mjs "${{ steps.deployment.outputs.page_url }}"
