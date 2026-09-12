@@ -11,19 +11,23 @@ import Icon from '../core/Icon.astro';
 import PlaceCard from '../content/PlaceCard.astro';
 import YandexEmbed from '../content/YandexEmbed.astro';
 import { clinic } from '../../data/site';
+/* Тексты блока правит владелец в редакторе — раздел «Главная страница».
+   Метро в подводке не называем строкой: карточка ниже показывает обе
+   станции со знаком метрополитена и цветами линий, вышло бы вразнобой. */
+import copy from '../../data/home.json';
 
 interface Props {
   eyebrow?: string;
   title?: string;
   lead?: string;
+  cta?: string;
 }
 
 const {
-  eyebrow = 'Контакты',
-  title = 'Приезжайте или позвоните',
-  /* Метро не называем строкой: карточка ниже показывает обе станции
-     со знаком метрополитена и цветами линий — здесь вышло бы вразнобой. */
-  lead = 'Москва, 4-я Магистральная, 5с1, 2 этаж. Пн–сб 10:00–22:00, вс — выходной. Позвоните — администратор подберёт время, или оставьте заявку, и мы перезвоним сами.',
+  eyebrow = copy.contacts.eyebrow,
+  title = copy.contacts.title,
+  lead = copy.contacts.lead,
+  cta = copy.contacts.cta,
 } = Astro.props;
 ---
 
@@ -37,7 +41,7 @@ const {
       <div class="dc-contacts-cta__actions">
         <Button variant="primary" size="lg" data-open="dc-book">
           <Icon slot="icon" name="calendar" size={20} />
-          Записаться на приём
+          {cta}
         </Button>
       </div>
     </Reveal>

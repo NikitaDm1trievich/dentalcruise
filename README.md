@@ -32,7 +32,6 @@ npm run dev
 | `src/content/services/` | Топ-услуги на главной | один файл на услугу |
 | `src/content/price-list/` | Полный прайс | один файл на категорию |
 | `src/content/cases/` | Кейсы «до/после» | один файл на кейс, см. README внутри |
-| `src/content/carousel-slides/slides.json` | Слайды блока преимуществ (поле `photos` — массив, показывается галереей) | один массив |
 | `src/content/faq/faq.json` | Вопросы и ответы | один массив |
 | `src/content/promos/promos.json` | Плашка акций | один массив |
 | `src/content/brands/brands.json` | Бегущая строка поставщиков | один массив |

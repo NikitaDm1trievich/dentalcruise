@@ -1,4 +1,6 @@
 ---
+import { readdirSync } from 'node:fs';
+
 import { getCollection } from 'astro:content';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -14,12 +16,10 @@ import OceanHero from '../components/media/OceanHero.astro';
 import PhotoGallery from '../components/media/PhotoGallery.astro';
 
 import PromoBoard from '../components/content/PromoBoard.astro';
-import AdvantageCarousel from '../components/content/AdvantageCarousel.astro';
 import ServiceCatalogCard from '../components/content/ServiceCatalogCard.astro';
 import BrandsMarquee from '../components/content/BrandsMarquee.astro';
 import OfferStrip from '../components/content/OfferStrip.astro';
 import ComparisonColumns from '../components/content/ComparisonColumns.astro';
-import PriceCompare from '../components/content/PriceCompare.astro';
 import PriceChart from '../components/content/PriceChart.astro';
 import DoctorFlipCard from '../components/content/DoctorFlipCard.astro';
 import FaqAccordion from '../components/content/FaqAccordion.astro';
@@ -37,7 +37,6 @@ type Ordered = { data: { order: number } };
 const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
 
 const promos = (await getCollection('promos')).sort(byOrder);
-const slides = (await getCollection('carousel-slides')).sort(byOrder);
 const categories = (await getCollection('service-categories')).sort(byOrder);
 const brands = (await getCollection('brands')).sort(byOrder);
 const comparison = (await getCollection('comparison')).sort(byOrder);
@@ -51,12 +50,14 @@ const faqItems = faq.map((f) => ({ id: f.data.id, q: f.data.q, a: f.data.a }));
 
 /**
  * Интерьеры клиники для тизера «О клинике».
+ * Список читаем с диска, а не нумеруем от 1 до 8: снимок, удалённый
+ * владельцем через редактор, иначе остался бы битой картинкой на главной.
  * Пути обычные, как в JSON-контенте: базовый путь подставит сама галерея.
  */
-const clinicPhotos = Array.from(
-  { length: 8 },
-  (_, i) => `/images/clinic/clinic-0${i + 1}.jpg`,
-);
+const clinicPhotos = readdirSync(new URL('../../public/images/clinic', import.meta.url))
+  .filter((file) => /\.(jpe?g|png|webp|avif)$/i.test(file))
+  .sort()
+  .map((file) => `/images/clinic/${file}`);
 ---
 
 <BaseLayout
@@ -188,20 +189,8 @@ const clinicPhotos = Array.from(
     </div>
   </section>
 
-  <!-- Преимущества -->
-  <section id="advantages" class="dc-section dc-bg-warm">
-    <div class="dc-container">
-      <Reveal>
-        <SectionHeading eyebrow={copy.advantages.eyebrow} title={copy.advantages.title} />
-      </Reveal>
-      <Reveal delay={90}>
-        <AdvantageCarousel slides={slides.map((s) => s.data)} />
-      </Reveal>
-    </div>
-  </section>
-
   <!-- Почему мы -->
-  <section id="why" class="dc-section dc-bg-white">
+  <section id="why" class="dc-section dc-bg-warm">
     <div class="dc-container">
       <Reveal>
         <SectionHeading eyebrow={copy.why.eyebrow} title={copy.why.title} lead={copy.why.lead} />
@@ -211,14 +200,6 @@ const clinicPhotos = Array.from(
       </Reveal>
       <Reveal delay={140}>
         <PriceChart />
-      </Reveal>
-      <Reveal delay={180}>
-        <PriceCompare
-          label={copy.why.compare.label}
-          marketPrice={copy.why.compare.marketPrice}
-          ourPrice={copy.why.compare.ourPrice}
-          note={copy.why.compare.note}
-        />
       </Reveal>
     </div>
   </section>

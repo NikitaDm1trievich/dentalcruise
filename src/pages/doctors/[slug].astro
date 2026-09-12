@@ -44,17 +44,24 @@ const services = d.services
 const doctorsHref = withBase('doctors');
 ---
 
+{/*
+  Заголовок страницы — имя врача: к конкретному врачу и записываются, по
+  фамилии же его и ищут. Специальность ушла в надпись сверху.
+  Запасные значения через `||`, а не `??`: поля SEO в редакторе пустые
+  строки, а не null, и `??` пропускал их дальше — все страницы врачей
+  уходили в сборку с пустым <title>.
+*/}
 <PageLayout
-  title={d.seoTitle ?? `${d.speciality} — ${clinic.name}, м. Полежаевская`}
+  title={d.seoTitle || `${d.name} — ${d.speciality} в клинике «${clinic.name}»`}
   description={
-    d.seoDescription ??
-    `${d.speciality} клиники «Дентал Круиз», стаж ${d.experience}. ${d.note} Запись по телефону ${clinic.phone}.`
+    d.seoDescription ||
+    `${d.name} — ${d.speciality.toLowerCase()} клиники «Дентал Круиз», стаж ${d.experience}. ${d.note} Запись по телефону ${clinic.phone}.`
   }
   path={`/doctors/${doctor.id}`}
-  eyebrow={`Стаж ${d.experience}`}
-  heading={d.speciality}
+  eyebrow={`${d.speciality} · стаж ${d.experience}`}
+  heading={d.name}
   lead={d.note}
-  breadcrumbs={[{ label: 'Врачи', href: doctorsHref }, { label: d.speciality }]}
+  breadcrumbs={[{ label: 'Врачи', href: doctorsHref }, { label: d.name }]}
 >
   <div slot="head-extra" class="dc-doc-page__actions">
     <Button variant="primary" size="lg" data-open="dc-book">

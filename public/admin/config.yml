@@ -192,13 +192,6 @@ collections:
               - { name: lead, label: Описание, widget: text }
               - { name: cta, label: Текст кнопки, widget: string }
 
-          - name: advantages
-            label: Блок «Почему выбирают нас»
-            widget: object
-            fields:
-              - { name: eyebrow, label: Надпись сверху, widget: string }
-              - { name: title, label: Заголовок, widget: string }
-
           - name: why
             label: Блок «Своя лаборатория»
             widget: object
@@ -206,14 +199,6 @@ collections:
               - { name: eyebrow, label: Надпись сверху, widget: string }
               - { name: title, label: Заголовок, widget: string }
               - { name: lead, label: Описание, widget: text }
-              - name: compare
-                label: Сравнение цены
-                widget: object
-                fields:
-                  - { name: label, label: Что сравниваем, widget: string }
-                  - { name: marketPrice, label: Цена по рынку, widget: string }
-                  - { name: ourPrice, label: Наша цена, widget: string }
-                  - { name: note, label: Пояснение, widget: text }
 
           - name: about
             label: Блок «О клинике»
@@ -261,6 +246,20 @@ collections:
                   - { name: caption, label: Подпись, widget: string }
               - { name: note, label: Пояснение под цифрами, widget: text }
               - { name: linkLabel, label: Текст ссылки на Яндекс, widget: string }
+
+          - name: contacts
+            label: Блок «Контакты»
+            widget: object
+            fields:
+              - { name: eyebrow, label: Надпись сверху, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - name: lead
+                label: Описание
+                widget: text
+                hint: >-
+                  Адрес, часы работы и призыв позвонить. Станции метро писать
+                  не нужно — карточка ниже показывает их сама.
+              - { name: cta, label: Текст кнопки, widget: string }
 
   # ── Акции ────────────────────────────────────────────────────────────
   - name: promos
@@ -661,40 +660,6 @@ collections:
                   - { label: Обычная клиника, value: them }
                   - { label: Мы, value: us }
               - { name: text, label: Текст, widget: text }
-              - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
-
-  # ── Карусель преимуществ ─────────────────────────────────────────────
-  - name: carousel-slides
-    label: Карусель преимуществ
-    icon: view_carousel
-    files:
-      - name: list
-        label: Слайды
-        file: src/content/carousel-slides/slides.json
-        fields:
-          - name: items
-            label: Слайды
-            label_singular: слайд
-            widget: list
-            summary: '{{fields.title}}'
-            fields:
-              - name: id
-                label: Служебный ID
-                widget: string
-                pattern:
-                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
-              - { name: title, label: Заголовок, widget: string }
-              - { name: text, label: Текст, widget: text }
-              - name: photos
-                label: Фотографии
-                widget: list
-                required: false
-                field: { name: photo, label: Фото, widget: image }
-              - name: photoLabel
-                label: Подпись, если фото нет
-                widget: string
-                required: false
-                default: Здесь фото клиники
               - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
 
   # ── Поставщики ───────────────────────────────────────────────────────

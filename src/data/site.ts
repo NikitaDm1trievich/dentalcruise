@@ -17,7 +17,7 @@ export const clinic = {
   phoneHref: 'tel:+79255777677',
   /** E.164 — для JSON-LD и микроразметки */
   phoneE164: '+79255777677',
-  email: 'dental.cruise@inbox.ru',
+  email: 'info@dentalcruise.ru',
 
   address: {
     street: '4-я Магистральная улица, 5с1, 2 этаж',

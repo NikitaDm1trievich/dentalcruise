@@ -732,7 +732,7 @@ function PlaceCard({
   schedule = 'Пн–Сб 10:00–22:00 · Вс — выходной',
   phone = '+7 925 577-76-77',
   phoneHref = 'tel:+79255777677',
-  email = 'dental.cruise@inbox.ru',
+  email = 'info@dentalcruise.ru',
   routeHref = 'https://yandex.ru/maps/org/dental_kruiz/154025048590/',
   style
 }) {
@@ -2128,7 +2128,7 @@ function BurgerMenu({
   phoneHref = 'tel:+79255777677',
   schedule = 'Пн–Сб 10:00–22:00 · Вс — выходной',
   address = 'Москва, 4-я Магистральная, 5с1, 2 этаж',
-  email = 'dental.cruise@inbox.ru',
+  email = 'info@dentalcruise.ru',
   route = '5 минут пешком от метро Полежаевская',
   routeHref = 'https://yandex.ru/maps/org/dental_kruiz/154025048590/',
   onBook
@@ -2327,7 +2327,7 @@ function Footer({
   phone = '+7 925 577-76-77',
   phoneHref = 'tel:+79255777677',
   address = 'Москва, 4-я Магистральная, 5с1, 2 этаж · м. Полежаевская',
-  email = 'dental.cruise@inbox.ru',
+  email = 'info@dentalcruise.ru',
   schedule = 'Пн–Сб 10:00–22:00 · Вс — выходной',
   year = 2026,
   style

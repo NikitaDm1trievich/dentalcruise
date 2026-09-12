@@ -76,19 +76,6 @@ const cases = defineCollection({
   }),
 });
 
-const carouselSlides = defineCollection({
-  loader: file('./src/content/carousel-slides/slides.json', { parser: unwrap }),
-  schema: z.object({
-    id: z.string(),
-    title: z.string(),
-    text: z.string(),
-    /** Несколько кадров — галерея с кроссфейдом; пустой массив — подписанная заглушка */
-    photos: z.array(z.string()).default([]),
-    photoLabel: z.string().default('Здесь фото клиники'),
-    ...orderable,
-  }),
-});
-
 const faq = defineCollection({
   loader: file('./src/content/faq/faq.json', { parser: unwrap }),
   schema: z.object({
@@ -271,9 +258,7 @@ const comparison = defineCollection({
 export const collections = {
   doctors,
   services,
-  cases,
-  'carousel-slides': carouselSlides,
-  faq,
+  cases,  faq,
   promos,
   brands,
   'price-list': priceList,
