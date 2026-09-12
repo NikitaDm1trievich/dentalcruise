@@ -34,7 +34,6 @@ const d = doctor.data;
 
 const servicePages = await getCollection('service-pages');
 const categories = await getCollection('service-categories');
-const prices = await getCollection('price-list');
 
 /** Услуги врача — в том порядке, в каком перечислены в его файле */
 const services = d.services
@@ -42,6 +41,11 @@ const services = d.services
   .filter(Boolean) as CollectionEntry<'service-pages'>[];
 
 const doctorsHref = withBase('doctors');
+
+/* Строки с подтверждённым годом идут лентой, остальные — списком курсов.
+   Прочерк вместо года в колонке лет читается как брак вёрстки. */
+const dated = d.education.filter((row) => row.year);
+const undated = d.education.filter((row) => !row.year);
 ---
 
 {/*
@@ -128,14 +132,32 @@ const doctorsHref = withBase('doctors');
             <SectionHeading class="dc-aside-heading" eyebrow="Подготовка" title="Образование и курсы" />
           </Reveal>
           <Reveal delay={90}>
-            <ol class="dc-timeline" role="list">
-              {d.education.map((row) => (
-                <li>
-                  <span class="dc-timeline__year">{row.year}</span>
-                  <span class="dc-timeline__text">{row.text}</span>
-                </li>
-              ))}
-            </ol>
+            <div class="dc-edu">
+              {dated.length > 0 && (
+                <ol class="dc-timeline" role="list">
+                  {dated.map((row) => (
+                    <li>
+                      <span class="dc-timeline__year">{row.year}</span>
+                      <span class="dc-timeline__text">{row.text}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              {undated.length > 0 && (
+                <div class="dc-edu__courses">
+                  {/* Подзаголовок нужен только когда выше есть лента с годами:
+                      он отделяет курсы от дипломов. Если годов нет вовсе,
+                      список идёт прямо под «Образование и курсы» — иначе
+                      диплом вуза оказался бы подписан как курс. */}
+                  {dated.length > 0 && <h3 class="dc-edu__subtitle">Курсы и повышение квалификации</h3>}
+                  <ul class="dc-edu__list" role="list">
+                    {undated.map((row) => (
+                      <li>{row.text}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </Reveal>
         </div>
       </section>
@@ -156,13 +178,17 @@ const doctorsHref = withBase('doctors');
           <div class="dc-catalog-grid">
             {services.map((page, i) => {
               const category = categories.find((c) => c.data.slug === page.data.category);
-              const price = prices.find((p) => p.data.slug === page.data.category);
-              /* Позиции для карточки берём из самой услуги, а если их нет —
-                 из первой группы прайса по её направлению. */
+              /* Позиции для карточки берём из самой услуги. Раньше при их
+                 отсутствии подставлялась первая группа прайса по направлению —
+                 и все карточки одного направления показывали один и тот же
+                 список, будто врач делает везде одно и то же. Теперь
+                 показываем собственную цену услуги. */
               const items =
                 page.data.prices.length > 0
                   ? page.data.prices
-                  : (price?.data.groups[0]?.items ?? []);
+                  : page.data.price
+                    ? [{ title: page.data.title, price: page.data.price, note: page.data.priceNote }]
+                    : [];
               return (
                 <Reveal delay={i * 70}>
                   <ServiceCatalogCard
@@ -265,6 +291,37 @@ const doctorsHref = withBase('doctors');
     margin-top: 3px;
   }
 
+  .dc-edu {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .dc-edu__subtitle {
+    font-size: var(--type-h4);
+    color: var(--text-strong);
+    margin-bottom: var(--space-3);
+  }
+  .dc-edu__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+    color: var(--text-body);
+  }
+  .dc-edu__list li {
+    position: relative;
+    padding-inline-start: var(--space-5);
+  }
+  .dc-edu__list li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.6em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-accent);
+  }
   .dc-timeline {
     list-style: none;
     margin: 0;

@@ -34,8 +34,8 @@ const { title, items } = Astro.props;
             )}
             {item.note && <span class="dc-price__note">{item.note}</span>}
           </span>
-          {(item.promo || item.was) && <span class="dc-price__promo">Акция</span>}
           <span class="dc-price__values">
+            {(item.promo || item.was) && <span class="dc-price__promo">Акция</span>}
             {item.was && <s class="dc-price__was">{item.was}</s>}
             <b class="dc-price__value">{item.price}</b>
           </span>
@@ -46,9 +46,13 @@ const { title, items } = Astro.props;
 </div>
 
 <style>
+  /* Таблица живёт и в узкой колонке прайса (три в ряд), и во всю ширину на
+     странице услуги. Раскладку строки решаем по ширине самой таблицы, а не
+     экрана: на странице прайса колонка узкая даже на большом мониторе. */
   .dc-price {
     display: grid;
     gap: var(--space-4);
+    container-type: inline-size;
   }
   .dc-price__title {
     font-size: var(--type-h4);
@@ -60,14 +64,24 @@ const { title, items } = Astro.props;
     padding: 0;
     display: grid;
   }
+  /* В узкой колонке название и цена идут друг под другом: раньше строка была
+     переносимым flex-контейнером из трёх частей, и длинное название
+     раскидывало метку и цену по разным местам — соседние строки вставали
+     вразнобой. Теперь порядок один и тот же в любой строке. */
   .dc-price__row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-2) var(--space-4);
+    display: grid;
+    gap: 6px var(--space-4);
     padding: 12px 0;
     border-bottom: 1px solid var(--line-hairline);
+  }
+  @container (min-width: 420px) {
+    .dc-price__row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: baseline;
+    }
+    .dc-price__values {
+      justify-content: flex-end;
+    }
   }
   .dc-price__row:last-child {
     border-bottom: 0;
@@ -95,12 +109,11 @@ const { title, items } = Astro.props;
     font-size: var(--type-small);
     color: var(--text-muted);
   }
-  /* Метка занимает место в общей строке flex, а не «висит» над ценой:
-     на узком экране строка переносится и метка уезжает вместе с названием. */
+  /* Метка идёт первой в блоке цен и всегда рядом с ними: так она читается
+     как пометка к цене, а не как отдельный элемент, гуляющий по строке. */
   .dc-price__promo {
     align-self: center;
     flex: 0 0 auto;
-    margin-inline-start: auto;
     padding: 3px 10px;
     border-radius: var(--radius-pill);
     background: var(--dc-coral);
@@ -112,10 +125,10 @@ const { title, items } = Astro.props;
     white-space: nowrap;
   }
   .dc-price__values {
-    display: inline-flex;
+    display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: var(--space-3);
-    flex: 0 0 auto;
+    gap: var(--space-2) var(--space-3);
   }
   .dc-price__was {
     color: var(--text-muted);

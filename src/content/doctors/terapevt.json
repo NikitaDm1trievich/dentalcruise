@@ -21,6 +21,34 @@
     {
       "year": "2023",
       "text": "Ординатура по хирургической стоматологии, МГМСУ им. А. И. Евдокимова"
+    },
+    {
+      "year": "",
+      "text": "Синус-лифтинг: расширенный курс с разбором базовых аспектов"
+    },
+    {
+      "year": "",
+      "text": "Осложнения в хирургической пародонтологии и имплантологии"
+    },
+    {
+      "year": "",
+      "text": "Мягкие ткани в области зубов и имплантатов"
+    },
+    {
+      "year": "",
+      "text": "Лечение рецессии десны"
+    },
+    {
+      "year": "",
+      "text": "Эстетические и реконструктивные вмешательства в имплантологии"
+    },
+    {
+      "year": "",
+      "text": "Полный цифровой протокол в стоматологии"
+    },
+    {
+      "year": "",
+      "text": "Немедленная имплантация от А до Я"
     }
   ],
   "skills": [
@@ -33,7 +61,14 @@
     "Апикальная хирургия",
     "Помощь при острой боли"
   ],
-  "services": [],
+  "services": [
+    "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-srednego-kariesa",
+    "lechenie-kanalov-endodontiya-pulpit-odnokanalnyy-zub",
+    "lechenie-kanalov-endodontiya-pomosch-pri-ostroy-boli",
+    "udalenie-zubov-udalenie-zuba-slozhnoe",
+    "implantaciya-pod-klyuch",
+    "kostnaya-plastika-zakrytyy-sinus-lifting-1-implant"
+  ],
   "seoTitle": "",
   "seoDescription": "",
   "order": 20

@@ -34,8 +34,9 @@ const doctors = defineCollection({
           пустые блоки на странице не рисуются. ───────────────────────── */
     /** Пара абзацев о подходе врача */
     about: z.array(z.string()).default([]),
-    /** Образование и курсы: год + что именно */
-    education: z.array(z.object({ year: z.string(), text: z.string() })).default([]),
+    /** Образование и курсы. Год необязателен: у курсов даты обычно нет,
+        а выдумывать её нельзя — такие строки идут отдельным списком. */
+    education: z.array(z.object({ year: z.string().default(''), text: z.string() })).default([]),
     /** Что делает: короткие пункты для списка */
     skills: z.array(z.string()).default([]),
     /** Слаги услуг из service-pages, которые ведёт врач */
