@@ -19,11 +19,20 @@ const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
 
 const doctors = (await getCollection('doctors')).sort(byOrder);
 const trust = (await getCollection('trust')).sort(byOrder);
+
+/**
+ * Заголовок и описание собираем из самой коллекции. Раньше они были вписаны
+ * руками и отстали от жизни: обещали зубного техника и керамиста, которых
+ * владелец уже удалил, и стаж, которого ни у кого нет. Список врачей
+ * меняется через редактор, поэтому и текст должен считаться из данных.
+ */
+const specialities = [...new Set(doctors.map((d) => d.data.speciality.toLowerCase().split(/,\s*/)).flat())];
+const names = doctors.map((d) => d.data.name).join(', ');
 ---
 
 <PageLayout
-  title="Врачи стоматологии «Дентал Круиз» — ортопед, терапевт, хирург, зубной техник"
-  description="Команда клиники «Дентал Круиз»: ортопед-имплантолог со стажем 18 лет, терапевт, хирург и керамист собственной зуботехнической лаборатории. Москва, 4-я Магистральная, 5с1."
+  title={`Врачи стоматологии «${clinic.name}» — ${specialities.join(', ')}`}
+  description={`Команда клиники «${clinic.name}»: ${names}. Своя зуботехническая лаборатория, ${clinic.address.locality}, ${clinic.address.streetShort}.`}
   path="/doctors"
   eyebrow="Врачи"
   heading="Команда, которая работает вместе"
@@ -46,6 +55,7 @@ const trust = (await getCollection('trust')).sort(byOrder);
                   cover
                 />
                 <span class="dc-team__body">
+                  <span class="dc-team__name">{doctor.data.name}</span>
                   <span class="dc-team__spec">{doctor.data.speciality}</span>
                   <span class="dc-team__exp">Стаж {doctor.data.experience}</span>
                   <span class="dc-team__note">{doctor.data.note}</span>
@@ -129,11 +139,20 @@ const trust = (await getCollection('trust')).sort(byOrder);
     align-content: start;
     padding: var(--space-5);
   }
-  .dc-team__spec {
+  /* Заголовок карточки — ФИО: к врачу записываются по имени, а специальность
+     повторяется у нескольких врачей и заголовком их не различает. */
+  .dc-team__name {
     font-family: var(--font-display);
     font-size: var(--type-h4);
     font-weight: var(--fw-black);
+    line-height: var(--lh-tight);
     color: var(--text-strong);
+    text-wrap: balance;
+  }
+  .dc-team__spec {
+    font-size: var(--type-small);
+    font-weight: var(--fw-medium);
+    color: var(--text-muted);
   }
   .dc-team__exp {
     font-size: var(--type-small);

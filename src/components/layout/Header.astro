@@ -194,6 +194,7 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     }
   }
 
+
   .dc-header__nav > a,
   .dc-header__nav-toggle {
     font-family: var(--font-body);
@@ -293,10 +294,21 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     color: var(--text-accent) !important;
     font-weight: var(--fw-bold) !important;
   }
+  /* Адрес и часы показываем только там, где на них честно хватает места.
+     Строки внутри не переносятся, а ширины меню и кнопок фиксированы, так
+     что в промежутке 1180–1360px адрес наезжал на телефон. Телефон важнее —
+     он остаётся; адрес есть в подвале, бургер-меню и блоке «Контакты».
+     Порог по сумме реальных ширин: лого, меню, контакты, кнопки и отступы
+     складываются примерно в 1330px. */
   .dc-header__place {
-    display: grid;
+    display: none;
     gap: 2px;
     min-width: 0;
+  }
+  @media (min-width: 1360px) {
+    .dc-header__place {
+      display: grid;
+    }
   }
   .dc-header__address,
   .dc-header__schedule,
