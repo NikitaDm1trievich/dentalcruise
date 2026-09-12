@@ -40,7 +40,7 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
       </a>
 
       <nav class="dc-header__nav" aria-label="Разделы сайта">
-        <div class="dc-header__nav-item" data-nav-dropdown data-open="false">
+        <div class="dc-header__nav-item" data-nav-dropdown data-expanded="false">
           <button
             type="button"
             class="dc-header__nav-toggle"
@@ -231,6 +231,14 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     transform: rotate(180deg);
   }
 
+  /* Между кнопкой и списком 18px пустоты. Мост из псевдоэлемента держит
+     наведение, пока курсор идёт вниз: без него меню успевало закрыться
+     на полпути. */
+  .dc-header__dropdown::before {
+    content: '';
+    position: absolute;
+    inset: -18px 0 100%;
+  }
   .dc-header__dropdown {
     position: absolute;
     top: calc(100% + 18px);
@@ -259,7 +267,7 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     top: -20px;
     height: 20px;
   }
-  .dc-header__nav-item[data-open='true'] .dc-header__dropdown {
+  .dc-header__nav-item[data-expanded='true'] .dc-header__dropdown {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
     pointer-events: auto;
@@ -421,7 +429,7 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     if (!toggle) return;
 
     const set = (open: boolean) => {
-      item.dataset.open = String(open);
+      item.dataset.expanded = String(open);
       toggle.setAttribute('aria-expanded', String(open));
     };
 
@@ -438,9 +446,33 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
         closeTimer = window.setTimeout(() => set(false), 220);
       });
     }
-    toggle.addEventListener('click', () => set(item.dataset.open !== 'true'));
-    item.addEventListener('focusout', (event) => {
-      if (!item.contains(event.relatedTarget as Node)) set(false);
+    toggle.addEventListener('click', () => set(item.dataset.expanded !== 'true'));
+
+    /**
+     * Закрытие по уходу фокуса нужно для клавиатуры, но мышью оно ломало
+     * само меню: при нажатии на ссылку фокус уходит в body раньше, чем её
+     * получит ссылка, relatedTarget приходит пустым, меню закрывалось и
+     * само себе выставляло pointer-events: none. Клик по направлению не
+     * доходил до ссылки, и работала только та, по которой успевали
+     * отпустить кнопку. Поэтому: пока мышь нажата внутри пункта — не
+     * закрываем, а после ухода фокуса проверяем, куда он реально попал.
+     */
+    let pressingInside = false;
+    item.addEventListener('pointerdown', () => {
+      pressingInside = true;
+    });
+    window.addEventListener(
+      'pointerup',
+      () => {
+        pressingInside = false;
+      },
+      true,
+    );
+    item.addEventListener('focusout', () => {
+      if (pressingInside) return;
+      window.setTimeout(() => {
+        if (!item.contains(document.activeElement)) set(false);
+      }, 0);
     });
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') set(false);

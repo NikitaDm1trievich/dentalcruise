@@ -54,9 +54,18 @@ export function initOverlays(): void {
     const target = event.target as HTMLElement;
 
     const opener = target.closest<HTMLElement>('[data-open]');
-    if (opener) {
+    /**
+     * Значение обязано называть существующий оверлей. Без этой проверки
+     * обработчик считал своим любой элемент с атрибутом `data-open`:
+     * выпадающее меню «Услуги» держало в нём своё состояние true/false,
+     * и клик по ссылке внутри меню гасился здесь через preventDefault —
+     * переход на прайс не происходил вовсе. Меню атрибут больше не
+     * занимает, а проверка страхует от следующего такого совпадения.
+     */
+    const overlayId = opener?.dataset.open;
+    if (opener && overlayId && document.getElementById(overlayId)) {
       event.preventDefault();
-      openOverlay(opener.dataset.open!, opener);
+      openOverlay(overlayId, opener);
       return;
     }
 
