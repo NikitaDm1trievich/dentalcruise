@@ -6,6 +6,7 @@
       "price": "19 900 ₽",
       "was": "26 000 ₽",
       "note": "Изготовление и установка, по акции",
+      "category": "protezirovanie",
       "attributes": [
         {
           "label": "Срок службы",
@@ -20,53 +21,53 @@
           "value": "не вызывает"
         }
       ],
-      "order": 10,
-      "category": "protezirovanie"
+      "order": 10
     },
     {
-      "id": "veneer-emax",
-      "title": "Винир E-max, за зуб",
+      "id": "crown-zirconia-implant",
+      "title": "Циркониевая коронка на импланте",
       "price": "25 000 ₽",
-      "was": "40 000–80 000 ₽",
-      "note": "Своя лаборатория",
+      "was": "35 000 ₽",
+      "note": "Винтовая фиксация",
+      "category": "protezirovanie",
       "attributes": [
         {
           "label": "Срок службы",
-          "value": "до 15–20 лет"
-        },
-        {
-          "label": "Обточка зуба",
-          "value": "минимальная"
+          "value": "бессрочно"
         },
         {
           "label": "Аллергия",
           "value": "не вызывает"
+        },
+        {
+          "label": "Система исплантации",
+          "value": "все"
         }
       ],
-      "order": 20,
-      "category": "restoration"
+      "order": 100
     },
     {
       "id": "implant-turnkey",
-      "title": "Имплантация Osstem",
-      "price": "от 65 000 ₽",
-      "note": "Имплант Osstem + коронка нашей лаборатории",
+      "title": "Имплантация Osstem + циркониевая коронка",
+      "price": "59 900 ₽",
+      "was": "75 000 ₽",
+      "note": "Имплант Osstem + циркониевая коронка",
+      "category": "implantacia",
       "attributes": [
         {
-          "label": "Гарантия импланта",
+          "label": "Гарантия",
           "value": "пожизненная от Osstem"
         },
         {
           "label": "Приживаемость",
-          "value": "выше 98%"
+          "value": "выше 95%"
         },
         {
           "label": "Что входит",
           "value": "имплант + коронка"
         }
       ],
-      "order": 30,
-      "category": "implantacia"
+      "order": 30
     }
   ]
 }
