@@ -49,7 +49,7 @@ const pricelistHref = href('pricelist');
             Прайс-лист
             <Icon name="chevron-down" size={22} />
           </button>
-          <div class="dc-burger__accordion-body" id="burger-services">
+          <div class="dc-burger__accordion-body" id="burger-services" inert>
             <ul class="dc-burger__sublist">
               {
                 categories.map((cat) => (
@@ -288,9 +288,17 @@ const pricelistHref = href('pricelist');
 
 <script>
   // Аккордеон «Услуги» — не открывает/закрывает бургер, поэтому не через overlays.ts
+  //
+  // Свёрнутое подменю схлопнуто до нулевой высоты, но ссылки в нём остаются
+  // в DOM — без `inert` Tab и скринридер заходят в невидимые пункты. `hidden`
+  // не подходит: display:none убил бы анимацию grid-template-rows. Состояние
+  // хранится только в aria-expanded и не зависит от открытия самого меню.
   document.querySelectorAll<HTMLButtonElement>('.dc-burger__accordion-toggle').forEach((btn) => {
+    const body = document.getElementById(btn.getAttribute('aria-controls') ?? '');
     btn.addEventListener('click', () => {
-      btn.setAttribute('aria-expanded', String(btn.getAttribute('aria-expanded') !== 'true'));
+      const expanded = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(expanded));
+      if (body) body.inert = !expanded;
     });
   });
 </script>
