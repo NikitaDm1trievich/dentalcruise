@@ -157,10 +157,14 @@ const row = [...brands, ...brands];
     let paused = false;
     let resumeTimer: number | undefined;
     let lastFrame: number | undefined;
-    let programmatic = false;
+    // Позицию держим дробной сами: браузер округляет scrollLeft до целого
+    // пикселя, а за кадр автопрокрутка сдвигает ленту меньше чем на пиксель —
+    // если прибавлять к самому scrollLeft, сдвиг каждый раз теряется и лента
+    // стоит на месте.
+    let position = 0;
 
     const setScroll = (v: number) => {
-      programmatic = true;
+      position = v;
       viewport.scrollLeft = v;
     };
 
@@ -170,8 +174,8 @@ const row = [...brands, ...brands];
     const wrapIfNeeded = () => {
       const width = setWidth();
       if (width <= 0) return;
-      if (viewport.scrollLeft >= width * (sets - 1)) setScroll(viewport.scrollLeft - width);
-      else if (viewport.scrollLeft < width) setScroll(viewport.scrollLeft + width);
+      if (position >= width * (sets - 1)) setScroll(position - width);
+      else if (position < width) setScroll(position + width);
     };
 
     const pauseAutoplay = () => {
@@ -183,11 +187,12 @@ const row = [...brands, ...brands];
     viewport.addEventListener(
       'scroll',
       () => {
-        if (programmatic) {
-          programmatic = false;
-          return;
-        }
+        // Свою запись узнаём по совпадению с position (с точностью до
+        // округления), а не по флагу: дробный сдвиг меньше пикселя события
+        // scroll не порождает, и флаг съел бы следующий настоящий скролл.
+        if (Math.abs(viewport.scrollLeft - position) < 1) return;
         // Настоящий скролл пользователя — тач, колесо, трекпад, полоса
+        position = viewport.scrollLeft;
         pauseAutoplay();
         wrapIfNeeded();
       },
@@ -200,7 +205,7 @@ const row = [...brands, ...brands];
       lastFrame = now;
 
       if (!paused && !document.hidden) {
-        setScroll(viewport.scrollLeft + (setWidth() / speedSetting) * dt);
+        setScroll(position + (setWidth() / speedSetting) * dt);
         wrapIfNeeded();
       }
       requestAnimationFrame(tick);
