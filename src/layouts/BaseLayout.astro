@@ -57,6 +57,12 @@ const asset = withBase;
       // Снимаем .no-js до первой отрисовки — контент со скролл-анимацией
       // прячется только тогда, когда его точно есть кому показать.
       document.documentElement.classList.remove('no-js');
+      // Страница открыта в живом предпросмотре редактора: заставку и
+      // появление блоков при прокрутке выключаем, владельцу нужен сразу
+      // весь текст, а не анимация на каждую перезагрузку фрейма.
+      if (/[?&]cms-preview\b/.test(location.search)) {
+        document.documentElement.classList.add('dc-cms-preview');
+      }
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -98,11 +104,13 @@ const asset = withBase;
       import { initOverlays } from '../lib/overlays';
       import { initFlipCards } from '../lib/flip';
       import { initCountUp } from '../lib/count-up';
+      import { initCmsPreview } from '../lib/cms-preview';
 
       initOverlays();
       initReveal();
       initFlipCards();
       initCountUp();
+      initCmsPreview();
 
       // Заставка уходит по готовности страницы, но живёт не меньше MIN_MS:
       // иначе на быстром соединении она мелькает одним кадром и читается

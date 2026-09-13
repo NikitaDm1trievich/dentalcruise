@@ -12,6 +12,7 @@
  */
 import theme from '../../data/theme.json';
 import { checkTheme } from '../../lib/contrast';
+import { themeEntries } from '../../lib/theme-vars';
 
 const failed = checkTheme(theme).filter((c) => !c.passes);
 if (failed.length) {
@@ -22,26 +23,7 @@ if (failed.length) {
   );
 }
 
-const css = `:root:root{
---dc-turquoise:${theme.accent.base};
---dc-turquoise-press:${theme.accent.press};
---dc-turquoise-ink:${theme.accent.ink};
---dc-turquoise-soft:${theme.accent.soft};
---dc-turquoise-mark:${theme.accent.mark};
---dc-coral:${theme.promo.base};
---dc-coral-press:${theme.promo.press};
---dc-coral-soft:${theme.promo.soft};
---dc-depths:${theme.ink.heading};
---text-body:${theme.ink.body};
---text-muted:${theme.ink.muted};
---dc-lagoon:${theme.dark.base};
---dc-lagoon-lift:${theme.dark.lift};
---surface-footer:${theme.dark.footer};
---dc-seashell:${theme.tint.warm};
---dc-mist:${theme.tint.cool};
---dc-aqua-tint:${theme.tint.aqua};
---dc-breeze:${theme.tint.breeze};
-}`;
+const css = `:root:root{${themeEntries(theme).map(([name, value]) => `${name}:${value};`).join('')}}`;
 ---
 
 <style is:inline set:html={css}></style>
