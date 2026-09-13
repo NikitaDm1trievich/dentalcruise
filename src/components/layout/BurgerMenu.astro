@@ -24,10 +24,10 @@ const categories = (await getCollection('service-categories')).sort(
 const pricelistHref = href('pricelist');
 ---
 
-<div class="dc-burger" id="dc-menu" data-state="closed" aria-hidden="true">
+<div class="dc-burger" id="dc-menu" data-state="closed" aria-hidden="true" inert>
   <div class="dc-burger__scrim" data-close></div>
 
-  <nav class="dc-burger__panel" aria-label="Меню сайта">
+  <div class="dc-burger__panel" role="dialog" aria-modal="true" aria-label="Меню сайта">
     <div class="dc-burger__head">
       <a href={href('')} class="dc-burger__logo" aria-label={`${clinic.name} — на главную`} data-close>
         <img src={logo} alt={clinic.name} width="150" height="36" />
@@ -37,44 +37,46 @@ const pricelistHref = href('pricelist');
       </IconButton>
     </div>
 
-    <ul class="dc-burger__links">
-      <li class="dc-burger__accordion">
-        <button
-          type="button"
-          class="dc-burger__accordion-toggle"
-          aria-expanded="false"
-          aria-controls="burger-services"
-        >
-          Прайс-лист
-          <Icon name="chevron-down" size={22} />
-        </button>
-        <div class="dc-burger__accordion-body" id="burger-services">
-          <ul class="dc-burger__sublist">
-            {
-              categories.map((cat) => (
-                <li>
-                  <a href={`${pricelistHref}#${cat.data.slug}`} data-close>
-                    {cat.data.title}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </li>
+    <nav aria-label="Разделы сайта">
+      <ul class="dc-burger__links">
+        <li class="dc-burger__accordion">
+          <button
+            type="button"
+            class="dc-burger__accordion-toggle"
+            aria-expanded="false"
+            aria-controls="burger-services"
+          >
+            Прайс-лист
+            <Icon name="chevron-down" size={22} />
+          </button>
+          <div class="dc-burger__accordion-body" id="burger-services">
+            <ul class="dc-burger__sublist">
+              {
+                categories.map((cat) => (
+                  <li>
+                    <a href={`${pricelistHref}#${cat.data.slug}`} data-close>
+                      {cat.data.title}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </li>
 
-      {
-        navLinks
-          .filter((l) => l.href !== '/' && l.href !== '/pricelist')
-          .map((link) => (
-            <li>
-              <a href={href(link.href.replace(/^\//, ''))} data-close>
-                {link.label}
-              </a>
-            </li>
-          ))
-      }
-    </ul>
+        {
+          navLinks
+            .filter((l) => l.href !== '/' && l.href !== '/pricelist')
+            .map((link) => (
+              <li>
+                <a href={href(link.href.replace(/^\//, ''))} data-close>
+                  {link.label}
+                </a>
+              </li>
+            ))
+        }
+      </ul>
+    </nav>
 
     <div class="dc-burger__socials">
       {
@@ -109,7 +111,7 @@ const pricelistHref = href('pricelist');
     </div>
 
     <Button variant="primary" size="lg" fullWidth data-open="dc-book">Записаться на приём</Button>
-  </nav>
+  </div>
 </div>
 
 <style>

@@ -4,6 +4,11 @@
  * Все три открываются по `data-open="<id>"`, закрываются по `data-close`,
  * по клику на подложку и по Escape. Пока открыт любой оверлей — страница
  * под ним не скроллится, а фокус остаётся внутри.
+ *
+ * Закрытый оверлей только уезжает за край и не ловит клики, поэтому
+ * в разметке он с атрибутом `inert` — иначе Tab уводит фокус в невидимые
+ * ссылки и поля. Снимаем `inert` при открытии и возвращаем сразу при
+ * закрытии: на анимацию ухода он не влияет.
  */
 
 type Overlay = {
@@ -25,6 +30,7 @@ export function closeOverlay(): void {
   const { root, opener } = open;
   root.dataset.state = 'closed';
   root.setAttribute('aria-hidden', 'true');
+  root.inert = true;
   document.querySelectorAll<HTMLElement>(`[data-open="${root.id}"]`).forEach((btn) => {
     btn.setAttribute('aria-expanded', 'false');
   });
@@ -36,10 +42,16 @@ export function closeOverlay(): void {
 export function openOverlay(id: string, opener: HTMLElement | null = null): void {
   const root = document.getElementById(id);
   if (!root) return;
-  if (open) closeOverlay();
+  if (open) {
+    // Запись из бургер-меню: кнопка в меню станет inert, фокус после
+    // закрытия модалки возвращаем туда, откуда открывали само меню.
+    if (opener && open.root.contains(opener)) opener = open.opener;
+    closeOverlay();
+  }
 
   root.dataset.state = 'open';
   root.setAttribute('aria-hidden', 'false');
+  root.inert = false;
   document.querySelectorAll<HTMLElement>(`[data-open="${id}"]`).forEach((btn) => {
     btn.setAttribute('aria-expanded', 'true');
   });
