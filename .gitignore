@@ -17,6 +17,10 @@ assets/coverr-the-ocean-7381-1080p.mp4
 # Design reference snippets, not part of the shipped project
 coconut-reference/
 
+# Internal reference pages, not part of the shipped project
+docs/reklama-guide.html
+docs/audit-florenciadent/
+
 # Downloaded design export archives
 *.zip
 
