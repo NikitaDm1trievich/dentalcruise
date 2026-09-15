@@ -32,7 +32,13 @@ import Icon from './Icon.astro';
     transition:
       opacity var(--dur-mid) var(--ease-out),
       transform var(--dur-mid) var(--ease-out),
+      bottom var(--dur-mid) var(--ease-out),
       background var(--dur-fast) var(--ease-out);
+  }
+  /* Пока на телефоне видна нижняя панель действий (StickyActions ставит
+     класс на <html>), кнопка поднимается над ней — иначе ложится на панель. */
+  :global(html.has-sticky-actions) .dc-totop {
+    bottom: calc(var(--sticky-actions-h) + var(--space-3));
   }
   .dc-totop[data-visible='true'] {
     opacity: 1;

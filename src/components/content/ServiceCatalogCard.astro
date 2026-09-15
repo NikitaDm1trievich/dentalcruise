@@ -13,7 +13,12 @@ interface Props {
   title: string;
   description: string;
   icon: string;
-  items: { title: string; price: string }[];
+  /**
+   * Позиция со своим `href` ведёт на страницу услуги (/uslugi/<slug>),
+   * без него — в раздел прайса, как и заголовок карточки. Так главная
+   * ссылается на посадочные напрямую, а не только на прайс-лист.
+   */
+  items: { title: string; price: string; href?: string }[];
   href: string;
 }
 
@@ -39,7 +44,7 @@ const shown = items.slice(0, 3);
     {
       shown.map((item) => (
         <li>
-          <a href={href} class="dc-catalog-card__item">
+          <a href={item.href ?? href} class="dc-catalog-card__item">
             <span class="dc-catalog-card__item-title">{item.title}</span>
             <span class="dc-catalog-card__item-price">{item.price}</span>
           </a>
@@ -162,6 +167,10 @@ const shown = items.slice(0, 3);
   .dc-catalog-card__item-title {
     color: var(--text-body);
     min-width: 0;
+    /* «Металлокерамическая» на 320px не помещается рядом с ценой и
+       наезжала на неё — длинное слово переносим по дефису */
+    hyphens: auto;
+    overflow-wrap: anywhere;
     /* Подчёркивание — опознавательный знак ссылки: позиция кликабельна */
     text-decoration: underline;
     text-decoration-color: var(--line-strong);

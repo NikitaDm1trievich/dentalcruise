@@ -85,25 +85,52 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-h) + 16px);
 }
+/* Крупные экраны (аудит, №35): от 1920px базовый кегль 18px — типографика
+   на rem подрастает на 12,5% (hero 5.25rem → 94px, заголовки секций
+   4.5rem → 81px, текст 19px), а контейнер расширяется до 1440px: иначе
+   шапка (лого, меню, телефон, кнопки ≈ 1320px при 18px) переставала
+   помещаться в 1280px, а сетки на 4K оставались островом. Отступы секций
+   заданы в px и не растут. */
+@media (min-width: 1920px) {
+  html {
+    font-size: 18px;
+  }
+  :root {
+    --container: 1440px;
+  }
+}
 
 body {
   background: var(--surface-page);
   color: var(--text-body);
 }
 
-/* Скроллбары скрыты везде — решение макета (чистый «морской» вид). */
-html,
-body,
-* {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/* Полоса прокрутки видна. Макет прятал скроллбары ради «чистого» вида, но
+   аудитория 40–70 лет по полосе понимает, где находится на длинной
+   странице, и тянет её мышью (аудит, №26). Полоса тонкая, в цветах
+   палитры; scrollbar-color наследуется, так что меню и модалка получают
+   тот же цвет. Ленты чипов на прайсе и логотипов прячут свою полосу
+   сами — их листают жестом. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--dc-white-caps) var(--surface-cool);
 }
-html::-webkit-scrollbar,
-body::-webkit-scrollbar,
-*::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
+/* Старые WebKit без scrollbar-color (Safari до 18.2). Там, где стандартные
+   свойства поддержаны, браузер сам игнорирует эти правила. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-cool);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--dc-white-caps);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--surface-cool);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 a {
@@ -141,7 +168,9 @@ a:hover {
   max-width: var(--container);
   margin-inline: auto;
   display: grid;
-  gap: var(--space-10);
+  /* 32px, а не 40: вместе с --section-y и заголовком до 72px промежуток
+     между заголовком секции и содержимым доходил до 250px (аудит, №34). */
+  gap: var(--space-8);
 }
 .dc-eyebrow {
   font-family: var(--font-body);

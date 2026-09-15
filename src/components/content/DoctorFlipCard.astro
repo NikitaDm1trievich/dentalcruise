@@ -11,9 +11,15 @@ interface Props {
   extra?: string;
   photo?: string;
   photoLabel: string;
+  /**
+   * Страница врача (/doctors/<id>). Ссылка стоит на обороте рядом с кнопкой
+   * записи: без неё главная не вела ни к одному врачу, а флип-карточка
+   * была тупиком — с неё можно было только записаться.
+   */
+  href?: string;
 }
 
-const { name, speciality, experience, note, extra, photo, photoLabel } = Astro.props;
+const { name, speciality, experience, note, extra, photo, photoLabel, href } = Astro.props;
 const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[];
 ---
 
@@ -55,10 +61,20 @@ const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[
           ))
         }
       </ul>
-      <button type="button" class="dc-doc__cta" data-open="dc-book">
-        Записаться к врачу
-        <Icon name="arrow-right" size={20} />
-      </button>
+      <div class="dc-doc__actions">
+        {
+          href && (
+            <a href={href} class="dc-doc__more">
+              Страница врача
+              <Icon name="arrow-right" size={16} strokeWidth={2.2} />
+            </a>
+          )
+        }
+        <button type="button" class="dc-doc__cta" data-open="dc-book">
+          Записаться к врачу
+          <Icon name="arrow-right" size={20} />
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -83,8 +99,10 @@ const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[
     border-radius: var(--radius-lg);
     cursor: pointer;
   }
+  /* На обороте кнопка-переворот не накрывает блок действий: ссылку на
+     страницу врача (48px) и кнопку записи (48px) с промежутком между ними. */
   .dc-doc[data-flipped='true'] .dc-doc__toggle {
-    inset: 0 0 var(--tap-min) 0;
+    inset: 0 0 calc(var(--tap-min) * 2 + var(--space-2)) 0;
   }
 
   .dc-doc__inner {
@@ -218,6 +236,32 @@ const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[
   }
   .dc-doc__facts :global(.dc-icon) {
     margin-top: 3px;
+  }
+
+  .dc-doc__actions {
+    display: grid;
+    gap: var(--space-2);
+  }
+  /* Ссылка на страницу врача. Как и кнопка записи — выше кнопки-переворота
+     по z-index, иначе нажатие уходило бы в переворот карточки. */
+  .dc-doc__more {
+    position: relative;
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-self: start;
+    min-height: var(--tap-min);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+    text-decoration: none;
+  }
+  .dc-doc__more:hover,
+  .dc-doc__more:focus-visible {
+    color: var(--dc-turquoise-press);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .dc-doc__cta {

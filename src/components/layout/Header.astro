@@ -10,7 +10,7 @@ import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
 import BrandIcon from '../core/BrandIcon.astro';
 import { clinic, navLinks } from '../../data/site';
-import { withBase } from '../../lib/asset';
+import { pageHref, withBase } from '../../lib/asset';
 import { getCollection } from 'astro:content';
 
 interface Props {
@@ -28,7 +28,9 @@ const { vk, max } = clinic.links;
 const categories = (await getCollection('service-categories')).sort(
   (a, b) => a.data.order - b.data.order,
 );
-const pricelistHref = withBase('pricelist');
+/* Ссылки на страницы — только через pageHref: адрес со слешем на конце
+   совпадает с canonical и картой сайта, без лишнего редиректа. */
+const pricelistHref = pageHref('pricelist');
 const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelist');
 ---
 
@@ -55,7 +57,7 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
               {
                 categories.map((cat) => (
                   <li>
-                    <a href={`${pricelistHref}#${cat.data.slug}`}>{cat.data.title}</a>
+                    <a href={pageHref(`pricelist#${cat.data.slug}`)}>{cat.data.title}</a>
                   </li>
                 ))
               }
@@ -66,7 +68,7 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
             </a>
           </div>
         </div>
-        {restLinks.map((link) => <a href={withBase(link.href.replace(/^\//, ''))}>{link.label}</a>)}
+        {restLinks.map((link) => <a href={pageHref(link.href)}>{link.label}</a>)}
       </nav>
 
       <div class="dc-header__contacts">
@@ -89,14 +91,14 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
       <div class="dc-header__actions">
         {
           max && (
-            <IconButton label="Написать в Max" href={max} size={44}>
+            <IconButton label="Написать в Max" href={max} size={44} class="dc-header__social">
               <BrandIcon name="max" size={20} />
             </IconButton>
           )
         }
         {
           vk && (
-            <IconButton label="Написать во ВКонтакте" href={vk} size={44}>
+            <IconButton label="Написать во ВКонтакте" href={vk} size={44} class="dc-header__social">
               <BrandIcon name="vk" size={20} />
             </IconButton>
           )
@@ -170,13 +172,16 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     filter: brightness(0) invert(1) drop-shadow(0 2px 14px rgba(7, 59, 75, 0.7));
   }
 
-  /* Десктоп-навигация и адрес/часы появляются вместе — на планшете и уже
-     им попросту не хватает места рядом с лого и кнопками; вся навигация
-     там живёт в бургере, дублирования нет. */
+  /* Навигация показывается с 1024px: на ноутбуке искать разделы в бургере
+     непривычно, а лого, пять пунктов и четыре кнопки укладываются
+     примерно в 930px. Телефон добавляется с 1180px — вместе с меню
+     он в 1024–1179px уже не помещается; до этого звонок остаётся
+     круглой кнопкой справа. Адрес и часы — ещё позже, см. .dc-header__place.
+     На планшете и уже вся навигация живёт в бургере, дублирования нет. */
   .dc-header__nav {
     display: none;
     align-items: center;
-    gap: var(--space-6);
+    gap: var(--space-5);
   }
   .dc-header__contacts {
     display: none;
@@ -185,9 +190,14 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     text-align: center;
     min-width: 0;
   }
-  @media (min-width: 1180px) {
+  @media (min-width: 1024px) {
     .dc-header__nav {
       display: flex;
+    }
+  }
+  @media (min-width: 1180px) {
+    .dc-header__nav {
+      gap: var(--space-6);
     }
     .dc-header__contacts {
       display: flex;
@@ -358,6 +368,15 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
     display: flex;
     align-items: center;
     gap: var(--space-2);
+  }
+  /* На 320px лого (≈101px), четыре кнопки по 44px и отступы требуют
+     ≈357px — бургер уезжал за край экрана. Ниже 360px мессенджеры
+     прячем: они есть в бургер-меню и в нижней панели действий; звонок
+     и бургер остаются тап-целями 44px. */
+  @media (max-width: 359.98px) {
+    .dc-header__actions :global(.dc-header__social) {
+      display: none;
+    }
   }
 
   .dc-burger-btn {

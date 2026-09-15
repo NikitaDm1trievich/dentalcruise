@@ -4,11 +4,15 @@
   --space-16:64px;--space-20:80px;--space-24:96px;--space-32:128px;
 
   /* Section rhythm — full-bleed sections breathe hard on desktop */
-  --section-y:clamp(56px,9vw,140px);/* @kind spacing */
+  --section-y:clamp(48px,7vw,104px);/* @kind spacing */   /* было 56/9vw/140: вместе с заголовком 72px и gap контейнера давало пустоты до 250px на 1440–1920 */
   --section-y-tight:clamp(40px,6vw,88px);/* @kind spacing */
   --gutter:clamp(20px,5vw,64px);/* @kind spacing */
   --measure:66ch;/* @kind spacing */              /* max prose width */
   --container:1280px;
   --container-narrow:880px;
   --tap-min:48px;              /* never smaller */
+  /* Высота нижней панели действий на телефоне (StickyActions): по ней
+     страница получает отступ снизу, а кнопка «наверх» поднимается выше.
+     env() — под «бровь» iPhone, чтобы панель не легла на системную полосу. */
+  --sticky-actions-h:calc(64px + env(safe-area-inset-bottom,0px));
 }

@@ -1,0 +1,215 @@
+---
+/**
+ * Нижняя панель быстрых действий на телефоне: позвонить, записаться,
+ * написать в Max. Главная — 19 экранов, и после hero кнопка записи
+ * и телефон оставались только в потоке страницы (аудит, №23).
+ *
+ * Появляется, когда первый экран ушёл из вида: на главной — hero, на
+ * внутренних страницах — невидимый маркер высотой в экран. Пока панель
+ * видна, на <html> стоит класс has-sticky-actions: по нему страница
+ * получает отступ снизу (подвал не перекрыт), а кнопка «наверх»
+ * поднимается над панелью. Шире 900px панели нет — там телефон и запись
+ * всегда на виду в шапке.
+ *
+ * Скрытая панель — inert и visibility:hidden, а не только transform:
+ * иначе Tab уводил бы фокус в невидимые кнопки. Открытые бургер-меню и
+ * модалка лежат выше по z-index и накрывают панель своей подложкой.
+ */
+import Icon from '../core/Icon.astro';
+import BrandIcon from '../core/BrandIcon.astro';
+import { clinic } from '../../data/site';
+
+const { max } = clinic.links;
+---
+
+<div class="dc-sticky__sentinel" data-sticky-sentinel></div>
+
+<nav class="dc-sticky" aria-label="Быстрые действия" data-sticky-actions data-visible="false" inert>
+  <a
+    href={clinic.phoneHref}
+    class="dc-sticky__btn dc-sticky__btn--quiet dc-sticky__btn--call"
+    aria-label={`Позвонить ${clinic.phone}`}
+  >
+    <Icon name="phone" size={20} strokeWidth={2} />
+    <span class="dc-sticky__label">Позвонить</span>
+  </a>
+
+  <button
+    type="button"
+    class="dc-sticky__btn dc-sticky__btn--book"
+    data-open="dc-book"
+    aria-controls="dc-book"
+    aria-haspopup="dialog"
+  >
+    <Icon name="calendar" size={20} strokeWidth={2} />
+    Записаться
+  </button>
+
+  {
+    max && (
+      <a
+        href={max}
+        class="dc-sticky__btn dc-sticky__btn--quiet dc-sticky__btn--max"
+        aria-label="Написать в Max"
+        target="_blank"
+        rel="noopener"
+      >
+        <BrandIcon name="max" size={20} />
+        <span class="dc-sticky__label">Max</span>
+      </a>
+    )
+  }
+</nav>
+
+<style>
+  /* Маркер первого экрана: от верха документа, высотой в экран. У него
+     visibility:hidden, а не display:none — бокс остаётся, и
+     IntersectionObserver видит, когда он ушёл вверх. */
+  .dc-sticky__sentinel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100svh;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .dc-sticky {
+    position: fixed;
+    inset: auto 0 0 0;
+    /* Выше контента и кнопки «наверх» (50), ниже бургер-меню (70) и
+       модалки (100): их подложка накрывает панель, пока оверлей открыт. */
+    z-index: 65;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    box-sizing: border-box;
+    height: var(--sticky-actions-h);
+    /* Боковые отступы уже gutter: на 320px иначе не помещаются три кнопки */
+    padding: var(--space-2) var(--space-3) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+    background: var(--dc-white);
+    border-top: 1px solid var(--line-hairline);
+    box-shadow: 0 -8px 24px rgba(4, 48, 65, 0.08);
+    transform: translateY(100%);
+    visibility: hidden;
+    /* visibility переключается после того, как панель уехала вниз */
+    transition:
+      transform var(--dur-mid) var(--ease-out),
+      visibility 0s linear var(--dur-mid);
+  }
+  .dc-sticky[data-visible='true'] {
+    transform: none;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-sticky {
+      transition: none;
+    }
+  }
+  /* На широких экранах и в печати панели нет */
+  @media (min-width: 900px), print {
+    .dc-sticky,
+    .dc-sticky__sentinel {
+      display: none;
+    }
+  }
+
+  /* Отступ под панель: иначе последние строки подвала прячутся за ней */
+  :global(html.has-sticky-actions body) {
+    padding-bottom: var(--sticky-actions-h);
+  }
+
+  .dc-sticky__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    line-height: 1.1;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+  .dc-sticky__btn:active {
+    transform: scale(0.975);
+  }
+  .dc-sticky__btn--quiet {
+    background: var(--surface-quiet);
+    color: var(--text-strong);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-sticky__btn--quiet:hover {
+    background: var(--dc-turquoise-soft);
+    color: var(--text-strong);
+  }
+  /* Запись — главное действие: заливка CTA и вся свободная ширина */
+  .dc-sticky__btn--book {
+    flex: 1 1 auto;
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-sticky__btn--book:hover {
+    background: var(--cta-bg-hover);
+  }
+
+  /* На самых узких экранах подписи «Позвонить» и «Max» не помещаются рядом
+     с «Записаться»: остаются круглые кнопки 48px с иконкой, имя у них
+     в aria-label. Подписи возвращаются по мере ширины. */
+  .dc-sticky__btn--call .dc-sticky__label,
+  .dc-sticky__btn--max .dc-sticky__label {
+    display: none;
+  }
+  @media (min-width: 360px) {
+    .dc-sticky__btn--call .dc-sticky__label {
+      display: inline;
+    }
+  }
+  @media (min-width: 400px) {
+    .dc-sticky__btn--max .dc-sticky__label {
+      display: inline;
+    }
+  }
+</style>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-sticky-actions]');
+  const sentinel = document.querySelector<HTMLElement>('[data-sticky-sentinel]');
+
+  if (bar && sentinel && 'IntersectionObserver' in window) {
+    const phone = window.matchMedia('(max-width: 899.98px)');
+    // На главной ориентир — hero: панель нужна, когда он целиком ушёл
+    // из вида. На внутренних страницах hero нет — следим за маркером
+    // высотой в первый экран.
+    const anchor = document.querySelector<HTMLElement>('.dc-hero') ?? sentinel;
+
+    let pastAnchor = false;
+    const apply = () => {
+      const on = pastAnchor && phone.matches;
+      bar.dataset.visible = String(on);
+      bar.inert = !on;
+      document.documentElement.classList.toggle('has-sticky-actions', on);
+    };
+
+    new IntersectionObserver(([entry]) => {
+      // Не пересекается и лежит выше окна — значит, прокрутили мимо
+      pastAnchor = !entry.isIntersecting && entry.boundingClientRect.bottom <= 0;
+      apply();
+    }).observe(anchor);
+
+    phone.addEventListener('change', apply);
+  }
+</script>

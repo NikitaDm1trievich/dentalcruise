@@ -13,6 +13,7 @@ import MetroStations from '../components/core/MetroStations.astro';
 import BrandIcon from '../components/core/BrandIcon.astro';
 import YandexEmbed from '../components/content/YandexEmbed.astro';
 import { clinic } from '../data/site';
+import { clampText } from '../lib/seo';
 
 const { yandexPin, yandexOrg, vk, max, instagram } = clinic.links;
 
@@ -53,8 +54,10 @@ const blocks = [
 ---
 
 <PageLayout
-  title="Контакты стоматологии «Дентал Круиз» — Москва, 4-я Магистральная, 5с1"
-  description="Как добраться до клиники «Дентал Круиз»: 5 минут пешком от метро Полежаевская, Москва, 4-я Магистральная улица, 5с1, 2 этаж. Пн–сб 10:00–22:00. Телефон +7 925 577-76-77."
+  title="Контакты и схема проезда — Дентал Круиз, м. Полежаевская"
+  description={clampText(
+    'Как добраться до клиники «Дентал Круиз»: 5 минут от м. Полежаевская, Москва, 4-я Магистральная, 5с1, 2 этаж. Пн–сб 10:00–22:00, тел. +7 925 577-76-77.',
+  )}
   path="/contacts"
   eyebrow="Контакты"
   heading="Приезжайте или позвоните"
@@ -84,7 +87,8 @@ const blocks = [
   <section class="dc-section dc-bg-white">
     <div class="dc-container dc-two-col">
       <Reveal>
-        <PlaceCard />
+        {/* h2: карточка идёт сразу за h1 страницы, h3 пропускал бы уровень */}
+        <PlaceCard headingLevel="h2" />
       </Reveal>
       <Reveal delay={90}>
         <YandexEmbed

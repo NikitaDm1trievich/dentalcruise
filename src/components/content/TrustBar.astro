@@ -52,7 +52,9 @@ const { items, tone = 'light' } = Astro.props;
   .dc-trust__grid {
     display: grid;
     gap: var(--space-5);
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    /* min(100%, …): на 320px колонка уже 240px, и без этого единственный
+       трек вылезал за край полосы — горизонтальный скролл страницы. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   }
   .dc-trust__card {
     min-width: 0;
@@ -104,5 +106,39 @@ const { items, tone = 'light' } = Astro.props;
   }
   .dc-trust--dark .dc-trust__text {
     color: var(--text-on-dark-muted);
+  }
+
+  /* На телефоне три карточки по 250px в столбик — слишком много для
+     полублока. Складываем каждую в компактный ряд: иконка слева, заголовок
+     и текст справа. Размер текста не уменьшаем — 15px и так нижняя граница
+     для сайта; заголовок берём размером с основной текст. */
+  @media (max-width: 559.98px) {
+    .dc-trust {
+      padding: var(--space-4);
+    }
+    .dc-trust__grid {
+      gap: var(--space-3);
+    }
+    .dc-trust__card {
+      grid-template-columns: auto 1fr;
+      column-gap: var(--space-3);
+      row-gap: var(--space-1);
+      padding: var(--space-4);
+    }
+    /* svg приходит из Icon — у него своя область видимости стилей */
+    .dc-trust__card > :global(.dc-icon) {
+      grid-row: 1 / span 2;
+      align-self: start;
+      width: 26px;
+      height: 26px;
+      margin-top: 1px;
+    }
+    .dc-trust__title {
+      font-size: var(--type-body);
+      line-height: var(--lh-heading);
+    }
+    .dc-trust__text {
+      grid-column: 2;
+    }
   }
 </style>

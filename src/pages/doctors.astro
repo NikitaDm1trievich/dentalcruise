@@ -12,7 +12,7 @@ import Icon from '../components/core/Icon.astro';
 import PhotoPlaceholder from '../components/media/PhotoPlaceholder.astro';
 import TrustBar from '../components/content/TrustBar.astro';
 import { clinic } from '../data/site';
-import { withBase } from '../lib/asset';
+import { pageHref } from '../lib/asset';
 
 type Ordered = { data: { order: number } };
 const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
@@ -45,7 +45,7 @@ const names = doctors.map((d) => d.data.name).join(', ');
         {
           doctors.map((doctor, i) => (
             <Reveal as="li" delay={i * 70}>
-              <a href={withBase(`doctors/${doctor.id}`)} class="dc-team__card">
+              <a href={pageHref(`doctors/${doctor.id}`)} class="dc-team__card">
                 <PhotoPlaceholder
                   label={doctor.data.photoLabel}
                   src={doctor.data.photo}
@@ -95,22 +95,33 @@ const names = doctors.map((d) => d.data.name).join(', ');
 </PageLayout>
 
 <style>
+  /* Три колонки, а не четыре: врачей трое, и четвёртый слот стоял пустым.
+     Flex вместо grid, чтобы неполный ряд (если врачей станет четверо)
+     вставал по центру, а не оставлял дыру справа. Ширина карточки —
+     доля ряда за вычетом промежутков, как в трёхколоночной сетке.
+     Планшет — две колонки, телефон — одна. */
   .dc-team {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: var(--space-5);
-    grid-template-columns: 1fr;
+  }
+  /* li рисует Reveal — у него своя область видимости стилей */
+  .dc-team > :global(li) {
+    flex: 0 1 100%;
+    min-width: 0;
   }
   @media (min-width: 560px) {
-    .dc-team {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .dc-team > :global(li) {
+      flex-basis: calc((100% - var(--space-5)) / 2);
     }
   }
   @media (min-width: 1040px) {
-    .dc-team {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+    .dc-team > :global(li) {
+      flex-basis: calc((100% - 2 * var(--space-5)) / 3);
     }
   }
 

@@ -8,11 +8,23 @@ import Button from '../core/Button.astro';
 import { clinic } from '../../data/site';
 import { withBase } from '../../lib/asset';
 
+interface Props {
+  /**
+   * Уровень заголовка карточки. В блоке контактов перед подвалом над ней
+   * стоит h2 секции — там h3; на странице «Контакты» карточка идёт сразу
+   * за h1, и h3 давал пропуск уровня (h1 → h3) — там h2. Вид не меняется:
+   * размер задаёт класс, а не тег.
+   */
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
 const { max, telegram, instagram, yandexOrg } = clinic.links;
 ---
 
 <div class="dc-place">
-  <h3>{clinic.name}</h3>
+  <Heading class="dc-place__title">{clinic.name}</Heading>
 
   <div class="dc-place__row">
     <Icon name="map-pin" size={22} color="var(--text-accent)" />
@@ -68,7 +80,6 @@ const { max, telegram, instagram, yandexOrg } = clinic.links;
       href={withBase('images/map/route-to-clinic.png')}
       target="_blank"
       rel="noopener"
-      download="Дентал Круиз — схема проезда.png"
     >
       <Icon slot="icon" name="image" size={18} />
       Схема проезда картинкой
@@ -86,7 +97,7 @@ const { max, telegram, instagram, yandexOrg } = clinic.links;
     box-shadow: var(--shadow-md);
     align-content: start;
   }
-  .dc-place h3 {
+  .dc-place__title {
     font-size: var(--type-h3);
 
     letter-spacing: var(--ls-display);
