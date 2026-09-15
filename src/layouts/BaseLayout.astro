@@ -9,10 +9,17 @@ import ContactsCta from '../components/layout/ContactsCta.astro';
 import AppointmentModal from '../components/forms/AppointmentModal.astro';
 import LicenseDrawer from '../components/content/LicenseDrawer.astro';
 import ScrollToTop from '../components/core/ScrollToTop.astro';
+import StickyActions from '../components/layout/StickyActions.astro';
 import Preloader from '../components/core/Preloader.astro';
 import ThemeVars from '../components/core/ThemeVars.astro';
 import theme from '../data/theme.json';
 import { withBase } from '../lib/asset';
+// Кириллица обоих семейств уходит в <link rel="preload">: это первое, что
+// нужно тексту над hero. Импорт с ?url даёт тот же хэшированный адрес, что
+// и url() в @font-face (см. styles/tokens/fonts.css), поэтому файл не
+// скачивается дважды.
+import onestCyrillicUrl from '@fontsource-variable/onest/files/onest-cyrillic-wght-normal.woff2?url';
+import golosCyrillicUrl from '@fontsource-variable/golos-text/files/golos-text-cyrillic-wght-normal.woff2?url';
 
 interface Props {
   title: string;
@@ -51,7 +58,7 @@ const asset = withBase;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content={theme.accent.base} />
     <link rel="icon" type="image/svg+xml" href={asset('favicon.svg')} />
-    <link rel="apple-touch-icon" href={asset('apple-touch-icon.png')} />
+    <link rel="apple-touch-icon" sizes="180x180" href={asset('apple-touch-icon.png')} />
 
     <script is:inline>
       // Снимаем .no-js до первой отрисовки — контент со скролл-анимацией
@@ -65,12 +72,12 @@ const asset = withBase;
       }
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Golos+Text:wght@400;500;600;700;800&display=swap"
-    />
+    {/* Шрифты подключает styles/tokens/fonts.css; латиницу браузер найдёт
+        через @font-face, кириллицу просим заранее — до разбора CSS.
+        crossorigin обязателен и для своего домена: без него шрифт
+        скачался бы второй раз уже из CSS. */}
+    <link rel="preload" as="font" type="font/woff2" href={onestCyrillicUrl} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={golosCyrillicUrl} crossorigin />
 
     <Seo title={title} description={description} path={path} noindex={noindex} faq={faq} breadcrumbs={breadcrumbs} schema={schema} />
 
@@ -97,6 +104,11 @@ const asset = withBase;
     <AppointmentModal />
     <LicenseDrawer />
     <ScrollToTop />
+    {/* Нижняя панель «Позвонить · Записаться · Max» на телефоне: после
+        первого экрана кнопки записи уходят из вида на 15–19 экранов
+        главной. Стоит прямо в body, не в main: её маркер первого экрана
+        позиционируется от верха документа. На ≥ 900px панель скрыта. */}
+    <StickyActions />
     <Metrika />
 
     <script>
@@ -112,17 +124,15 @@ const asset = withBase;
       initCountUp();
       initCmsPreview();
 
-      // Заставка уходит по готовности страницы, но живёт не меньше MIN_MS:
-      // иначе на быстром соединении она мелькает одним кадром и читается
-      // как сбой отрисовки. MAX_MS — предохранитель: что бы ни грузилось
-      // (видео в hero, шрифты), дольше него человека не держим.
+      // Заставка живёт ровно столько, сколько разбирается документ: уходит
+      // по DOMContentLoaded, картинки и видео не ждём — у них есть poster и
+      // lazy-loading. Минимального времени показа нет: на быстрой сети она
+      // растворяется почти сразу, и это цена того, что контент не ждёт
+      // (аудит: заставка держала главную ≥ 1,5 с). MAX_MS — предохранитель:
+      // как бы ни тянулся разбор на медленной сети, дольше него не держим.
       const preloader = document.querySelector<HTMLElement>('[data-preloader]');
       if (preloader) {
-        // Анимация играет один раз и замирает на 2.0 с; уходим на 1.5 с —
-        // на посадке зубов, не дожидаясь полной остановки.
-        const MIN_MS = 1500;
-        const MAX_MS = 3200;
-        const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const MAX_MS = 1500;
         const started =
           (window as Window & { __dcPreloaderStart?: number }).__dcPreloaderStart ??
           performance.now();
@@ -136,15 +146,14 @@ const asset = withBase;
           // подстраховываемся таймером, иначе слой навсегда остаётся в DOM.
           const drop = () => preloader.remove();
           preloader.addEventListener('transitionend', drop, { once: true });
-          window.setTimeout(drop, 900);
-        };
-        const hideAfterMinimum = () => {
-          const shown = performance.now() - started;
-          window.setTimeout(hide, calm ? 0 : Math.max(0, MIN_MS - shown));
+          window.setTimeout(drop, 600);
         };
 
-        if (document.readyState === 'complete') hideAfterMinimum();
-        else window.addEventListener('load', hideAfterMinimum, { once: true });
+        // Модульный скрипт выполняется уже после разбора, так что обычно
+        // документ готов и заставка уходит сразу; ветка с событием — на
+        // случай, если порядок загрузки окажется иным.
+        if (document.readyState !== 'loading') hide();
+        else document.addEventListener('DOMContentLoaded', hide, { once: true });
         window.setTimeout(hide, Math.max(0, MAX_MS - (performance.now() - started)));
       }
     </script>

@@ -4,8 +4,11 @@
  * Перенесено из Ds2_2d9e23.OceanHero.
  *
  * Видео не грузится, пока скрипт не убедится, что это уместно:
- * при экономии трафика, медленном соединении или prefers-reduced-motion
- * остаётся только poster-кадр (требование брифа — mobile-first аудитория).
+ * при экономии трафика, медленном соединении, prefers-reduced-motion или
+ * на экране уже 1024px остаётся только poster-кадр (требование брифа —
+ * mobile-first аудитория; ролик весит 2,1–2,5 МБ и на телефоне только
+ * тормозил первый экран). Poster на телефоне — кандидат в LCP, поэтому
+ * его просим предзагрузить с высоким приоритетом.
  */
 import WaveField from './WaveField.astro';
 
@@ -21,6 +24,9 @@ const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, post
 ---
 
 <section id="top" class="dc-hero" data-cms-scope="hero">
+  {/* <link rel="preload"> допустим и в <body>; сканер предзагрузки видит
+      его раньше, чем парсер дойдёт до атрибута poster у <video>. */}
+  {poster && <link rel="preload" as="image" href={poster} fetchpriority="high" />}
   <video
     class="dc-hero__video"
     poster={poster}
@@ -124,8 +130,11 @@ const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, post
       .connection;
     const slow = conn?.saveData === true || /^(slow-2g|2g|3g)$/.test(conn?.effectiveType ?? '');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Телефоны и планшеты обходятся poster-кадром: ролик там ни разу не
+    // окупал свои мегабайты (аудит: грузился и на мобильных).
+    const wide = window.matchMedia('(min-width: 1024px)').matches;
 
-    if (!slow && !reduced) {
+    if (!slow && !reduced && wide) {
       const add = (src: string | null, type: string) => {
         if (!src) return;
         const s = document.createElement('source');

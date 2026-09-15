@@ -1,8 +1,62 @@
 /* Webfonts. Both families are designed with full, undistorted Cyrillic.
    Onest      — contemporary geometric grotesk built for landing headlines (display).
    Golos Text — Russian-designed interface sans, very even Cyrillic (body/UI).
-   Loaded from Google Fonts CDN; no local binaries are shipped.
    Replaced Unbounded (display) + Manrope (body) — Unbounded's Cyrillic had
    quirky cut-outs at large sizes. */
-/* Шрифты грузит BaseLayout.astro через <link rel=preconnect> + <link rel=stylesheet>,
-   чтобы CSS-@import не блокировал рендер. */
+
+/* Файлы шрифтов лежат в сборке (пакеты @fontsource-variable), а не на CDN
+   Google: цепочка HTML → fonts.googleapis.com → fonts.gstatic.com стоила
+   ~1,7 с до первого текста на телефоне, а из РФ Google Fonts бывает
+   недоступен вовсе. Переменный шрифт — один файл на подмножество вместо
+   пяти начертаний: диапазон весов покрывает все --fw-* (400–800).
+
+   Отдельных CSS на подмножество у пакетов нет; index.css описывает все
+   подмножества через unicode-range, и браузер качает только те, чьи символы
+   встретились: кириллицу и латиницу всегда, latin-ext — ради знака ₽ в ценах.
+   Кириллические файлы дополнительно предзагружает BaseLayout.astro. */
+@import "@fontsource-variable/onest";
+@import "@fontsource-variable/golos-text";
+
+/* Запасные начертания на время загрузки (font-display: swap): локальный
+   Arial, подогнанный по ширине и вертикальным метрикам под веб-шрифт, чтобы
+   подмена почти не двигала вёрстку. Проценты посчитаны из самих файлов
+   шрифтов по тексту сайта (средняя ширина знака с учётом пробелов):
+   Golos Text 400 шире Arial на 6,0 %, Onest 800 шире Arial Bold на 1,1 %.
+   Там, где Arial нет (Android), правило просто пропускается и работает
+   system-ui, как раньше. */
+@font-face {
+  font-family: "Golos Text Fallback";
+  font-weight: 400;
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 106.01%;
+  ascent-override: 92.45%;
+  descent-override: 20.75%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Golos Text Fallback";
+  font-weight: 700;
+  src: local("Arial Bold"), local("Arial-BoldMT");
+  size-adjust: 100.73%;
+  ascent-override: 97.29%;
+  descent-override: 21.84%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Onest Fallback";
+  font-weight: 400;
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 103.59%;
+  ascent-override: 93.64%;
+  descent-override: 29.44%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Onest Fallback";
+  font-weight: 700 900;
+  src: local("Arial Bold"), local("Arial-BoldMT");
+  size-adjust: 101.08%;
+  ascent-override: 95.97%;
+  descent-override: 30.17%;
+  line-gap-override: 0%;
+}

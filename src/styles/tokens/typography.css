@@ -1,6 +1,9 @@
 :root{
-  --font-display:"Onest","Golos Text",system-ui,sans-serif;
-  --font-body:"Golos Text","Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  /* Имена семейств — из пакетов @fontsource-variable (см. fonts.css);
+     «… Fallback» — локальный Arial с подогнанными метриками на время
+     загрузки, дальше системная цепочка. */
+  --font-display:"Onest Variable","Onest Fallback",system-ui,sans-serif;
+  --font-body:"Golos Text Variable","Golos Text Fallback",system-ui,-apple-system,"Segoe UI",sans-serif;
 
   --fw-regular:400/* @kind font */;--fw-medium:500/* @kind font */;--fw-semibold:600/* @kind font */;--fw-bold:700/* @kind font */;--fw-black:800/* @kind font */;
 
