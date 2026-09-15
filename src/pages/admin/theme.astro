@@ -115,8 +115,8 @@ const previewPages = [
           <section class="auth" data-auth hidden>
             <h2>Нужен доступ</h2>
             <p>
-              Вставьте личный токен GitHub с правом записи в репозиторий. Он хранится только в этом
-              браузере и никуда больше не отправляется.
+              Вставьте личный токен GitHub с правом записи в репозиторий. Он живёт только до
+              закрытия этой вкладки и никуда, кроме GitHub, не отправляется.
             </p>
             <label class="field">
               <span>Токен доступа</span>
@@ -643,7 +643,12 @@ const previewPages = [
         'tint.breeze': '--dc-breeze',
       };
 
-      let token = localStorage.getItem(TOKEN_KEY) ?? '';
+      /* Токен — в sessionStorage, а не в localStorage: он живёт до закрытия
+         вкладки, а не годами на общем компьютере. Утечка токена с правом
+         записи — это произвольный коммит в main и автопубликация на сайт. */
+      let token = sessionStorage.getItem(TOKEN_KEY) ?? '';
+      // Раньше токен лежал в localStorage — подчищаем, если остался
+      localStorage.removeItem(TOKEN_KEY);
       let saved: Theme | null = null; // как лежит в репозитории
       let draft: Theme = {}; // что видно на экране
       let sha = '';
@@ -892,7 +897,7 @@ const previewPages = [
           await load();
         } catch (err) {
           token = '';
-          localStorage.removeItem(TOKEN_KEY);
+          sessionStorage.removeItem(TOKEN_KEY);
           authBox.hidden = false;
           editor.hidden = true;
           authError.textContent = err instanceof Error ? err.message : 'Не удалось подключиться';
@@ -910,7 +915,7 @@ const previewPages = [
         }
         authError.hidden = true;
         token = value;
-        localStorage.setItem(TOKEN_KEY, token);
+        sessionStorage.setItem(TOKEN_KEY, token);
         tokenInput.value = '';
         await tryLoad();
       });

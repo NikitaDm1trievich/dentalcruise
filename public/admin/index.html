@@ -14,8 +14,17 @@
       коммитом в репозиторий, после чего GitHub Actions пересобирает сайт
       (примерно 1–2 минуты). Версия закреплена намеренно: обновлять
       осознанно, а не молча ловить изменения в чужом релизе.
+
+      integrity — отпечаток именно этого файла: подменённый на CDN скрипт
+      браузер не выполнит, а здесь он работает с токеном GitHub. При смене
+      версии хеш пересчитать (без сохранения файла на диск):
+        curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A
     -->
-    <script src="https://unpkg.com/@sveltia/cms@0.209.1/dist/sveltia-cms.js"></script>
+    <script
+      src="https://unpkg.com/@sveltia/cms@0.209.1/dist/sveltia-cms.js"
+      integrity="sha384-+LjBwm1JrV6L7Nptv96H1C6SYZ0R3HTtHpta0Nuqs9o9Rtr47aPiXZaspb5VTWsM"
+      crossorigin="anonymous"
+    ></script>
     <!-- Живой предпросмотр: справа настоящая страница сайта вместо списка полей -->
     <script src="./preview.js"></script>
   </body>
