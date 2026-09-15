@@ -1,5 +1,7 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { file, glob } from 'astro/loaders';
+// С Astro 6 схемы описываются zod из 'astro/zod': реэкспорт из 'astro:content' убран
+import { z } from 'astro/zod';
 
 /**
  * Контент, который меняется чаще вёрстки, живёт в JSON-файлах.

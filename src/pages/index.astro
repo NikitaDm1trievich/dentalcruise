@@ -1,6 +1,4 @@
 ---
-import { readdirSync } from 'node:fs';
-
 import { getCollection } from 'astro:content';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -60,14 +58,16 @@ const faqItems = faq.map((f) => ({ id: f.data.id, q: f.data.q, a: f.data.a }));
 
 /**
  * Интерьеры клиники для тизера «О клинике».
- * Список читаем с диска, а не нумеруем от 1 до 8: снимок, удалённый
+ * Список собирается на сборке, а не нумеруется от 1 до 8: снимок, удалённый
  * владельцем через редактор, иначе остался бы битой картинкой на главной.
- * Пути обычные, как в JSON-контенте: базовый путь подставит сама галерея.
+ * import.meta.glob, а не readdirSync от import.meta.url: с Astro 7 модуль
+ * страницы при сборке лежит в dist/, и относительный путь до public/
+ * промахивался. Пути обычные, как в JSON-контенте: базовый путь подставит
+ * сама галерея.
  */
-const clinicPhotos = readdirSync(new URL('../../public/images/clinic', import.meta.url))
-  .filter((file) => /\.(jpe?g|png|webp|avif)$/i.test(file))
+const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,jpeg,png,webp,avif}'))
   .sort()
-  .map((file) => `/images/clinic/${file}`);
+  .map((file) => file.replace(/^\/public/, ''));
 ---
 
 <BaseLayout

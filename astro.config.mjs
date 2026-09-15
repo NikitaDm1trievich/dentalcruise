@@ -21,6 +21,10 @@ export default defineConfig({
   // canonical и карта сайта. Иначе поисковик видел бы три формы одного URL.
   trailingSlash: 'always',
   build: { format: 'directory' },
+  // Astro 7 по умолчанию сжимает HTML «как JSX» и съедает пробел между
+  // соседними строчными элементами (`<span>а</span>\n<em>б</em>` → «аб»).
+  // Шаблоны написаны под обычные правила HTML — оставляем прежний режим.
+  compressHTML: true,
   integrations: [
     sitemap({
       // В карту сайта идут только страницы для людей. Служебное и машинное
