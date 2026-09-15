@@ -4,6 +4,11 @@ import Icon from '../core/Icon.astro';
 import Button from '../core/Button.astro';
 import CountUp from '../core/CountUp.astro';
 import { clinic } from '../../data/site';
+/* Рейтинг и число отзывов владелец правит в редакторе (раздел «Главная
+   страница» → «Отзывы») — это единственное место, где они хранятся.
+   Цифры должны совпадать с виджетом Яндекс Карт на той же странице:
+   расхождение читается как приукрашивание. */
+import copy from '../../data/home.json';
 
 interface Props {
   note?: string;
@@ -12,14 +17,17 @@ const {
   note = 'Мы не публикуем придуманные отзывы — читайте настоящие в карточке клиники на Яндекс Картах.',
 } = Astro.props;
 
-const { value, count } = clinic.rating;
+const value = copy.reviews.rating.value;
+const count = copy.reviews.count.value;
 const filled = Math.round(value);
 ---
 
 <div class="dc-reviews">
   <div class="dc-reviews__head">
     <span class="dc-reviews__value"><CountUp value={value} decimals={1} /></span>
-    <span class="dc-reviews__stars" aria-label={`Рейтинг ${value} из 5`}>
+    {/* role="img": без роли aria-label на span скринридер игнорирует,
+        и пять декоративных звёзд остаются без названия. */}
+    <span class="dc-reviews__stars" role="img" aria-label={`Рейтинг ${value} из 5`}>
       {
         [0, 1, 2, 3, 4].map((i) => (
           <Icon

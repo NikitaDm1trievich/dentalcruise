@@ -49,7 +49,10 @@ export const clinic = {
   scheduleShort: 'пн–сб 10:00–22:00',
   scheduleLong: 'Пн–Сб 10:00–22:00 · Вс — выходной',
 
-  rating: { value: 4.9, count: 120 },
+  /* Рейтинг и число отзывов живут в src/data/home.json (раздел «Отзывы»
+     редактора), а в микроразметку не отдаются вовсе: самооценка
+     организации в aggregateRating противоречит правилам Google и Яндекса,
+     а цифры на сайте обязаны совпадать с виджетом Яндекс Карт. */
 
   links: {
     yandexOrg: 'https://yandex.ru/maps/org/dental_kruiz/154025048590/',
