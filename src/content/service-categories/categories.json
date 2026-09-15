@@ -9,7 +9,8 @@
       "items": [
         {
           "title": "Винир E-max",
-          "price": "30 000 ₽"
+          "price": "30 000 ₽",
+          "page": "vinir-emax"
         },
         {
           "title": "Винир цельноциркониевый",
@@ -17,7 +18,8 @@
         },
         {
           "title": "Винир E-max с керамической массой",
-          "price": "35 000 ₽"
+          "price": "35 000 ₽",
+          "page": "viniry-vinir-keramicheskiy-e-max-s-naneseniem-keramicheskoy-massy"
         }
       ],
       "order": 10
@@ -35,11 +37,13 @@
         },
         {
           "title": "Металлокерамическая коронка",
-          "price": "15 000 ₽"
+          "price": "15 000 ₽",
+          "page": "metallokeramicheskie-koronki-metallokeramika-karkas-3d-slp"
         },
         {
           "title": "Коронка E.max",
-          "price": "25 000 ₽"
+          "price": "25 000 ₽",
+          "page": "keramicheskie-koronki-i-vkladki-e-max-koronka-vkladka-e-max"
         },
         {
           "title": "Съёмный протез Acry-Free",
@@ -57,7 +61,8 @@
       "items": [
         {
           "title": "Osstem + циркониевая коронка (акция)",
-          "price": "59 900 ₽"
+          "price": "59 900 ₽",
+          "page": "implantaciya-pod-klyuch-osstem-cirkonievaya-koronka"
         },
         {
           "title": "Astra Tech + циркониевая коронка",
@@ -65,7 +70,8 @@
         },
         {
           "title": "All-on-4 с немедленной нагрузкой",
-          "price": "от 250 000 ₽"
+          "price": "от 250 000 ₽",
+          "page": "protezy-na-implantah-vse-na-4-implantah-osstem-nemedlennaya-nagruzka"
         }
       ],
       "order": 30
@@ -105,11 +111,13 @@
         },
         {
           "title": "Лечение пульпита, 1 канал",
-          "price": "7 800 ₽"
+          "price": "7 800 ₽",
+          "page": "lechenie-kanalov-endodontiya-pulpit-odnokanalnyy-zub"
         },
         {
           "title": "Снятие острой боли",
-          "price": "4 000 ₽"
+          "price": "4 000 ₽",
+          "page": "lechenie-kanalov-endodontiya-pomosch-pri-ostroy-boli"
         }
       ],
       "order": 50
@@ -123,11 +131,13 @@
       "items": [
         {
           "title": "Проф. гигиена, 1-я категория",
-          "price": "6 000 ₽"
+          "price": "6 000 ₽",
+          "page": "professionalnaya-gigiena-1-ya-kategoriya"
         },
         {
           "title": "Проф. гигиена, ультразвук",
-          "price": "5 000 ₽"
+          "price": "5 000 ₽",
+          "page": "professionalnaya-gigiena-ultrazvuk"
         },
         {
           "title": "Отбеливание зубов Belle",

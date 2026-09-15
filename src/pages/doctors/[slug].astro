@@ -18,8 +18,8 @@ import SectionHeading from '../../components/core/SectionHeading.astro';
 import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
 import ServiceCatalogCard from '../../components/content/ServiceCatalogCard.astro';
 import { clinic } from '../../data/site';
-import { withBase } from '../../lib/asset';
-import { absolute, clinicRef, experienceYears } from '../../lib/seo';
+import { pageHref } from '../../lib/asset';
+import { absolute, clampText, clinicRef, experienceYears } from '../../lib/seo';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const doctors = await getCollection('doctors');
@@ -41,7 +41,7 @@ const services = d.services
   .map((slug) => servicePages.find((page) => page.id === slug))
   .filter(Boolean) as CollectionEntry<'service-pages'>[];
 
-const doctorsHref = withBase('doctors');
+const doctorsHref = pageHref('doctors');
 
 /* Строки с подтверждённым годом идут лентой, остальные — списком курсов.
    Прочерк вместо года в колонке лет читается как брак вёрстки. */
@@ -95,16 +95,19 @@ if (years) {
 
 {/*
   Заголовок страницы — имя врача: к конкретному врачу и записываются, по
-  фамилии же его и ищут. Специальность ушла в надпись сверху.
+  фамилии же его и ищут. Специальность ушла в надпись сверху; в title она
+  вместе со стажем — по ним и сравнивают врачей в выдаче.
   Запасные значения через `||`, а не `??`: поля SEO в редакторе пустые
   строки, а не null, и `??` пропускал их дальше — все страницы врачей
   уходили в сборку с пустым <title>.
 */}
 <PageLayout
-  title={d.seoTitle || `${d.name} — ${d.speciality} в клинике «${clinic.name}»`}
+  title={d.seoTitle || `${d.name} — ${d.speciality}, стаж ${d.experience} | Дентал Круиз`}
   description={
     d.seoDescription ||
-    `${d.name} — ${d.speciality.toLowerCase()} клиники «Дентал Круиз», стаж ${d.experience}. ${d.note} Запись по телефону ${clinic.phone}.`
+    clampText(
+      `${d.name} — ${d.speciality.toLowerCase()} клиники «Дентал Круиз», стаж ${d.experience}. ${d.note} Запись по телефону ${clinic.phone}.`,
+    )
   }
   path={`/doctors/${doctor.id}`}
   eyebrow={`${d.speciality} · стаж ${d.experience}`}
@@ -242,7 +245,7 @@ if (years) {
                     description={page.data.lead}
                     icon={category?.data.icon ?? 'sparkles'}
                     items={items}
-                    href={withBase(`uslugi/${page.id}`)}
+                    href={pageHref(`uslugi/${page.id}`)}
                   />
                 </Reveal>
               );
@@ -281,6 +284,14 @@ if (years) {
 
   .dc-doc-page__top {
     align-items: start;
+  }
+  /* В одну колонку портрет 3:4 во всю ширину занимал на телефоне целый
+     экран (тем более заглушка вместо фото). Квадрат — пока фото стоит над
+     текстом; портретные пропорции возвращаются рядом с ним, с 900px. */
+  @media (max-width: 899px) {
+    .dc-doc-page__top :global(.dc-photo) {
+      aspect-ratio: 1 / 1;
+    }
   }
   @media (min-width: 900px) {
     .dc-doc-page__top {

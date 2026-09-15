@@ -16,15 +16,23 @@ const BASE = process.env.BASE ?? '/';
 export default defineConfig({
   site: SITE,
   base: BASE,
-  trailingSlash: 'ignore',
+  // У страницы один адрес — со слешем на конце. Так же их отдаёт сервер
+  // (страницы лежат папками), так же строятся ссылки (lib/asset pageHref),
+  // canonical и карта сайта. Иначе поисковик видел бы три формы одного URL.
+  trailingSlash: 'always',
   build: { format: 'directory' },
   integrations: [
     sitemap({
       // В карту сайта идут только страницы для людей. Служебное и машинное
       // (админка, фиды, ключ IndexNow) роботу там не нужно: фиды он берёт
-      // по прямой ссылке из Вебмастера, а не из sitemap.
+      // по прямой ссылке из Вебмастера, а не из sitemap. Заглушки «раздел
+      // готовится» (/about, /gallery) закрыты от индексации — убрать их
+      // отсюда, когда страницы наполнятся и переедут на PageLayout.
       filter: (page) =>
-        !page.includes('/404') && !page.includes('/admin') && !page.includes('/feeds/'),
+        !page.includes('/404') &&
+        !page.includes('/admin') &&
+        !page.includes('/feeds/') &&
+        !/\/(about|gallery)\/?$/.test(new URL(page).pathname),
       /**
        * Приоритет и частота обновления — подсказка обходчику, куда
        * заглядывать чаще. Прайс и врачи меняются в редакторе постоянно,

@@ -185,6 +185,13 @@ const servicePages = defineCollection({
      * ищем по `title`.
      */
     matchTitle: z.string().optional(),
+    /**
+     * Название группы прайса, если такая же строка есть в нескольких
+     * группах раздела («На импланте, винтовая фиксация» повторяется у
+     * циркониевых, металлокерамических, E.max и временных коронок).
+     * Без группы строки всех четырёх групп вели на одну страницу.
+     */
+    matchGroup: z.string().optional(),
     /** Короткое пояснение под заголовком — одно-два предложения */
     lead: z.string(),
     /** Слаг категории из service-categories: хлебные крошки и ссылка в прайс */
@@ -225,7 +232,20 @@ const serviceCategories = defineCollection({
     title: z.string(),
     description: z.string(),
     icon: z.string(),
-    items: z.array(z.object({ title: z.string(), price: z.string() })),
+    items: z.array(
+      z.object({
+        title: z.string(),
+        price: z.string(),
+        /**
+         * Слаг страницы услуги (имя файла в service-pages без .json), на
+         * которую ведёт позиция с главной. Без него страница ищется по
+         * точному совпадению названия со строкой прайса; названия в
+         * каталоге короче («Проф. гигиена, ультразвук»), и совпадение
+         * находилось лишь у половины позиций.
+         */
+        page: z.string().optional(),
+      }),
+    ),
     ...orderable,
   }),
 });

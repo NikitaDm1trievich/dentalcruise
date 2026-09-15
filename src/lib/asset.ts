@@ -30,3 +30,19 @@ export function withBase(path: string): string {
 
   return `${BASE}${normalized}`.replace(/\/{2,}/g, '/');
 }
+
+/**
+ * Ссылка на страницу сайта — всегда с завершающим слешем.
+ *
+ * Страницы собираются в папки (`/pricelist/index.html`), и сервер отдаёт
+ * их по адресу со слешем; `/pricelist` без слеша — это лишний редирект.
+ * Чтобы у страницы был один адрес и в ссылках, и в canonical, и в карте
+ * сайта, ссылки на страницы строим только здесь. Файлы (картинки, видео,
+ * фиды) — через withBase: им слеш не нужен. Якорь после `#` сохраняется:
+ * `pageHref('pricelist#protezirovanie')` → `/pricelist/#protezirovanie`.
+ */
+export function pageHref(path: string): string {
+  const [pathname, hash] = withBase(path).split('#');
+  const withSlash = pathname.endsWith('/') ? pathname : `${pathname}/`;
+  return hash ? `${withSlash}#${hash}` : withSlash;
+}

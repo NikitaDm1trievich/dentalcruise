@@ -20,6 +20,7 @@ coconut-reference/
 # Internal reference pages, not part of the shipped project
 docs/reklama-guide.html
 docs/audit-florenciadent/
+dentalcruise-audit.md
 
 # Downloaded design export archives
 *.zip

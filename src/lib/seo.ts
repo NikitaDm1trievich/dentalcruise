@@ -13,6 +13,28 @@ import { withBase } from './asset';
 export const FALLBACK_SITE = 'https://dentalcruise.ru';
 
 /**
+ * Хосты, на которых сайт открыт для поисковиков. Всё остальное — staging
+ * на GitHub Pages и локальные сборки: там страницы уходят с noindex, а
+ * robots.txt закрывает обход целиком. Иначе после переезда на домен в
+ * индексе остался бы дубль всего сайта на github.io.
+ */
+const INDEXABLE_HOSTS = ['dentalcruise.ru', 'www.dentalcruise.ru'];
+
+/**
+ * Можно ли отдавать страницы этой сборки в индекс.
+ *
+ * Открыть индексацию на любом другом хосте можно переменной сборки
+ * `INDEXABLE=true` (в `env:` workflow или в `.env`). Astro подставляет
+ * «true» из process.env в код булевым литералом, а из `.env`-файла —
+ * строкой, поэтому сравниваем через String(), а не с `'true'` напрямую.
+ */
+export function isIndexable(site: URL | undefined): boolean {
+  if (String(import.meta.env.INDEXABLE ?? '').toLowerCase() === 'true') return true;
+  const host = (site ?? new URL(FALLBACK_SITE)).hostname.toLowerCase();
+  return INDEXABLE_HOSTS.includes(host);
+}
+
+/**
  * Абсолютный адрес страницы или файла: базовый путь сборки плюс домен.
  * `path` пишем так же, как в ссылках — «/pricelist», «uslugi/vinir-emax».
  */
@@ -24,7 +46,26 @@ export function absolute(path: string, site: URL | undefined): string {
   // Схлопываем повторяющиеся слеши: путь, начинающийся с «//», браузер и
   // URL() читают как адрес другого домена, и микроразметка уезжает в
   // несуществующий хост.
-  return new URL(relative.replace(/\/{2,}/g, '/'), site ?? FALLBACK_SITE).toString();
+  const url = new URL(relative.replace(/\/{2,}/g, '/'), site ?? FALLBACK_SITE);
+  // Страницы — со слешем на конце, как и в ссылках (см. pageHref): адрес
+  // без слеша сервер отдаёт редиректом, и canonical, крошки и карта сайта
+  // расходились бы в трёх формах одного URL. Файлы узнаём по расширению —
+  // им слеш не нужен.
+  if (!url.pathname.endsWith('/') && !/\.[a-z0-9]+$/i.test(url.pathname)) url.pathname += '/';
+  return url.toString();
+}
+
+/**
+ * Текст для сниппета выдачи. Поисковик показывает около 155 символов
+ * описания и режет дальше посреди слова — обрезаем сами, по границе слова.
+ */
+export function clampText(text: string, max = 155): string {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max - 1);
+  const atWord = cut.lastIndexOf(' ');
+  const body = atWord > max * 0.6 ? cut.slice(0, atWord) : cut;
+  return `${body.replace(/[\s,;:—–-]+$/, '')}…`;
 }
 
 /** Корень сайта — он же `@id` организации в JSON-LD. */

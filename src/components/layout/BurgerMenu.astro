@@ -11,17 +11,16 @@ import BrandIcon from '../core/BrandIcon.astro';
 import MetroStations from '../core/MetroStations.astro';
 import Button from '../core/Button.astro';
 import { clinic, navLinks } from '../../data/site';
-import { withBase } from '../../lib/asset';
+import { pageHref, withBase } from '../../lib/asset';
 import { getCollection } from 'astro:content';
 
-const href = withBase;
 const { vk, max } = clinic.links;
 const logo = withBase('logo-dentalcruise.svg');
 
 const categories = (await getCollection('service-categories')).sort(
   (a, b) => a.data.order - b.data.order,
 );
-const pricelistHref = href('pricelist');
+const pricelistHref = pageHref('pricelist');
 ---
 
 <div class="dc-burger" id="dc-menu" data-state="closed" aria-hidden="true" inert>
@@ -29,7 +28,7 @@ const pricelistHref = href('pricelist');
 
   <div class="dc-burger__panel" role="dialog" aria-modal="true" aria-label="Меню сайта">
     <div class="dc-burger__head">
-      <a href={href('')} class="dc-burger__logo" aria-label={`${clinic.name} — на главную`} data-close>
+      <a href={pageHref('')} class="dc-burger__logo" aria-label={`${clinic.name} — на главную`} data-close>
         <img src={logo} alt={clinic.name} width="150" height="36" />
       </a>
       <IconButton label="Закрыть меню" variant="bare" data-close>
@@ -46,7 +45,9 @@ const pricelistHref = href('pricelist');
             aria-expanded="false"
             aria-controls="burger-services"
           >
-            Прайс-лист
+            {/* Название то же, что у дропдауна в десктопной шапке: один
+                раздел не должен называться в двух меню по-разному */}
+            Услуги
             <Icon name="chevron-down" size={22} />
           </button>
           <div class="dc-burger__accordion-body" id="burger-services" inert>
@@ -54,12 +55,20 @@ const pricelistHref = href('pricelist');
               {
                 categories.map((cat) => (
                   <li>
-                    <a href={`${pricelistHref}#${cat.data.slug}`} data-close>
+                    <a href={pageHref(`pricelist#${cat.data.slug}`)} data-close>
                       {cat.data.title}
                     </a>
                   </li>
                 ))
               }
+              <li>
+                {/* Вход на сам прайс-лист — как в десктопном дропдауне;
+                    из общего списка страниц он убран (см. фильтр ниже) */}
+                <a href={pricelistHref} class="dc-burger__sublist-all" data-close>
+                  Весь прайс-лист
+                  <Icon name="arrow-right" size={18} />
+                </a>
+              </li>
             </ul>
           </div>
         </li>
@@ -69,7 +78,7 @@ const pricelistHref = href('pricelist');
             .filter((l) => l.href !== '/' && l.href !== '/pricelist')
             .map((link) => (
               <li>
-                <a href={href(link.href.replace(/^\//, ''))} data-close>
+                <a href={pageHref(link.href)} data-close>
                   {link.label}
                 </a>
               </li>
@@ -245,6 +254,19 @@ const pricelistHref = href('pricelist');
     text-decoration: none;
   }
   .dc-burger__sublist a:hover {
+    color: var(--text-accent);
+  }
+  /* Ссылка на весь прайс: тот же ряд, что направления, но заметнее —
+     жирнее, акцентным цветом и со стрелкой, отделена линией сверху */
+  .dc-burger__sublist a.dc-burger__sublist-all {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line-hairline);
+    font-weight: var(--fw-bold);
     color: var(--text-accent);
   }
 

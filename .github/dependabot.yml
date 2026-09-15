@@ -1,0 +1,33 @@
+# Dependabot: раз в неделю проверяет зависимости и заводит pull request
+# с обновлениями — для сайта, для Worker'а формы записи и для actions в
+# workflow. Слитый PR попадает в main, а там сборка гонит `npm run check`
+# и `npm run build`: сломанное обновление до сайта не доедет.
+version: 2
+updates:
+  # Зависимости сайта: Astro, карта сайта, Tailwind, lucide
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Минорные и патч-версии приходят одним PR в неделю, а не десятком.
+    # Мажорные (например, новый Astro) — отдельно: их смотрят руками.
+    groups:
+      minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  # Cloudflare Worker формы записи — свой package.json в /worker
+  - package-ecosystem: npm
+    directory: /worker
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  # Версии actions/checkout, setup-node, deploy-pages и т. п.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

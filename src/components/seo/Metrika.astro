@@ -16,7 +16,11 @@
  */
 import seo from '../../data/seo.json';
 
-const id = seo.metrikaId.trim();
+/* Номер счётчика — только цифры. Значение из редактора уходит в инлайн-
+   скрипт через define:vars как есть, поэтому всё, что не похоже на номер
+   (например, вставленный целиком код счётчика), не подключаем вовсе. */
+const raw = seo.metrikaId.trim();
+const id = /^\d{5,12}$/.test(raw) ? raw : '';
 ---
 
 {
@@ -42,9 +46,13 @@ const id = seo.metrikaId.trim();
             a.parentNode.insertBefore(k, a);
           })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
 
+          // Вебвизор (запись сессий) выключен: включать только после
+          // появления на сайте уведомления об использовании cookie и
+          // Метрики (152-ФЗ), иначе запись действий посетителя — обработка
+          // персональных данных без уведомления.
           ym(id, 'init', {
             ssr: true,
-            webvisor: true,
+            webvisor: false,
             clickmap: true,
             trackLinks: true,
             accurateTrackBounce: true,

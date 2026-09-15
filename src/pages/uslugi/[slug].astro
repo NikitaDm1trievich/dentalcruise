@@ -20,8 +20,8 @@ import FaqAccordion from '../../components/content/FaqAccordion.astro';
 import TrustBar from '../../components/content/TrustBar.astro';
 import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
 import { clinic } from '../../data/site';
-import { withBase } from '../../lib/asset';
-import { absolute, clinicRef, isFromPrice, priceValue } from '../../lib/seo';
+import { pageHref } from '../../lib/asset';
+import { absolute, clampText, clinicRef, isFromPrice, priceValue } from '../../lib/seo';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const pages = await getCollection('service-pages');
@@ -44,7 +44,7 @@ const siblings = (await getCollection('service-pages'))
   .filter((p) => p.data.category === s.category && p.id !== page.id)
   .sort((a, b) => a.data.order - b.data.order);
 
-const pricelistHref = withBase('pricelist');
+const pricelistHref = pageHref('pricelist');
 
 /** Короткие факты в шапке — показываем только заполненные */
 const facts = [
@@ -97,16 +97,33 @@ if (amount) {
 
 ---
 
+{/*
+  Title с ценой и городом: по запросу «коронка цена Москва» сниппет с суммой
+  выглядит ответом, а не ещё одной ссылкой. Длинный шаблон «— цена в
+  стоматологии …, м. Полежаевская» выдача обрезала.
+  Запасные значения через `||`, а не `??`: поля SEO в редакторе — пустые
+  строки, а не null, и `??` пропускал их дальше.
+*/}
 <PageLayout
-  title={s.seoTitle ?? `${s.title} — цена в стоматологии «Дентал Круиз», м. Полежаевская`}
-  description={s.seoDescription ?? `${s.title}${s.price ? ` — ${s.price}` : ''}. ${s.lead}`}
+  title={
+    s.seoTitle ||
+    (s.price ? `${s.title} — ${s.price} | Дентал Круиз, Москва` : `${s.title} | Дентал Круиз, Москва`)
+  }
+  description={
+    s.seoDescription ||
+    clampText(
+      `${s.title}${s.price ? ` — ${s.price}` : ''} в стоматологии «Дентал Круиз», м. Полежаевская. ${s.lead}`,
+    )
+  }
   path={`/uslugi/${page.id}`}
   eyebrow={category?.data.title ?? 'Услуги'}
   heading={s.title}
   lead={s.lead}
   breadcrumbs={[
     { label: 'Прайс-лист', href: pricelistHref },
-    ...(category ? [{ label: category.data.title, href: `${pricelistHref}#${category.data.slug}` }] : []),
+    ...(category
+      ? [{ label: category.data.title, href: pageHref(`pricelist#${category.data.slug}`) }]
+      : []),
     { label: s.title },
   ]}
   schema={[serviceSchema]}
@@ -223,7 +240,7 @@ if (amount) {
                 title="Сколько это стоит"
                 lead="Итоговую сумму врач называет после осмотра — до начала лечения и без доплат по ходу."
               />
-              <Button variant="secondary" href={`${pricelistHref}#${s.category}`}>
+              <Button variant="secondary" href={pageHref(`pricelist#${s.category}`)}>
                 Весь раздел прайса
               </Button>
             </div>
@@ -290,7 +307,7 @@ if (amount) {
                 title="Другие услуги этого направления"
               />
               {category && (
-                <Button variant="secondary" href={`${pricelistHref}#${category.data.slug}`}>
+                <Button variant="secondary" href={pageHref(`pricelist#${category.data.slug}`)}>
                   Весь прайс-лист
                   <Icon slot="icon" name="arrow-right" size={18} />
                 </Button>
@@ -302,7 +319,7 @@ if (amount) {
             <ul class="dc-related__grid" role="list">
               {siblings.slice(0, 8).map((sibling, i) => (
                 <Reveal as="li" delay={i * 50}>
-                  <a href={withBase(`uslugi/${sibling.id}`)} class="dc-related__card">
+                  <a href={pageHref(`uslugi/${sibling.id}`)} class="dc-related__card">
                     <span class="dc-related__title">{sibling.data.title}</span>
                     {sibling.data.price && <span class="dc-related__price">{sibling.data.price}</span>}
                   </a>

@@ -16,8 +16,10 @@ import Icon from '../components/core/Icon.astro';
 import PriceTable from '../components/content/PriceTable.astro';
 import OfferStrip from '../components/content/OfferStrip.astro';
 import { clinic } from '../data/site';
-import { withBase } from '../lib/asset';
-import { absolute, clinicRef, isFromPrice, priceValue } from '../lib/seo';
+import { pageHref } from '../lib/asset';
+import { plural } from '../lib/format';
+import { absolute, clampText, clinicRef, isFromPrice, priceValue } from '../lib/seo';
+import { servicePageIndex } from '../lib/services';
 
 type Ordered = { data: { order: number } };
 const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
@@ -26,10 +28,8 @@ const categories = (await getCollection('service-categories')).sort(byOrder);
 const prices = await getCollection('price-list');
 const servicePages = await getCollection('service-pages');
 
-/** Позиция прайса → своя страница услуги, по совпадению названия и направления */
-const pageByItem = new Map(
-  servicePages.map((page) => [`${page.data.category}__${page.data.matchTitle ?? page.data.title}`, page.id]),
-);
+/** Позиция прайса → своя страница услуги: по направлению, названию и группе */
+const pageFor = servicePageIndex(servicePages);
 
 /** Направления в порядке каталога; без цен в прайсе — не показываем */
 const sections = categories
@@ -40,15 +40,15 @@ const sections = categories
       title: category.data.title,
       icon: category.data.icon,
       price,
-      /** Каждая позиция — ссылка на свою карточку услуги, если она есть */
+      /** Каждая позиция — ссылка на свою карточку услуги, если она есть.
+          Группа нужна для одинаковых строк вроде «На импланте, цементная
+          фиксация»: у E.max и у временной коронки они ведут на разные страницы. */
       groups: price?.data.groups.map((group) => ({
         title: group.title,
-        items: group.items.map((item) => ({
-          ...item,
-          href: pageByItem.has(`${category.data.slug}__${item.title}`)
-            ? withBase(`uslugi/${pageByItem.get(`${category.data.slug}__${item.title}`)}`)
-            : undefined,
-        })),
+        items: group.items.map((item) => {
+          const slug = pageFor(category.data.slug, item.title, group.title);
+          return { ...item, href: slug ? pageHref(`uslugi/${slug}`) : undefined };
+        }),
       })),
     };
   })
@@ -106,11 +106,13 @@ const total = sections.reduce(
 ---
 
 <PageLayout
-  title="Прайс-лист стоматологии «Дентал Круиз» — цены на коронки, виниры и импланты"
-  description="Полные цены клиники «Дентал Круиз»: коронки от 15 000 ₽, виниры от 25 000 ₽, имплантация под ключ от 65 000 ₽, All-on-4 от 150 000 ₽. Консультация бесплатно. Москва, 4-я Магистральная, 5с1."
+  title="Цены на лечение зубов в Москве — прайс-лист Дентал Круиз"
+  description={clampText(
+    'Полные цены клиники «Дентал Круиз»: коронки от 15 000 ₽, виниры от 25 000 ₽, имплантация под ключ от 65 000 ₽, All-on-4 от 150 000 ₽. Консультация бесплатно. Москва, 4-я Магистральная, 5с1.',
+  )}
   path="/pricelist"
   heading="Цены на лечение"
-  lead={`${total} позиций по шести направлениям. Цены указаны за единицу работы. Коронки, виниры и протезы делает зуботехническая лаборатория клиники — поэтому в цене нет наценки посредника.`}
+  lead={`${total} ${plural(total, ['позиция', 'позиции', 'позиций'])} по шести направлениям. Цены указаны за единицу работы. Коронки, виниры и протезы делает зуботехническая лаборатория клиники — поэтому в цене нет наценки посредника.`}
   breadcrumbs={[{ label: 'Прайс-лист' }]}
   schema={[catalogSchema]}
 >
@@ -220,6 +222,10 @@ const total = sections.reduce(
   }
   .dc-filter__chip {
     flex: 0 0 auto;
+    /* Тап-цель не ниже 44px: с одними отступами чип выходил ~38px */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     padding: 9px 16px;
     border-radius: var(--radius-pill);
     border: 1px solid var(--line-hairline);

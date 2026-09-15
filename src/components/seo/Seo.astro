@@ -14,7 +14,7 @@
  */
 import { clinic } from '../../data/site';
 import seo from '../../data/seo.json';
-import { absolute, breadcrumbSchema, clinicId, siteRoot } from '../../lib/seo';
+import { absolute, breadcrumbSchema, clinicId, isIndexable, siteRoot } from '../../lib/seo';
 
 interface Props {
   title: string;
@@ -46,12 +46,18 @@ const site = Astro.site;
 const canonical = absolute(path, site);
 const root = siteRoot(site);
 
-/* Обложка для соцсетей. Отдельного баннера у клиники пока нет, поэтому
-   по умолчанию идёт реальный снимок интерьера 1200×800: ссылка на сайт
-   во ВКонтакте или в мессенджере должна открываться с картинкой, а не
-   с пустым прямоугольником. */
-const OG_FALLBACK = 'images/clinic/clinic-01.jpg';
+/* Страница закрыта от поиска либо своим noindex (404, заглушки), либо
+   всей сборкой: на staging (GitHub Pages) и в локальных сборках
+   isIndexable даёт false, и noindex получают все страницы разом. */
+const indexable = isIndexable(site) && !noindex;
+
+/* Обложка для соцсетей: кадр интерьера клиники, обрезанный под 1200×630 —
+   размер превью ссылки во ВКонтакте, Telegram и мессенджерах. Отдельного
+   баннера у клиники пока нет; появится — достаточно заменить файл.
+   Размеры отдаём только для неё: чужой картинке они бы не подошли. */
+const OG_FALLBACK = 'og-cover.jpg';
 const image = absolute(ogImage ?? OG_FALLBACK, site);
+const imageSize = ogImage ? null : { width: 1200, height: 630 };
 
 const address: Record<string, string> = {
   '@type': 'PostalAddress',
@@ -85,7 +91,9 @@ const business: Record<string, unknown> = {
   telephone: clinic.phoneE164,
   email: clinic.email,
   image,
-  logo: absolute('logo-dentalcruise.svg', site),
+  /* Логотип — объектом, а не голой ссылкой: так его понимают и Google
+     (панель знаний), и Яндекс, а поле можно расширить размерами. */
+  logo: { '@type': 'ImageObject', url: absolute('logo-dentalcruise.svg', site) },
   address,
   geo: {
     '@type': 'GeoCoordinates',
@@ -110,14 +118,24 @@ const business: Record<string, unknown> = {
     { '@type': 'City', name: clinic.address.locality },
     ...clinic.metroStations.map((s) => ({ '@type': 'Place', name: `м. ${s.name}` })),
   ],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: clinic.rating.value,
-    reviewCount: clinic.rating.count,
-    bestRating: 5,
-  },
+  /* aggregateRating намеренно не отдаём: рейтинг, проставленный самой
+     организацией, Google и Яндекс считают самооценкой и могут наказать
+     за разметку; реальный рейтинг они берут из карточки на Картах. */
 };
 if (sameAs.length > 0) business.sameAs = sameAs;
+
+/* Сайт как отдельная сущность рядом с организацией: по `WebSite` поисковик
+   берёт название сайта для сниппета и связывает его с владельцем через
+   тот же `@id` клиники. */
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${root}#website`,
+  name: clinic.name,
+  url: root,
+  inLanguage: 'ru-RU',
+  publisher: { '@id': clinicId(site) },
+};
 
 const faqSchema =
   faq && faq.length > 0
@@ -134,22 +152,30 @@ const faqSchema =
 
 const crumbSchema = breadcrumbs && breadcrumbs.length > 0 ? breadcrumbSchema(breadcrumbs, site) : null;
 
-/* Организацию описываем только на главной. На внутренних страницах хватает
-   ссылки по `@id` из блоков врача и услуги: дубль полной карточки на
-   каждой странице поисковику ничего не добавляет, а вес размывает. */
-const blocks = [path === '/' || path === '' ? business : null, crumbSchema, faqSchema, ...schema].filter(
-  Boolean,
-) as Record<string, unknown>[];
+/* Организацию и сайт описываем только на главной. На внутренних страницах
+   хватает ссылки по `@id` из блоков врача и услуги: дубль полной карточки
+   на каждой странице поисковику ничего не добавляет, а вес размывает. */
+const isHome = path === '/' || path === '';
+const blocks = [
+  isHome ? business : null,
+  isHome ? website : null,
+  crumbSchema,
+  faqSchema,
+  ...schema,
+].filter(Boolean) as Record<string, unknown>[];
 ---
 
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
-{noindex && <meta name="robots" content="noindex, nofollow" />}
 
-{/* Права на индексацию для конкретных роботов: без них Яндекс по
-    умолчанию сокращает сниппет и не показывает быстрые ссылки. */}
-{!noindex && <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />}
+{/* Открытой странице — права на индексацию для конкретных роботов: без
+    них Яндекс по умолчанию сокращает сниппет и не показывает быстрые
+    ссылки. Закрытой (и всему staging) — noindex без исключений. */}
+<meta
+  name="robots"
+  content={indexable ? 'index, follow, max-snippet:-1, max-image-preview:large' : 'noindex, nofollow'}
+/>
 
 {/* Подтверждение прав на сайт. Коды выдают Вебмастер и Search Console,
     владелец вставляет их в редакторе — раздел «SEO». */}
@@ -171,8 +197,8 @@ const blocks = [path === '/' || path === '' ? business : null, crumbSchema, faqS
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={image} />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="800" />
+{imageSize && <meta property="og:image:width" content={String(imageSize.width)} />}
+{imageSize && <meta property="og:image:height" content={String(imageSize.height)} />}
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />

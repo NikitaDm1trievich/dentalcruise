@@ -6,9 +6,8 @@
 import BrandIcon from '../core/BrandIcon.astro';
 import MetroStations from '../core/MetroStations.astro';
 import { clinic, navLinks } from '../../data/site';
-import { withBase } from '../../lib/asset';
+import { pageHref, withBase } from '../../lib/asset';
 
-const href = withBase;
 const year = new Date().getFullYear();
 
 const infoLinks = [
@@ -28,7 +27,7 @@ const socials = [
   <div class="dc-footer__grid">
     <div class="dc-footer__brand">
       <img
-        src={href('logo-dentalcruise.svg')}
+        src={withBase('logo-dentalcruise.svg')}
         alt={clinic.name}
         width="180"
         height="40"
@@ -54,7 +53,7 @@ const socials = [
         {
           navLinks.map((l) => (
             <li>
-              <a href={href(l.href.replace(/^\//, ''))}>{l.label}</a>
+              <a href={pageHref(l.href)}>{l.label}</a>
             </li>
           ))
         }
@@ -67,7 +66,7 @@ const socials = [
         {
           infoLinks.map((l) => (
             <li>
-              <a href={href(l.href.replace(/^\//, ''))}>{l.label}</a>
+              <a href={pageHref(l.href)}>{l.label}</a>
             </li>
           ))
         }

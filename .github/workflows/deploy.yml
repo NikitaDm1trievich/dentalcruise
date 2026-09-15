@@ -5,6 +5,19 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Домен и базовый путь сборки. GitHub Pages отдаёт проект из подпапки
+# /dentalcruise/, поэтому base подставляется здесь, а не в коде. Переезд
+# на хостинг клиники — это замена на SITE=https://dentalcruise.ru и
+# BASE=/ здесь же; больше нигде ничего менять не нужно.
+#
+# Сборка не на dentalcruise.ru считается тестовой: страницы получают
+# noindex, robots.txt закрывает обход, шаг IndexNow ниже пропускается.
+# Если тестовую сборку нужно намеренно показать поисковикам, добавьте
+# сюда строку INDEXABLE: 'true' (см. isIndexable в src/lib/seo.ts).
+env:
+  SITE: https://nikitadm1trievich.github.io
+  BASE: /dentalcruise/
+
 # Нужно, чтобы workflow мог опубликовать сборку в Pages
 permissions:
   contents: read
@@ -29,12 +42,14 @@ jobs:
 
       - run: npm ci
 
+      # Ошибка типов или шаблона останавливает публикацию до сборки:
+      # `astro build` сам их не ловит и выложил бы сломанную страницу.
+      - name: Проверка типов и шаблонов
+        run: npm run check
+
       - name: Сборка Astro
-        # GitHub Pages отдаёт проект из подпапки /dentalcruise/,
-        # поэтому base подставляем здесь, а не в коде.
+        # SITE и BASE приходят из env наверху файла
         env:
-          SITE: https://nikitadm1trievich.github.io
-          BASE: /dentalcruise/
           PUBLIC_BOOKING_ENDPOINT: ${{ vars.PUBLIC_BOOKING_ENDPOINT }}
         run: npm run build
 
@@ -61,8 +76,10 @@ jobs:
         uses: actions/deploy-pages@v4
 
       # Сообщаем Яндексу и Bing, что сайт обновился: новые страницы
-      # попадают в поиск за часы вместо недель. Шаг не должен ронять
-      # публикацию — сайт к этому моменту уже выложен.
+      # попадают в поиск за часы вместо недель. Только с боевого домена:
+      # адреса тестовой сборки на github.io поисковикам знать незачем.
+      # Шаг не должен ронять публикацию — сайт к этому моменту уже выложен.
       - name: Сообщить поисковикам об обновлении
+        if: env.SITE == 'https://dentalcruise.ru'
         continue-on-error: true
         run: node scripts/indexnow.mjs "${{ steps.deployment.outputs.page_url }}"

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 
-import { absolute } from '../lib/seo';
+import { absolute, isIndexable } from '../lib/seo';
 
 /**
  * robots.txt генерируется, а не лежит статикой: адреса карты сайта и фидов
@@ -11,7 +11,24 @@ import { absolute } from '../lib/seo';
  * скачивают их тем же обходчиком, что и страницы, и закрытый каталог
  * читается как «файл недоступен».
  */
+const headers = { 'Content-Type': 'text/plain; charset=utf-8' };
+
 export const GET: APIRoute = ({ site }) => {
+  /* Сборка не на боевом домене (staging на GitHub Pages, локальный
+     preview) закрыта целиком. Строки Sitemap здесь нет намеренно: робот
+     не должен получать список адресов, которые потом пришлось бы вычищать
+     из индекса. Как открыть staging намеренно — см. isIndexable. */
+  if (!isIndexable(site)) {
+    return new Response(
+      `# Тестовая сборка, не dentalcruise.ru: страницы отдаются с noindex,
+# обход закрыт целиком.
+User-agent: *
+Disallow: /
+`,
+      { headers },
+    );
+  }
+
   const body = `User-agent: *
 Allow: /
 Allow: /feeds/
@@ -27,7 +44,5 @@ Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&yclid&gclid
 Sitemap: ${absolute('sitemap-index.xml', site)}
 `;
 
-  return new Response(body, {
-    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-  });
+  return new Response(body, { headers });
 };

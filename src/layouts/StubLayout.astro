@@ -12,7 +12,7 @@ import Button from '../components/core/Button.astro';
 import Icon from '../components/core/Icon.astro';
 import Reveal from '../components/core/Reveal.astro';
 import { clinic } from '../data/site';
-import { withBase } from '../lib/asset';
+import { pageHref } from '../lib/asset';
 
 interface Props {
   title: string;
@@ -25,14 +25,14 @@ interface Props {
 }
 
 const { title, description, path, heading, eyebrow, lead, noindex = false } = Astro.props;
-const asset = withBase;
 ---
 
 <BaseLayout title={title} description={description} path={path} noindex={noindex}>
   <section class="dc-stub">
     <div class="dc-stub__inner">
       <Reveal>
-        <SectionHeading eyebrow={eyebrow} title={heading} lead={lead} />
+        {/* Другого заголовка на заглушке нет — этот и есть h1 страницы */}
+        <SectionHeading as="h1" eyebrow={eyebrow} title={heading} lead={lead} />
       </Reveal>
 
       <Reveal delay={90}>
@@ -48,7 +48,7 @@ const asset = withBase;
             {clinic.phone}
           </Button>
           <Button variant="secondary" size="lg" data-open="dc-book">Записаться на приём</Button>
-          <Button variant="ghost" size="lg" href={asset('')}>На главную</Button>
+          <Button variant="ghost" size="lg" href={pageHref('')}>На главную</Button>
         </div>
       </Reveal>
     </div>

@@ -481,6 +481,15 @@ collections:
                 fields:
                   - { name: title, label: Название, widget: string }
                   - { name: price, label: Цена, widget: string }
+                  - name: page
+                    label: Страница услуги
+                    widget: relation
+                    collection: service-pages
+                    value_field: '{{slug}}'
+                    search_fields: [title]
+                    display_fields: [title]
+                    required: false
+                    hint: Куда ведёт позиция с главной. Пусто — ищется страница с тем же названием, что в прайсе; если такой нет, ссылка ведёт в раздел прайс-листа.
               - { name: order, label: Порядок, widget: number, value_type: int, default: 100 }
 
   # ── Страницы отдельных услуг ─────────────────────────────────────────
@@ -501,6 +510,11 @@ collections:
         widget: string
         required: false
         hint: Заполнять, только если в прайсе позиция называется иначе.
+      - name: matchGroup
+        label: Группа в прайсе
+        widget: string
+        required: false
+        hint: Заполнять, если такое же название есть в нескольких группах раздела (например «На импланте, винтовая фиксация» у разных видов коронок) — укажите название группы этой страницы.
       - { name: lead, label: Короткое описание, widget: text }
       - name: category
         label: Раздел

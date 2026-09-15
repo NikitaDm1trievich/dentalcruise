@@ -8,15 +8,30 @@ interface Props {
   onDark?: boolean;
   id?: string;
   class?: string;
+  /**
+   * Уровень заголовка. h1 — когда этот блок и есть заголовок страницы
+   * (заглушки на StubLayout); стили от уровня не зависят.
+   */
+  as?: 'h1' | 'h2';
 }
-const { eyebrow, title, lead, align = 'left', onDark = false, id, class: className } = Astro.props;
+const {
+  eyebrow,
+  title,
+  lead,
+  align = 'left',
+  onDark = false,
+  id,
+  class: className,
+  as = 'h2',
+} = Astro.props;
+const Title = as;
 ---
 
 <header
   class:list={['dc-heading', align === 'center' && 'dc-heading--center', onDark && 'dc-heading--dark', className]}
 >
   {eyebrow && <span class="dc-heading__eyebrow">{eyebrow}</span>}
-  <h2 class="dc-heading__title" id={id}>{title}</h2>
+  <Title class="dc-heading__title" id={id}>{title}</Title>
   {lead && <p class="dc-heading__lead">{lead}</p>}
   <slot />
 </header>
@@ -53,6 +68,11 @@ const { eyebrow, title, lead, align = 'left', onDark = false, id, class: classNa
 
     color: var(--text-strong);
     margin: 0;
+    /* «Стоматологические» в 34px шире экрана 320px: без переноса одно
+       слово растягивало страницу вбок (горизонтальный скролл). Перенос
+       по дефису включается только когда слово не помещается. */
+    hyphens: auto;
+    overflow-wrap: anywhere;
   }
   .dc-heading__lead {
     font-size: var(--type-lead);
