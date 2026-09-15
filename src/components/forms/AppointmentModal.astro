@@ -12,7 +12,7 @@ import AppointmentForm from './AppointmentForm.astro';
     <div class="dc-modal__head">
       <div>
         <h2 id="dc-book-title">Записаться на приём</h2>
-        <p>Оставьте контакт — мы перезвоним и подберём удобное время.</p>
+        <p>Оставьте номер — мы перезвоним и подберём удобное время.</p>
       </div>
       <IconButton label="Закрыть" variant="bare" data-close>
         <Icon name="x" size={24} />
@@ -25,19 +25,33 @@ import AppointmentForm from './AppointmentForm.astro';
 
 <style>
   .dc-modal {
+    --dc-modal-gap: var(--gutter);
     position: fixed;
     inset: 0;
     z-index: 100;
     display: grid;
+    /* Диалог короче экрана центрируется; диалог выше экрана начинается
+       сверху и не обрезается: ряд грида, не влезающий в контейнер,
+       прижимается к его началу */
     place-items: center;
-    padding: var(--gutter);
+    padding: var(--dc-modal-gap) var(--dc-modal-gap)
+      max(var(--dc-modal-gap), env(safe-area-inset-bottom));
+    /* Диалог выше экрана (телефон, тем более с клавиатурой) прокручивается
+       вместе с подложкой, как страница: обрез контента приходится на край
+       экрана, а низ карточки со скруглением и отступом дорисовывается целиком.
+       Скролл внутри самого диалога резал строку с телефоном у скруглённого
+       низа — выглядело обрывом, а не «дальше есть ещё». */
+    overflow-y: auto;
+    /* Иначе скролл модалки на телефоне протекает на страницу под ней */
+    overscroll-behavior: contain;
     pointer-events: none;
   }
   .dc-modal[data-state='open'] {
     pointer-events: auto;
   }
   .dc-modal__scrim {
-    position: absolute;
+    /* fixed, а не absolute: подложка не должна уезжать вместе со скроллом модалки */
+    position: fixed;
     inset: 0;
     background: rgba(2, 32, 41, 0.62);
     backdrop-filter: blur(3px);
@@ -51,10 +65,6 @@ import AppointmentForm from './AppointmentForm.astro';
   .dc-modal__dialog {
     position: relative;
     width: min(520px, 100%);
-    max-height: 90svh;
-    overflow-y: auto;
-    /* Иначе скролл диалога на телефоне протекает на страницу под ним */
-    overscroll-behavior: contain;
     background: var(--surface-page);
     border-radius: var(--radius-xl);
     padding: var(--space-8);
@@ -85,5 +95,15 @@ import AppointmentForm from './AppointmentForm.astro';
   }
   .dc-modal__head p {
     color: var(--text-body);
+  }
+
+  /* На телефоне отступы теснее: в экран помещается больше формы, скроллить меньше */
+  @media (max-width: 480px) {
+    .dc-modal {
+      --dc-modal-gap: var(--space-4);
+    }
+    .dc-modal__dialog {
+      padding: var(--space-6);
+    }
   }
 </style>

@@ -20,11 +20,15 @@ type Bindings = {
 
 type Booking = {
   name: string;
+  /** Телефон в E.164: +79255777677 */
   contact: string;
   comment: string;
+  /** Адрес страницы, с которой ушла заявка (вместе с utm-метками), и реферер — если сайт их прислал */
+  page: string;
+  referrer: string;
 };
 
-const MAX = { name: 80, contact: 40, comment: 600 } as const;
+const MAX = { name: 80, contact: 40, comment: 600, page: 300, referrer: 300 } as const;
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -42,6 +46,7 @@ app.get('/health', (c) => c.json({ ok: true }));
 
 app.post('/booking', async (c) => {
   // ── Частота: защита от перебора и спама ──────────────────────
+  // IP нужен только здесь, как ключ ограничителя; дальше он не идёт.
   const ip = c.req.header('CF-Connecting-IP') ?? 'unknown';
   if (c.env.BOOKING_LIMIT) {
     const { success } = await c.env.BOOKING_LIMIT.limit({ key: ip });
@@ -67,7 +72,7 @@ app.post('/booking', async (c) => {
   const booking = validate(body);
   if ('error' in booking) return c.json({ ok: false, error: booking.error }, 400);
 
-  const sent = await sendToTelegram(c.env, booking, ip);
+  const sent = await sendToTelegram(c.env, booking);
   if (!sent) {
     return c.json({ ok: false, error: 'Не удалось передать заявку. Позвоните нам.' }, 502);
   }
@@ -85,19 +90,42 @@ function validate(body: Record<string, unknown>): Booking | { error: string } {
     typeof value === 'string' ? value.trim().slice(0, limit) : '';
 
   const name = str(body.name, MAX.name);
-  const contact = str(body.contact, MAX.contact);
+  const contact = normalizePhone(str(body.contact, MAX.contact));
   const comment = str(body.comment, MAX.comment);
+  const page = str(body.page, MAX.page);
+  const referrer = str(body.referrer, MAX.referrer);
   const consent = body.consent === true || body.consent === 'on' || body.consent === 'true';
 
   if (name.length < 2) return { error: 'Укажите имя' };
-  if (contact.length < 5) return { error: 'Укажите телефон или Max для связи' };
+  if (!contact) return { error: 'Введите номер в формате +7 900 000-00-00' };
   if (!consent) return { error: 'Нужно согласие на обработку персональных данных' };
 
-  return { name, contact, comment };
+  return { name, contact, comment, page, referrer };
+}
+
+/**
+ * Телефон → E.164 («+79255777677») или null, если это не российский номер.
+ *
+ * Принимаются 11 цифр с ведущей 7; 8 вместо 7 — старый межгород; десять цифр —
+ * номер без кода страны (российские номера с 7 не начинаются, поэтому неполный
+ * «+7 925 577-76-7» сюда не проскочит). Строже — первая цифра 9 и т.п. — не
+ * проверяем: городские номера тоже нужны. Форма присылает уже E.164, но старая
+ * версия сайта и ручные запросы шлют что угодно — нормализуем и здесь.
+ *
+ *   '+7 (925) 577-76-77' → '+79255777677'
+ *   '89255777677'        → '+79255777677'
+ *   '9255777677'         → '+79255777677'
+ *   '+1 212 555 0100'    → null
+ */
+export function normalizePhone(raw: string): string | null {
+  let digits = raw.replace(/\D/g, '');
+  if (digits.length === 10 && !digits.startsWith('7')) digits = `7${digits}`;
+  else if (digits.length === 11 && digits.startsWith('8')) digits = `7${digits.slice(1)}`;
+  return /^7\d{10}$/.test(digits) ? `+${digits}` : null;
 }
 
 /** Отправка заявки в чат Telegram. */
-async function sendToTelegram(env: Bindings, booking: Booking, ip: string): Promise<boolean> {
+async function sendToTelegram(env: Bindings, booking: Booking): Promise<boolean> {
   const when = new Intl.DateTimeFormat('ru-RU', {
     dateStyle: 'short',
     timeStyle: 'short',
@@ -108,10 +136,14 @@ async function sendToTelegram(env: Bindings, booking: Booking, ip: string): Prom
     '<b>Новая заявка с сайта</b>',
     '',
     `<b>Имя:</b> ${escapeHtml(booking.name)}`,
-    `<b>Связь:</b> ${escapeHtml(booking.contact)}`,
+    `<b>Телефон:</b> ${escapeHtml(booking.contact)}`,
   ];
   if (booking.comment) lines.push(`<b>Комментарий:</b> ${escapeHtml(booking.comment)}`);
-  lines.push('', `<i>${when} МСК · ${escapeHtml(ip)}</i>`);
+  if (booking.page) lines.push(`<b>Страница:</b> ${escapeHtml(booking.page)}`);
+  if (booking.referrer) lines.push(`<b>Переход с:</b> ${escapeHtml(booking.referrer)}`);
+  // IP посетителя в сообщение не пишем: это персональные данные, и мессенджеру
+  // они ни к чему — от спама защищает ограничитель частоты выше.
+  lines.push('', `<i>${when} МСК</i>`);
 
   try {
     const response = await fetch(
@@ -133,7 +165,7 @@ async function sendToTelegram(env: Bindings, booking: Booking, ip: string): Prom
   }
 }
 
-/** Экранирование под parse_mode: HTML — имя пациента приходит от пользователя. */
+/** Экранирование под parse_mode: HTML — текст полей приходит от пользователя. */
 function escapeHtml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }

@@ -6,10 +6,16 @@
  * Адрес эндпоинта задаётся переменной PUBLIC_BOOKING_ENDPOINT (.env).
  * Пока она не задана, форма честно предлагает позвонить, а не делает вид,
  * что заявка ушла.
+ *
+ * Проверка полей своя, а не браузерная (novalidate): нативные подсказки
+ * исчезают через несколько секунд и не читаются скринридером вместе
+ * с полем. Ошибка живёт под полем и связана с ним через aria-describedby.
  */
 import Button from '../core/Button.astro';
 import Icon from '../core/Icon.astro';
+import BrandIcon from '../core/BrandIcon.astro';
 import { clinic } from '../../data/site';
+import { pageHref } from '../../lib/asset';
 
 const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
 ---
@@ -18,10 +24,12 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
   <div class="dc-field">
     <label for="dc-name">Ваше имя</label>
     <input id="dc-name" name="name" type="text" required autocomplete="name" maxlength="80" />
+    <p class="dc-field__error" id="dc-name-error" hidden></p>
   </div>
 
   <div class="dc-field">
-    <label for="dc-contact">Как с вами связаться</label>
+    <label for="dc-contact">Телефон</label>
+    <!-- maxlength с запасом к маске: вставка «+7 (925) 577-76-77» не должна обрезаться до форматирования -->
     <input
       id="dc-contact"
       name="contact"
@@ -31,8 +39,10 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
       inputmode="tel"
       maxlength="40"
       placeholder="+7 900 000-00-00"
+      aria-describedby="dc-contact-hint"
     />
-    <span class="dc-field__hint">Телефон или Max</span>
+    <p class="dc-field__error" id="dc-contact-error" hidden></p>
+    <span class="dc-field__hint" id="dc-contact-hint">Перезвоним или напишем в Max</span>
   </div>
 
   <div class="dc-field">
@@ -46,13 +56,25 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
     <input id="dc-website" name="website" type="text" tabindex="-1" autocomplete="off" />
   </div>
 
-  <label class="dc-checkbox">
-    <input type="checkbox" name="consent" required />
-    <span class="dc-checkbox__box" aria-hidden="true">
-      <Icon name="check" size={18} strokeWidth={3} />
-    </span>
-    <span>Согласен на обработку персональных данных</span>
-  </label>
+  <!-- Откуда пришла заявка: адрес страницы с utm-метками и реферер. Заполняет скрипт перед отправкой -->
+  <input type="hidden" name="page" />
+  <input type="hidden" name="referrer" />
+
+  <div class="dc-consent">
+    <label class="dc-checkbox">
+      <input id="dc-consent" type="checkbox" name="consent" required />
+      <span class="dc-checkbox__box" aria-hidden="true">
+        <Icon name="check" size={18} strokeWidth={3} />
+      </span>
+      <!-- Ссылка внутри label: клик по интерактивному потомку по спецификации
+           не переключает чекбокс, а Tab доходит до ссылки как до любой другой -->
+      <span>
+        Согласен на обработку персональных данных —
+        <a href={pageHref('privacy')} target="_blank" rel="noopener">политика конфиденциальности</a>
+      </span>
+    </label>
+    <p class="dc-field__error" id="dc-consent-error" hidden></p>
+  </div>
 
   <Button type="submit" variant="primary" size="lg" fullWidth>Оставить заявку</Button>
 
@@ -66,7 +88,21 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
 <div class="dc-form-done" data-booking-done hidden tabindex="-1" role="status" aria-live="polite">
   <Icon name="circle-check" size={34} color="var(--text-accent)" />
   <h3>Заявка отправлена</h3>
-  <p>Мы перезвоним вам в рабочее время и подберём удобное время приёма.</p>
+  <p>Перезвоним в рабочее время — {clinic.scheduleShort}.</p>
+  <div class="dc-form-done__actions">
+    <Button href={clinic.phoneHref} variant="primary">
+      <Icon slot="icon" name="phone" size={20} />
+      Позвонить
+    </Button>
+    {
+      clinic.links.max && (
+        <Button href={clinic.links.max} variant="secondary" target="_blank" rel="noopener">
+          <BrandIcon slot="icon" name="max" size={20} />
+          Написать в Max
+        </Button>
+      )
+    }
+  </div>
 </div>
 
 <style>
@@ -98,13 +134,21 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
     width: 100%;
     resize: vertical;
   }
-  .dc-field input:user-invalid,
-  .dc-field textarea:user-invalid {
+  /* Невалидность ставит скрипт, а не браузер: :user-invalid сработал бы
+     от одного required и подсветил бы поле без объяснения */
+  .dc-field input[aria-invalid='true'],
+  .dc-field textarea[aria-invalid='true'] {
     border-color: var(--dc-coral);
   }
   .dc-field__hint {
     font-size: var(--type-small);
     color: var(--text-muted);
+  }
+  .dc-field__error,
+  .dc-form__error {
+    color: var(--dc-coral);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
   }
 
   .dc-honeypot {
@@ -115,6 +159,10 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
     overflow: hidden;
   }
 
+  .dc-consent {
+    display: grid;
+    gap: var(--space-2);
+  }
   .dc-checkbox {
     display: flex;
     gap: var(--space-3);
@@ -123,6 +171,9 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
     font-size: var(--type-small);
     color: var(--text-body);
     line-height: var(--lh-body);
+  }
+  .dc-checkbox a {
+    font-weight: var(--fw-semibold);
   }
   .dc-checkbox input {
     position: absolute;
@@ -149,16 +200,14 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
     border-color: var(--cta-bg);
     color: var(--cta-fg);
   }
+  .dc-checkbox input[aria-invalid='true'] + .dc-checkbox__box {
+    border-color: var(--dc-coral);
+  }
   .dc-checkbox input:focus-visible + .dc-checkbox__box {
     outline: 2px solid var(--dc-depths);
     outline-offset: 2px;
   }
 
-  .dc-form__error {
-    color: var(--dc-coral);
-    font-size: var(--type-small);
-    font-weight: var(--fw-semibold);
-  }
   .dc-form__fallback {
     font-size: var(--type-small);
     color: var(--text-muted);
@@ -182,60 +231,162 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
   .dc-form-done p {
     color: var(--text-body);
   }
+  .dc-form-done__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+  }
 </style>
 
 <script>
+  import { maskPhone, phoneToE164 } from '../../lib/phone';
+
   const form = document.querySelector<HTMLFormElement>('[data-booking-form]');
   const done = document.querySelector<HTMLElement>('[data-booking-done]');
   const error = document.querySelector<HTMLElement>('[data-form-error]');
+  const nameField = form?.querySelector<HTMLInputElement>('#dc-name');
+  const phoneField = form?.querySelector<HTMLInputElement>('#dc-contact');
+  const consentField = form?.querySelector<HTMLInputElement>('#dc-consent');
 
+  const GENERIC_ERROR = 'Не удалось отправить заявку. Попробуйте ещё раз или позвоните нам.';
+
+  /** Ошибка формы целиком: сеть, сервер, неподключённый эндпоинт */
   const fail = (message: string) => {
     if (!error) return;
     error.textContent = message;
     error.hidden = false;
   };
 
-  form?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    error && (error.hidden = true);
+  const describedBy = (field: HTMLElement) =>
+    (field.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean);
 
-    if (!form.reportValidity()) return;
+  /** Ошибка под полем: текст, aria-invalid и связь с полем через aria-describedby */
+  const setFieldError = (field: HTMLInputElement, message: string) => {
+    const box = document.getElementById(`${field.id}-error`);
+    if (!box) return;
+    box.textContent = message;
+    box.hidden = false;
+    field.setAttribute('aria-invalid', 'true');
+    // Ошибку ставим первой, чтобы скринридер прочитал её раньше подсказки
+    const ids = describedBy(field).filter((id) => id !== box.id);
+    field.setAttribute('aria-describedby', [box.id, ...ids].join(' '));
+  };
 
-    const endpoint = form.dataset.endpoint;
-    if (!endpoint) {
-      fail('Форма пока не подключена к серверу. Позвоните нам — ответим сразу.');
-      return;
-    }
+  const clearFieldError = (field: HTMLInputElement) => {
+    const box = document.getElementById(`${field.id}-error`);
+    if (!box || box.hidden) return;
+    box.hidden = true;
+    field.removeAttribute('aria-invalid');
+    const ids = describedBy(field).filter((id) => id !== box.id);
+    if (ids.length) field.setAttribute('aria-describedby', ids.join(' '));
+    else field.removeAttribute('aria-describedby');
+  };
 
-    const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
-    const label = submit?.textContent;
-    if (submit) {
-      submit.disabled = true;
-      submit.textContent = 'Отправляем…';
-    }
-
-    try {
-      const payload = Object.fromEntries(new FormData(form).entries());
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+  if (form && nameField && phoneField && consentField) {
+    // Маска телефона: форматируем значение целиком и возвращаем каретку на место
+    let prevPhone = phoneField.value;
+    phoneField.addEventListener('input', (event) => {
+      const caret = phoneField.selectionStart ?? phoneField.value.length;
+      const masked = maskPhone(phoneField.value, caret, {
+        prev: prevPhone,
+        inputType: (event as InputEvent).inputType,
       });
+      phoneField.value = masked.value;
+      phoneField.setSelectionRange(masked.caret, masked.caret);
+      prevPhone = masked.value;
+    });
 
-      if (!response.ok) throw new Error(String(response.status));
+    // Ошибка снимается, как только пользователь взялся исправлять поле
+    nameField.addEventListener('input', () => clearFieldError(nameField));
+    phoneField.addEventListener('input', () => clearFieldError(phoneField));
+    consentField.addEventListener('change', () => clearFieldError(consentField));
 
-      form.hidden = true;
-      if (done) {
-        done.hidden = false;
-        // aria-live один не гарантирует объявление — переносим фокус явно
-        done.focus();
+    let sending = false;
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (sending) return;
+      if (error) error.hidden = true;
+
+      // Своя проверка вместо reportValidity: сообщения под полями, фокус на первом невалидном
+      const phone = phoneToE164(phoneField.value);
+      const problems: Array<[HTMLInputElement, string]> = [];
+      if (nameField.value.trim().length < 2) {
+        problems.push([nameField, 'Укажите имя — не короче двух букв']);
       }
-    } catch {
-      fail('Не удалось отправить заявку. Попробуйте ещё раз или позвоните нам.');
+      if (!phone) problems.push([phoneField, 'Введите номер в формате +7 900 000-00-00']);
+      if (!consentField.checked) {
+        problems.push([consentField, 'Нужно согласие на обработку персональных данных']);
+      }
+      const first = problems[0];
+      if (first) {
+        problems.forEach(([field, message]) => setFieldError(field, message));
+        first[0].focus();
+        return;
+      }
+
+      if (!navigator.onLine) {
+        fail('Нет соединения. Проверьте интернет или позвоните нам.');
+        return;
+      }
+
+      const endpoint = form.dataset.endpoint;
+      if (!endpoint) {
+        fail('Форма пока не подключена к серверу. Позвоните нам — ответим сразу.');
+        return;
+      }
+
+      const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      const label = submit?.textContent;
+      sending = true;
+      form.setAttribute('aria-busy', 'true');
       if (submit) {
-        submit.disabled = false;
-        submit.textContent = label ?? 'Оставить заявку';
+        submit.disabled = true;
+        submit.textContent = 'Отправляем…';
       }
-    }
-  });
+
+      // Откуда пришла заявка — адрес с utm-метками и реферер
+      const pageField = form.querySelector<HTMLInputElement>('input[name="page"]');
+      const referrerField = form.querySelector<HTMLInputElement>('input[name="referrer"]');
+      if (pageField) pageField.value = location.href;
+      if (referrerField) referrerField.value = document.referrer;
+
+      try {
+        // В JSON поле остаётся `contact`, но уже в E.164 — воркер деплоится отдельно от сайта
+        const payload = { ...Object.fromEntries(new FormData(form).entries()), contact: phone };
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          // Зависший запрос не должен держать «Отправляем…» вечно.
+          // AbortSignal.timeout появился в Safari 16 — без него просто без таймаута.
+          signal: 'timeout' in AbortSignal ? AbortSignal.timeout(10_000) : undefined,
+        });
+        const data: { error?: unknown } | null = await response.json().catch(() => null);
+
+        if (response.ok) {
+          form.hidden = true;
+          if (done) {
+            done.hidden = false;
+            // aria-live один не гарантирует объявление — переносим фокус явно
+            done.focus();
+          }
+          return;
+        }
+        // Воркер отвечает { ok: false, error }: лимит частоты, неполный номер — текст показываем как есть
+        fail(typeof data?.error === 'string' && data.error ? data.error : GENERIC_ERROR);
+      } catch (err) {
+        const timedOut = err instanceof DOMException && err.name === 'TimeoutError';
+        fail(timedOut ? 'Сервер не ответил. Попробуйте ещё раз или позвоните нам.' : GENERIC_ERROR);
+      } finally {
+        sending = false;
+        form.removeAttribute('aria-busy');
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = label ?? 'Оставить заявку';
+        }
+      }
+    });
+  }
 </script>
