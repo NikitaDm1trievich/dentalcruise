@@ -5,8 +5,9 @@ import Icon from '../core/Icon.astro';
 interface Props {
   theirTitle?: string;
   ourTitle?: string;
-  theirItems: string[];
-  ourItems: string[];
+  /** cms — адрес пункта в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+  theirItems: { text: string; cms?: string }[];
+  ourItems: { text: string; cms?: string }[];
 }
 
 const {
@@ -29,14 +30,14 @@ const columns = [
         <h3>{col.title}</h3>
         <ul>
           {col.items.map((item) => (
-            <li>
+            <li data-cms={item.cms}>
               <Icon
                 name={col.ours ? 'check' : 'minus'}
                 size={22}
                 strokeWidth={2.4}
                 color={col.ours ? 'var(--dc-turquoise-ink)' : 'var(--text-muted)'}
               />
-              <span>{item}</span>
+              <span>{item.text}</span>
             </li>
           ))}
         </ul>

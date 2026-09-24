@@ -18,11 +18,13 @@ interface Props {
    * без него — в раздел прайса, как и заголовок карточки. Так главная
    * ссылается на посадочные напрямую, а не только на прайс-лист.
    */
-  items: { title: string; price: string; href?: string }[];
+  items: { title: string; price: string; href?: string; cms?: string }[];
   href: string;
+  /** Адрес раздела в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+  cms?: string;
 }
 
-const { title, description, icon, items, href } = Astro.props;
+const { title, description, icon, items, href, cms } = Astro.props;
 
 /**
  * Ровно три позиции на карточку: одинаковая высота списка держит ссылку
@@ -32,7 +34,7 @@ const { title, description, icon, items, href } = Astro.props;
 const shown = items.slice(0, 3);
 ---
 
-<article class="dc-catalog-card">
+<article class="dc-catalog-card" data-cms={cms}>
   <div class="dc-catalog-card__icon">
     <Icon name={icon} size={26} strokeWidth={1.75} color="var(--text-accent)" />
   </div>
@@ -44,7 +46,7 @@ const shown = items.slice(0, 3);
     {
       shown.map((item) => (
         <li>
-          <a href={item.href ?? href} class="dc-catalog-card__item">
+          <a href={item.href ?? href} class="dc-catalog-card__item" data-cms={item.cms}>
             <span class="dc-catalog-card__item-title">{item.title}</span>
             <span class="dc-catalog-card__item-price">{item.price}</span>
           </a>

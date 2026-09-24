@@ -11,9 +11,14 @@ interface Props {
     note?: string;
   }[];
   speed?: number;
+  /**
+   * Адрес списка в редакторе для выбора блока в предпросмотре. Стоит на
+   * всей ленте, а не на логотипах: они движутся и уезжали бы из-под курсора.
+   */
+  cms?: string;
 }
 
-const { eyebrow = 'Материалы и поставщики', brands, speed = 38 } = Astro.props;
+const { eyebrow = 'Материалы и поставщики', brands, speed = 38, cms } = Astro.props;
 // Дубль списка — чтобы лента замыкалась без стыка
 const row = [...brands, ...brands];
 ---
@@ -23,6 +28,7 @@ const row = [...brands, ...brands];
   <div
     class="dc-marquee__viewport"
     data-marquee-viewport
+    data-cms={cms}
     data-marquee-speed={speed}
     tabindex="0"
     role="group"

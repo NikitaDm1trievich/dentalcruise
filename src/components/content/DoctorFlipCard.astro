@@ -17,13 +17,15 @@ interface Props {
    * была тупиком — с неё можно было только записаться.
    */
   href?: string;
+  /** Запись врача в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+  cms?: string;
 }
 
-const { name, speciality, experience, note, extra, photo, photoLabel, href } = Astro.props;
+const { name, speciality, experience, note, extra, photo, photoLabel, href, cms } = Astro.props;
 const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[];
 ---
 
-<div class="dc-doc" data-flip>
+<div class="dc-doc" data-flip data-cms={cms}>
   <button
     type="button"
     class="dc-doc__toggle"

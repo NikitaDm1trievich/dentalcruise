@@ -30,6 +30,7 @@ import copy from '../data/home.json';
 import { pageHref, withBase } from '../lib/asset';
 import { clampText } from '../lib/seo';
 import { servicePageIndex } from '../lib/services';
+import { cmsItem, cmsList, cmsText } from '../lib/cms-ref';
 
 const asset = withBase;
 
@@ -52,8 +53,14 @@ const trust = (await getCollection('trust')).sort(byOrder);
  */
 const pageFor = servicePageIndex(await getCollection('service-pages'));
 
-const them = comparison.filter((c) => c.data.side === 'them').map((c) => c.data.text);
-const us = comparison.filter((c) => c.data.side === 'us').map((c) => c.data.text);
+/* cms — адрес блока в редакторе: в предпросмотре редактора по клику на
+   блок открывается его поле (lib/cms-ref, lib/cms-preview). */
+const compareItem = (c: (typeof comparison)[number]) => ({
+  text: c.data.text,
+  cms: cmsItem('comparison', c.data.id),
+});
+const them = comparison.filter((c) => c.data.side === 'them').map(compareItem);
+const us = comparison.filter((c) => c.data.side === 'us').map(compareItem);
 const faqItems = faq.map((f) => ({ id: f.data.id, q: f.data.q, a: f.data.a }));
 
 /**
@@ -100,16 +107,16 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   </OceanHero>
 
   <!-- Условия: сразу после hero, до акций -->
-  <section id="terms" class="dc-section--tight dc-bg-fade">
+  <section id="terms" class="dc-section--tight dc-bg-fade" data-cms={cmsText('terms')}>
     <div class="dc-container">
       <Reveal>
-        <OfferStrip items={copy.terms} />
+        <OfferStrip items={copy.terms.map((term, i) => ({ ...term, cms: cmsText(`terms.${i}`) }))} />
       </Reveal>
     </div>
   </section>
 
   <!-- Акции -->
-  <section id="promo" class="dc-section dc-bg-white">
+  <section id="promo" class="dc-section dc-bg-white" data-cms={cmsText('promo')}>
     <div class="dc-container">
       <Reveal>
         <PromoBoard
@@ -117,6 +124,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
           items={promos.map((p) => ({
             ...p.data,
             href: p.data.category ? pageHref(`pricelist#${p.data.category}`) : undefined,
+            cms: cmsItem('promos', p.data.id),
           }))}
           note={copy.promo.note}
         />
@@ -125,7 +133,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   </section>
 
   <!-- Каталог услуг: все направления клиники с ценами -->
-  <section id="services" class="dc-section dc-bg-aqua">
+  <section id="services" class="dc-section dc-bg-aqua" data-cms={cmsText('services')}>
     <div class="dc-container">
       <Reveal>
         <SectionHeading
@@ -143,15 +151,20 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
                 title={category.data.title}
                 description={category.data.description}
                 icon={category.data.icon}
-                items={category.data.items.map((item) => {
+                items={category.data.items.map((item, j) => {
                   /* Явный слаг из редактора важнее подбора по названию:
                      в каталоге названия короче строк прайса («Проф.
                      гигиена, ультразвук»), и совпадение находилось лишь
                      у половины позиций. */
                   const slug = item.page ?? pageFor(category.data.slug, item.title);
-                  return { ...item, href: slug ? pageHref(`uslugi/${slug}`) : undefined };
+                  return {
+                    ...item,
+                    href: slug ? pageHref(`uslugi/${slug}`) : undefined,
+                    cms: cmsItem('catalog', category.data.id, `items.${j}`),
+                  };
                 })}
                 href={pageHref(`pricelist#${category.data.slug}`)}
+                cms={cmsItem('catalog', category.data.id)}
               />
             </Reveal>
           ))
@@ -161,16 +174,16 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   </section>
 
   <!-- Полублок-перебивка между каталогом и врачами: поставщики -->
-  <section id="brands" class="dc-section--tight dc-bg-fade-aqua">
+  <section id="brands" class="dc-section--tight dc-bg-fade-aqua" data-cms={cmsText('brands')}>
     <div class="dc-container">
       <Reveal>
-        <BrandsMarquee eyebrow={copy.brands.eyebrow} brands={brands.map((b) => b.data)} />
+        <BrandsMarquee eyebrow={copy.brands.eyebrow} brands={brands.map((b) => b.data)} cms={cmsList('brands')} />
       </Reveal>
     </div>
   </section>
 
   <!-- Врачи -->
-  <section id="doctors" class="dc-section dc-bg-white">
+  <section id="doctors" class="dc-section dc-bg-white" data-cms={cmsText('doctors')}>
     <div class="dc-container">
       <Reveal>
         <SectionHeading
@@ -193,6 +206,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
                 photo={doctor.data.photo}
                 photoLabel={doctor.data.photoLabel}
                 href={pageHref(`doctors/${doctor.id}`)}
+                cms={`doctors/${doctor.id}`}
               />
             </Reveal>
           ))
@@ -208,7 +222,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   </section>
 
   <!-- Почему мы -->
-  <section id="why" class="dc-section dc-bg-warm">
+  <section id="why" class="dc-section dc-bg-warm" data-cms={cmsText('why')}>
     <div class="dc-container">
       <Reveal>
         <SectionHeading eyebrow={copy.why.eyebrow} title={copy.why.title} lead={copy.why.lead} />
@@ -223,7 +237,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   </section>
 
   <!-- Полоса доверия: полублок между аргументом о цене и рассказом о клинике -->
-  <section id="trust" class="dc-section--tight dc-bg-cool">
+  <section id="trust" class="dc-section--tight dc-bg-cool" data-cms={cmsList('trust')}>
     <div class="dc-container">
       <Reveal>
         <TrustBar items={trust.map((t) => t.data)} />
@@ -232,7 +246,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   </section>
 
   <!-- О клинике -->
-  <section id="about" class="dc-section dc-bg-warm">
+  <section id="about" class="dc-section dc-bg-warm" data-cms={cmsText('about')}>
     <div class="dc-container dc-container--split">
       <Reveal>
         <div class="dc-about">
@@ -258,7 +272,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   </section>
 
   <!-- Вопросы -->
-  <section id="faq" class="dc-section dc-bg-cool">
+  <section id="faq" class="dc-section dc-bg-cool" data-cms={cmsText('faq')}>
     <div class="dc-container dc-container--aside">
       <Reveal>
         <div class="dc-aside-col">
@@ -272,13 +286,13 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
         </div>
       </Reveal>
       <Reveal delay={90}>
-        <FaqAccordion items={faqItems} />
+        <FaqAccordion items={faqItems.map((item) => ({ ...item, cms: cmsItem('faq', item.id) }))} />
       </Reveal>
     </div>
   </section>
 
   <!-- Отзывы -->
-  <section id="reviews" class="dc-section dc-bg-white">
+  <section id="reviews" class="dc-section dc-bg-white" data-cms={cmsText('reviews')}>
     <div class="dc-container">
       <Reveal>
         <SectionHeading eyebrow={copy.reviews.eyebrow} title={copy.reviews.title} />
@@ -292,7 +306,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
                 выше, а дважды подряд одна цифра читается как шум. Ниже —
                 компактная подпись: один факт и заметка про отметку Яндекса. */}
             <div class="dc-facts">
-              <p class="dc-facts__fact">
+              <p class="dc-facts__fact" data-cms={cmsText('reviews.since')}>
                 <span class="dc-facts__value">
                   {/* Счёт с 2000, а не с нуля: год, бегущий от нуля, читается как ошибка */}
                   <CountUp value={copy.reviews.since.value} from={2000} prefix="с " grouping={false} />

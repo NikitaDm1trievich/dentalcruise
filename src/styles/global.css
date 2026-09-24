@@ -371,14 +371,151 @@ a:hover {
     box-shadow: 0 0 0 4px transparent;
   }
 }
+/* Размеры делятся на --dc-cms-scale: десктоп во фрейме редактора уменьшен
+   целиком (preview.js присылает масштаб), и без поправки плашка в 15px
+   читалась бы как 7px. */
 [data-cms-preview-notice] {
   position: fixed;
-  inset: auto 16px 16px;
+  inset: auto calc(16px / var(--dc-cms-scale, 1)) calc(16px / var(--dc-cms-scale, 1));
   z-index: 1000;
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: calc(12px / var(--dc-cms-scale, 1)) calc(16px / var(--dc-cms-scale, 1));
+  border-radius: calc(12px / var(--dc-cms-scale, 1));
   background: #073b4b;
   color: #fff;
-  font: 500 15px/1.4 system-ui, sans-serif;
+  font: 500 calc(15px / var(--dc-cms-scale, 1)) / 1.4 system-ui, sans-serif;
   box-shadow: 0 8px 24px rgb(7 59 75 / 0.25);
+}
+
+/* ── Выбор блока в предпросмотре (src/lib/cms-preview.ts) ─────────────────
+   Рамка — отдельный слой поверх страницы: стили самих блоков не трогаем,
+   иначе overflow:hidden обрезал бы обводку, а position у карточек менял бы
+   раскладку. --dc-cms-scale приходит из preview.js: десктоп во фрейме
+   уменьшен, и без деления на масштаб рамка и подпись стали бы вдвое мельче. */
+.dc-cms-preview {
+  --dc-cms-ring: calc(var(--border-width-strong) / var(--dc-cms-scale, 1));
+  --dc-cms-halo: calc(var(--space-1) / var(--dc-cms-scale, 1));
+}
+
+/* Режим выбора включён: курсор подсказывает, что блок нажимается. */
+.dc-cms-pick main,
+.dc-cms-pick [data-cms] {
+  cursor: pointer;
+}
+/* Виджеты Яндекса — чужие фреймы: они перехватили бы наведение и клик. */
+.dc-cms-pick iframe {
+  pointer-events: none;
+}
+
+.dc-cms-hl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* Выше шапки (60), нижней панели (65) и модалок (100),
+     ниже плашки предпросмотра (1000). */
+  z-index: 950;
+  box-sizing: border-box;
+  pointer-events: none;
+  border-radius: var(--dc-cms-hl-radius, 0);
+  box-shadow:
+    0 0 0 var(--dc-cms-ring) var(--dc-turquoise-ink),
+    0 0 0 calc(var(--dc-cms-ring) + var(--dc-cms-halo) / 2) var(--dc-white);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.dc-cms-hl[data-visible] {
+  opacity: 1;
+}
+.dc-cms-hl[data-level='item'] {
+  background: color-mix(in srgb, var(--dc-turquoise-ink) 4%, transparent);
+}
+.dc-cms-hl[data-level='text'] {
+  background: color-mix(in srgb, var(--dc-turquoise-ink) 8%, transparent);
+}
+.dc-cms-hl[data-state='pressed'] {
+  box-shadow:
+    0 0 0 calc(var(--dc-cms-ring) * 1.5) var(--dc-turquoise-press),
+    0 0 0 calc(var(--dc-cms-ring) * 1.5 + var(--dc-cms-halo) / 2) var(--dc-white);
+}
+.dc-cms-hl[data-state='selected'] {
+  background: none;
+}
+.dc-cms-hl[data-state='locked'] {
+  background: none;
+  box-shadow: 0 0 0 calc(var(--dc-cms-ring) + var(--dc-cms-halo) / 2) var(--dc-white);
+  outline: var(--dc-cms-ring) dashed var(--text-muted);
+  outline-offset: 0;
+}
+
+.dc-cms-hl__chip {
+  position: absolute;
+  left: calc(var(--dc-cms-ring) * -1);
+  bottom: calc(100% + var(--dc-cms-halo) * 1.5);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space-2) / var(--dc-cms-scale, 1));
+  max-width: 32em;
+  padding: calc(var(--space-1) / var(--dc-cms-scale, 1)) calc(var(--space-3) / var(--dc-cms-scale, 1));
+  border-radius: calc(var(--radius-sm) / var(--dc-cms-scale, 1));
+  background: var(--dc-turquoise-ink);
+  color: var(--text-on-dark);
+  font-family: var(--font-body);
+  font-size: calc(var(--type-eyebrow) / var(--dc-cms-scale, 1));
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-heading);
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 calc(var(--border-width) / var(--dc-cms-scale, 1)) var(--dc-white),
+    var(--shadow-md);
+}
+.dc-cms-hl__chip svg {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+}
+.dc-cms-hl__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dc-cms-hl[data-chip='below'] .dc-cms-hl__chip {
+  top: calc(100% + var(--dc-cms-halo) * 1.5);
+  bottom: auto;
+}
+.dc-cms-hl[data-chip='inside'] .dc-cms-hl__chip {
+  top: calc(var(--space-2) / var(--dc-cms-scale, 1));
+  left: calc(var(--space-2) / var(--dc-cms-scale, 1));
+  bottom: auto;
+}
+.dc-cms-hl[data-state='pressed'] .dc-cms-hl__chip {
+  background: var(--dc-turquoise-press);
+}
+.dc-cms-hl[data-state='selected'] .dc-cms-hl__chip {
+  background: var(--dc-turquoise-soft);
+  color: var(--dc-turquoise-ink);
+}
+.dc-cms-hl[data-state='locked'] .dc-cms-hl__chip {
+  background: var(--dc-white);
+  color: var(--text-muted);
+  box-shadow:
+    inset 0 0 0 calc(var(--border-width) / var(--dc-cms-scale, 1)) var(--line-strong),
+    var(--shadow-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-cms-hl {
+    transition: none;
+  }
+}
+/* Режим высокой контрастности Windows: тени там не рисуются. */
+@media (forced-colors: active) {
+  .dc-cms-hl {
+    outline: var(--dc-cms-ring) solid Highlight;
+    box-shadow: none;
+  }
+  .dc-cms-hl[data-state='locked'] {
+    outline-style: dashed;
+    outline-color: GrayText;
+  }
+  .dc-cms-hl__chip {
+    border: 1px solid CanvasText;
+  }
 }

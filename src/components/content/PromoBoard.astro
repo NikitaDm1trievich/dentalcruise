@@ -21,6 +21,8 @@ interface Props {
     attributes?: { label: string; value: string }[];
     /** Готовая ссылка в раздел прайса — карточка целиком кликабельна */
     href?: string;
+    /** Адрес карточки в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+    cms?: string;
   }[];
 }
 
@@ -45,7 +47,7 @@ const {
         // Карточка со ссылкой — <a>, без ссылки — прежний <div>
         const Tag = item.href ? 'a' : 'div';
         return (
-        <Tag class="dc-promo__card" href={item.href}>
+        <Tag class="dc-promo__card" href={item.href} data-cms={item.cms}>
           <span class="dc-promo__ribbon" aria-hidden="true">Акция</span>
           <span class="dc-promo__label">{item.title}</span>
           <span class="dc-promo__price">{item.price}</span>

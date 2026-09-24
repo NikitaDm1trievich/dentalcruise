@@ -4,6 +4,7 @@ import Icon from '../core/Icon.astro';
 import Button from '../core/Button.astro';
 import CountUp from '../core/CountUp.astro';
 import { clinic } from '../../data/site';
+import { cmsText } from '../../lib/cms-ref';
 /* Рейтинг и число отзывов владелец правит в редакторе (раздел «Главная
    страница» → «Отзывы») — это единственное место, где они хранятся.
    Цифры должны совпадать с виджетом Яндекс Карт на той же странице:
@@ -22,7 +23,7 @@ const count = copy.reviews.count.value;
 const filled = Math.round(value);
 ---
 
-<div class="dc-reviews">
+<div class="dc-reviews" data-cms={cmsText('reviews.rating')}>
   <div class="dc-reviews__head">
     <span class="dc-reviews__value"><CountUp value={value} decimals={1} /></span>
     {/* role="img": без роли aria-label на span скринридер игнорирует,

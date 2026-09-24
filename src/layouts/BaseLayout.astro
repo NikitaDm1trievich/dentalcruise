@@ -116,13 +116,16 @@ const asset = withBase;
       import { initOverlays } from '../lib/overlays';
       import { initFlipCards } from '../lib/flip';
       import { initCountUp } from '../lib/count-up';
-      import { initCmsPreview } from '../lib/cms-preview';
 
       initOverlays();
       initReveal();
       initFlipCards();
       initCountUp();
-      initCmsPreview();
+      // Код предпросмотра редактора грузится отдельным файлом и только во
+      // фрейме редактора (?cms-preview): посетителям сайта он не нужен.
+      if (document.documentElement.classList.contains('dc-cms-preview')) {
+        void import('../lib/cms-preview').then(({ initCmsPreview }) => initCmsPreview());
+      }
 
       // Заставка живёт ровно столько, сколько разбирается документ: уходит
       // по DOMContentLoaded, картинки и видео не ждём — у них есть poster и

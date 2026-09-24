@@ -11,6 +11,7 @@
  * его просим предзагрузить с высоким приоритетом.
  */
 import WaveField from './WaveField.astro';
+import { cmsText } from '../../lib/cms-ref';
 
 interface Props {
   eyebrow?: string;
@@ -23,7 +24,7 @@ interface Props {
 const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, poster } = Astro.props;
 ---
 
-<section id="top" class="dc-hero" data-cms-scope="hero">
+<section id="top" class="dc-hero" data-cms={cmsText('hero')}>
   {/* <link rel="preload"> допустим и в <body>; сканер предзагрузки видит
       его раньше, чем парсер дойдёт до атрибута poster у <video>. */}
   {poster && <link rel="preload" as="image" href={poster} fetchpriority="high" />}

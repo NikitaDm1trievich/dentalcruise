@@ -1,6 +1,7 @@
 ---
 /** Полоса доверия перед подвалом. Из Ds2_2d9e23.TrustBar. */
 import Icon from '../core/Icon.astro';
+import { cmsItem } from '../../lib/cms-ref';
 
 interface Props {
   items: { id: string; title: string; text: string; icon: string; href?: string; opensLicense: boolean }[];
@@ -23,6 +24,7 @@ const { items, tone = 'light' } = Astro.props;
             href={!item.opensLicense && item.href ? item.href : undefined}
             target={!item.opensLicense && item.href ? '_blank' : undefined}
             rel={!item.opensLicense && item.href ? 'noopener' : undefined}
+            data-cms={cmsItem('trust', item.id)}
             {...attrs}
           >
             <Icon

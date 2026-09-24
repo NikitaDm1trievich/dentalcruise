@@ -7,7 +7,8 @@
 import Icon from '../core/Icon.astro';
 
 interface Props {
-  items: { id: string; q: string; a: string }[];
+  /** cms — адрес вопроса в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+  items: { id: string; q: string; a: string; cms?: string }[];
 }
 const { items } = Astro.props;
 ---
@@ -15,7 +16,7 @@ const { items } = Astro.props;
 <div class="dc-faq" data-faq>
   {
     items.map((item) => (
-      <div class="dc-faq__item">
+      <div class="dc-faq__item" data-cms={item.cms}>
         <h3>
           <button
             type="button"

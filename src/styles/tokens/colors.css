@@ -57,7 +57,7 @@
 
   /* ── Decorative gradients (White Caps lives here) ──── */
   /* Градиенты собираются из тех же токенов, что и плоские заливки: иначе
-     смена цвета в редакторе темы меняла бы блоки, но не переходы между ними. */
+     смена цвета в разделе «Цвета сайта» меняла бы блоки, но не переходы между ними. */
   --grad-shallow:linear-gradient(180deg,var(--dc-mist) 0%,var(--dc-breeze) 100%);/* @kind other */
   --grad-deep:linear-gradient(180deg,var(--dc-lagoon-lift) 0%,var(--dc-lagoon) 100%);/* @kind other */
   --grad-sand:linear-gradient(180deg,var(--dc-white) 0%,var(--dc-seashell) 100%);/* @kind other */
