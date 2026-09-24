@@ -26,6 +26,8 @@ interface Props {
   width?: number;
   height?: number;
   class?: string;
+  /** Адрес ряда в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+  cms?: string;
 }
 
 const {
@@ -37,6 +39,7 @@ const {
   width: W = 660,
   height: H = 320,
   class: className,
+  cms,
 } = Astro.props;
 
 // ── Геометрия ───────────────────────────────────────────────
@@ -102,7 +105,7 @@ const marketFill = `dcMarketFill-${uid}`;
 const clinicFill = `dcClinicFill-${uid}`;
 ---
 
-<div class:list={['dc-chart__plot', className]} data-chart data-w={W}>
+<div class:list={['dc-chart__plot', className]} data-chart data-w={W} data-cms={cms}>
   <svg
     viewBox={`0 0 ${W} ${H}`}
     role="img"

@@ -54,6 +54,7 @@
     catalog: 'services',
     brands: 'brands',
     comparison: 'why',
+    chart: 'why',
     trust: 'trust',
     faq: 'faq',
   };
@@ -257,7 +258,8 @@
     var at = entry.indexOf('/');
     var collection = '/collections/' + entry.slice(0, at);
     var target = collection + '/entries/' + entry.slice(at + 1);
-    pendingField = path ? { entry: entry, path: path, text: text } : null;
+    // Путь бывает пустым (блок — вся запись): тогда поле найдётся по тексту.
+    pendingField = path || text ? { entry: entry, path: path, text: text } : null;
 
     route(collection);
     var started = Date.now();
@@ -712,6 +714,7 @@
     'catalog',
     'brands',
     'comparison',
+    'chart',
     'trust',
     'faq',
     'price-list',

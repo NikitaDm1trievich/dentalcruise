@@ -46,6 +46,11 @@ export function cmsItem(list: keyof typeof lists, id: string, sub?: string): str
   return `${entry}:items.${index}${sub ? `.${sub}` : ''}`;
 }
 
+/** График цен в блоке «Почему мы» (src/data/price-chart.json). */
+export function cmsChart(path: string): string {
+  return `home/chart:${path}`;
+}
+
 /** Весь список файла, например ленту поставщиков целиком. */
 export function cmsList(list: keyof typeof lists): string {
   return `${lists[list].entry}:items`;

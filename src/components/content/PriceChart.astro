@@ -16,9 +16,10 @@
  * Сам SVG рисует PriceChartPlot.
  */
 import PriceChartPlot from './PriceChartPlot.astro';
-import { priceChart } from '../../data/price-chart';
+import { MONTH_IN, priceChart } from '../../data/price-chart';
+import { cmsChart } from '../../lib/cms-ref';
 
-const { data, title, marketLabel, clinicLabel, note, anchorMonth } = priceChart;
+const { data, title, marketLabel, clinicLabel, note, year } = priceChart;
 
 /**
  * Мобильный ряд: с июня по сентябрь. Прогнозные месяцы отброшены — на
@@ -27,12 +28,22 @@ const { data, title, marketLabel, clinicLabel, note, anchorMonth } = priceChart;
  */
 const narrowData = data.filter((d) => !d.forecast).slice(-4);
 
-const anchorIndex = data.findIndex((d) => d.month === anchorMonth);
-const gap = data[anchorIndex].market - data[anchorIndex].clinic;
+/* Месяц разницы выбирает владелец в редакторе. Если такого месяца в ряду
+   нет (удалили), берём последний фактический — сборка не должна падать. */
+const anchor =
+  data.find((d) => d.month === priceChart.anchorMonth) ?? data.filter((d) => !d.forecast).at(-1) ?? data.at(-1);
+const anchorMonth = anchor?.month ?? '';
+const gap = anchor ? anchor.market - anchor.clinic : 0;
 const rub = new Intl.NumberFormat('ru-RU');
 ---
 
-<figure class="dc-chart">
+<figure
+  class="dc-chart"
+  data-cms={cmsChart('')}
+  data-market-label={marketLabel}
+  data-clinic-label={clinicLabel}
+  data-year={year}
+>
   <figcaption class="dc-chart__head">
     <span class="dc-chart__eyebrow">{title}</span>
     <div class="dc-chart__legend">
@@ -46,6 +57,7 @@ const rub = new Intl.NumberFormat('ru-RU');
     anchorMonth={anchorMonth}
     title={title}
     uid="wide"
+    cms={cmsChart('data')}
     thinTicks
     class="dc-chart__plot--wide"
   />
@@ -54,14 +66,19 @@ const rub = new Intl.NumberFormat('ru-RU');
     anchorMonth={anchorMonth}
     title={title}
     uid="narrow"
+    cms={cmsChart('data')}
     width={400}
     height={300}
     class="dc-chart__plot--narrow"
   />
 
-  <p class="dc-chart__gap">
-    В сентябре разница составляет <b>{rub.format(gap)} ₽</b> на каждой коронке.
-  </p>
+  {
+    gap > 0 && (
+      <p class="dc-chart__gap">
+        В {MONTH_IN[anchorMonth] ?? anchorMonth} разница составляет <b>{rub.format(gap)} ₽</b> на каждой коронке.
+      </p>
+    )
+  }
 
   <p class="dc-chart__note">{note}</p>
 </figure>
@@ -74,6 +91,8 @@ const rub = new Intl.NumberFormat('ru-RU');
     if (!svg || !tip || !cursor) return;
 
     const chartWidth = Number(chart.dataset.w) || 660;
+    // Подписи линий и год — из тех же данных, что легенда (правятся в редакторе)
+    const labels = chart.closest<HTMLElement>('.dc-chart')?.dataset ?? {};
     const rub = new Intl.NumberFormat('ru-RU');
     const money = (value: string) => `${rub.format(Number(value))} ₽`;
 
@@ -86,16 +105,27 @@ const rub = new Intl.NumberFormat('ru-RU');
       const show = () => {
         const d = hit.dataset;
 
-        tip.innerHTML = `
-          <span class="dc-chart__tip-date">${d.month} 2026${d.forecast === 'true' ? ' · прогноз' : ''}</span>
-          <span class="dc-chart__tip-row">
-            <i class="dc-chart__tip-dot" style="background:var(--dc-white-caps)"></i>
-            В среднем по Москве<b>${money(d.market!)}</b>
-          </span>
-          <span class="dc-chart__tip-row">
-            <i class="dc-chart__tip-dot" style="background:var(--dc-turquoise-ink)"></i>
-            Дентал Круиз<b>${money(d.clinic!)}</b>
-          </span>`;
+        // Подписи задаёт владелец в редакторе — собираем узлами, не через
+        // innerHTML, чтобы текст из данных не стал разметкой.
+        const date = document.createElement('span');
+        date.className = 'dc-chart__tip-date';
+        date.textContent = [d.month, labels.year].filter(Boolean).join(' ') + (d.forecast === 'true' ? ' · прогноз' : '');
+        const row = (label: string, color: string, value: string) => {
+          const line = document.createElement('span');
+          line.className = 'dc-chart__tip-row';
+          const dot = document.createElement('i');
+          dot.className = 'dc-chart__tip-dot';
+          dot.style.background = color;
+          const sum = document.createElement('b');
+          sum.textContent = money(value);
+          line.append(dot, label, sum);
+          return line;
+        };
+        tip.replaceChildren(
+          date,
+          row(labels.marketLabel ?? '', 'var(--dc-white-caps)', d.market!),
+          row(labels.clinicLabel ?? '', 'var(--dc-turquoise-ink)', d.clinic!),
+        );
         tip.hidden = false;
 
         // Подсказку ставим над колонкой месяца, в долях ширины графика.

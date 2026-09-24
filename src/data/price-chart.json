@@ -1,0 +1,83 @@
+{
+  "title": "Коронка, за единицу",
+  "marketLabel": "В среднем по Москве",
+  "clinicLabel": "Дентал Круиз",
+  "year": "2026",
+  "anchorMonth": "Сен",
+  "note": "Рыночный ряд — средняя цена коронки E-max по Москве в эконом- и среднем сегменте (премиум-клиники по 60 000–87 000 ₽ не учтены): расчёт по индексу цен Росстата на стоматологические услуги, единственный фактический замер — сентябрь 2026 года по открытым прайсам клиник, октябрь–декабрь прогноз. Наш ряд — цена коронки в клинике: с 25 000 ₽ за E-max до акционных 19 900 ₽ за циркониевую коронку с конца лета.",
+  "data": [
+    {
+      "month": "Янв",
+      "market": 28900,
+      "clinic": 25000,
+      "forecast": false
+    },
+    {
+      "month": "Фев",
+      "market": 29000,
+      "clinic": 25000,
+      "forecast": false
+    },
+    {
+      "month": "Мар",
+      "market": 29200,
+      "clinic": 24800,
+      "forecast": false
+    },
+    {
+      "month": "Апр",
+      "market": 29400,
+      "clinic": 24300,
+      "forecast": false
+    },
+    {
+      "month": "Май",
+      "market": 29500,
+      "clinic": 24000,
+      "forecast": false
+    },
+    {
+      "month": "Июн",
+      "market": 29600,
+      "clinic": 23400,
+      "forecast": false
+    },
+    {
+      "month": "Июл",
+      "market": 29700,
+      "clinic": 22800,
+      "forecast": false
+    },
+    {
+      "month": "Авг",
+      "market": 29800,
+      "clinic": 21200,
+      "forecast": false
+    },
+    {
+      "month": "Сен",
+      "market": 30000,
+      "clinic": 19900,
+      "forecast": false,
+      "promo": true
+    },
+    {
+      "month": "Окт",
+      "market": 30300,
+      "clinic": 19900,
+      "forecast": true
+    },
+    {
+      "month": "Ноя",
+      "market": 30500,
+      "clinic": 19900,
+      "forecast": true
+    },
+    {
+      "month": "Дек",
+      "market": 30800,
+      "clinic": 19900,
+      "forecast": true
+    }
+  ]
+}

@@ -178,7 +178,8 @@ collections:
             hint: >-
               Где на сайте: две колонки «Обычная клиника» и «Дентал Круиз», под
               ними график цен. Пункты колонок — в пункте «7. Почему мы —
-              сравнение». График меняет разработчик.
+              сравнение», числа и подписи графика — в «7. Почему мы — график
+              цен».
             fields:
               - { name: eyebrow, label: Надпись над заголовком, widget: string }
               - { name: title, label: Заголовок блока, widget: string }
@@ -532,6 +533,73 @@ collections:
                 hint: >-
                   Латиницей, один раз при создании. У существующих записей не
                   менять — сломаются ссылки.
+
+      - name: chart
+        label: 7. Почему мы — график цен
+        file: src/data/price-chart.json
+        fields:
+          - name: title
+            label: Подпись над графиком
+            widget: string
+            hint: Слева над графиком, например «Коронка, за единицу».
+          - { name: marketLabel, label: Подпись линии рынка, widget: string }
+          - { name: clinicLabel, label: Подпись линии клиники, widget: string }
+          - name: year
+            label: Год
+            widget: string
+            pattern: ['^\d{4}$', 'Четыре цифры, например 2026']
+            hint: Виден в подсказке при наведении на месяц («Сен 2026»).
+          - name: data
+            label: Цены по месяцам
+            label_singular: месяц
+            widget: list
+            collapsed: true
+            summary: '{{fields.month}}: рынок {{fields.market}} ₽, у нас {{fields.clinic}} ₽'
+            hint: >-
+              Месяцы идут на графике в том же порядке, что здесь, — держите
+              их по порядку с января. На телефоне показываются последние
+              четыре месяца без прогноза.
+            fields:
+              - name: month
+                label: Месяц
+                widget: select
+                options: [Янв, Фев, Мар, Апр, Май, Июн, Июл, Авг, Сен, Окт, Ноя, Дек]
+              - name: market
+                label: Средняя цена по Москве, ₽
+                widget: number
+                value_type: int
+                min: 0
+                hint: Только число, без пробелов и знака рубля.
+              - name: clinic
+                label: Цена в клинике, ₽
+                widget: number
+                value_type: int
+                min: 0
+              - name: forecast
+                label: Прогноз
+                widget: boolean
+                default: false
+                hint: Отметьте для будущих месяцев — цена рынка ещё не известна.
+              - name: promo
+                label: Выделить точку
+                widget: boolean
+                required: false
+                default: false
+                hint: Крупная точка на линии клиники — например, месяц начала акции.
+          - name: anchorMonth
+            label: Месяц для разницы под графиком
+            widget: select
+            options: [Янв, Фев, Мар, Апр, Май, Июн, Июл, Авг, Сен, Окт, Ноя, Дек]
+            hint: >-
+              По нему считается фраза «В сентябре разница составляет … ₽ на
+              каждой коронке». Если цена клиники в этом месяце не ниже
+              рыночной, фраза не показывается.
+          - name: note
+            label: Сноска под графиком
+            widget: text
+            hint: >-
+              Откуда взяты цены рынка и что сравнивается. Не убирайте
+              источник: реклама с цифрами должна их подтверждать.
 
       - name: trust
         label: 8. Полоса доверия

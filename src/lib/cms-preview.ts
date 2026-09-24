@@ -621,7 +621,7 @@ export function initCmsPreview() {
     select(target);
     // Текст под курсором: блок другой записи адресован целиком, и по тексту
     // редактор после перехода уточнит поле (заголовок, а не первое поле блока).
-    const text = event.target instanceof Element ? (event.target.textContent ?? '').trim().slice(0, 300) : '';
+    const text = event.target instanceof Element ? (event.target.textContent ?? '').trim().slice(0, 2000) : '';
     window.parent.postMessage(
       { type: 'dc-cms-pick', entry: target.entry, path: target.path, text },
       location.origin,
