@@ -73,7 +73,7 @@ jobs:
           node-version-file: .nvmrc
 
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       # Сообщаем Яндексу и Bing, что сайт обновился: новые страницы
       # попадают в поиск за часы вместо недель. Только с боевого домена:
