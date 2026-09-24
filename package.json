@@ -18,8 +18,8 @@
     "@fontsource-variable/onest": "5.3.1",
     "@tailwindcss/vite": "^4.1.14",
     "animejs": "^4.2.2",
-    "astro": "^7.3.2",
-    "lucide": "^1.41.0",
+    "astro": "^7.3.3",
+    "lucide": "^1.47.0",
     "tailwindcss": "^4.1.14"
   },
   "devDependencies": {
