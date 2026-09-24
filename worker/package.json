@@ -9,10 +9,10 @@
     "tail": "wrangler tail"
   },
   "dependencies": {
-    "hono": "^4.10.3"
+    "hono": "^4.13.8"
   },
   "devDependencies": {
-    "wrangler": "^4.48.0",
+    "wrangler": "^4.136.1",
     "@cloudflare/workers-types": "^5.20260903.1",
     "typescript": "^5.9.3"
   }
