@@ -1,12 +1,10 @@
 {
   "items": [
     {
-      "id": "crown-zirconia",
       "title": "Циркониевая коронка",
       "price": "19 900 ₽",
       "was": "26 000 ₽",
       "note": "Изготовление и установка, по акции",
-      "category": "protezirovanie",
       "attributes": [
         {
           "label": "Срок службы",
@@ -21,15 +19,15 @@
           "value": "не вызывает"
         }
       ],
-      "order": 10
+      "category": "protezirovanie",
+      "order": 10,
+      "id": "crown-zirconia"
     },
     {
-      "id": "crown-zirconia-implant",
       "title": "Циркониевая коронка на импланте",
       "price": "25 000 ₽",
       "was": "35 000 ₽",
       "note": "Винтовая фиксация",
-      "category": "protezirovanie",
       "attributes": [
         {
           "label": "Срок службы",
@@ -44,15 +42,15 @@
           "value": "все"
         }
       ],
-      "order": 20
+      "category": "protezirovanie",
+      "order": 20,
+      "id": "crown-zirconia-implant"
     },
     {
-      "id": "implant-turnkey",
       "title": "Имплантация Osstem + циркониевая коронка",
-      "price": "59 900 ₽",
+      "price": "49 900 ₽",
       "was": "75 000 ₽",
       "note": "Имплант Osstem + циркониевая коронка",
-      "category": "implantacia",
       "attributes": [
         {
           "label": "Гарантия",
@@ -67,7 +65,9 @@
           "value": "имплант + коронка"
         }
       ],
-      "order": 30
+      "category": "implantacia",
+      "order": 30,
+      "id": "implant-turnkey"
     }
   ]
 }
