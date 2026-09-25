@@ -111,9 +111,9 @@
       "icon": "stethoscope",
       "items": [
         {
-          "title": "Лечение среднего кариеса",
-          "price": "5 800 ₽",
-          "page": ""
+          "title": "Лечение поверхностного кариеса",
+          "price": "4 800 ₽",
+          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-nachalnogo-kariesa"
         },
         {
           "title": "Лечение пульпита, 1 канал",
