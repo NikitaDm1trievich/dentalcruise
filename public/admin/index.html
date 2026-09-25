@@ -25,7 +25,9 @@
       integrity="sha384-+LjBwm1JrV6L7Nptv96H1C6SYZ0R3HTtHpta0Nuqs9o9Rtr47aPiXZaspb5VTWsM"
       crossorigin="anonymous"
     ></script>
-    <!-- Живой предпросмотр: справа настоящая страница сайта вместо списка полей -->
+    <!-- Живой предпросмотр: справа настоящая страница сайта вместо списка полей.
+         Сборка дописывает к адресу ?v=<отпечаток файла> (astro.config.mjs),
+         чтобы браузер не держал старую версию: строку не менять. -->
     <script src="./preview.js"></script>
   </body>
 </html>

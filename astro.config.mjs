@@ -2,6 +2,33 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import { createHash } from 'node:crypto';
+import { readFile, writeFile } from 'node:fs/promises';
+
+/**
+ * Редактор сайта (public/admin/index.html) подключает preview.js — шаблон
+ * живого предпросмотра. Файл лежит в public и уходит на хостинг как есть,
+ * а браузер владельца держит старую копию: редактор с новым config.yml и
+ * старым preview.js не находит шаблоны по новым именам файлов и вместо
+ * страницы сайта показывает голый список полей. Поэтому после сборки
+ * дописываем к адресу отпечаток содержимого — новая версия файла = новый
+ * адрес, кэш браузера её не подменит.
+ */
+const adminCacheBust = {
+  name: 'dc-admin-cache-bust',
+  hooks: {
+    'astro:build:done': async ({ dir, logger }) => {
+      const page = new URL('admin/index.html', dir);
+      const script = await readFile(new URL('admin/preview.js', dir));
+      const version = createHash('sha256').update(script).digest('hex').slice(0, 12);
+      const html = await readFile(page, 'utf8');
+      const next = html.replace('src="./preview.js"', `src="./preview.js?v=${version}"`);
+      if (next === html) throw new Error('admin/index.html: не найдено подключение ./preview.js');
+      await writeFile(page, next);
+      logger.info(`preview.js?v=${version}`);
+    },
+  },
+};
 
 /**
  * Домен и базовый путь берутся из окружения, чтобы одна и та же сборка
@@ -54,6 +81,7 @@ export default defineConfig({
         return { ...item, changefreq: 'monthly', priority: 0.6 };
       },
     }),
+    adminCacheBust,
   ],
   vite: {
     plugins: [tailwindcss()],
