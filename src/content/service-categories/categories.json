@@ -1,10 +1,8 @@
 {
   "items": [
     {
-      "id": "restoration",
-      "slug": "restoration",
       "title": "Эстетическая реставрация",
-      "description": "Виниры меняют форму и цвет передних зубов — без обточки под полную коронку.",
+      "description": "Виниры меняют форму и цвет передних зубов. Техник предложит вам идеальные варианты.",
       "icon": "sparkles",
       "items": [
         {
@@ -14,7 +12,8 @@
         },
         {
           "title": "Винир цельноциркониевый",
-          "price": "25 000 ₽"
+          "price": "25 000 ₽",
+          "page": "viniry-vinir-celnocirkonievyy"
         },
         {
           "title": "Винир E-max с керамической массой",
@@ -22,18 +21,19 @@
           "page": "viniry-vinir-keramicheskiy-e-max-s-naneseniem-keramicheskoy-massy"
         }
       ],
-      "order": 10
+      "order": 10,
+      "id": "restoration",
+      "slug": "restoration"
     },
     {
-      "id": "prosthetics",
-      "slug": "protezirovanie",
       "title": "Протезирование",
       "description": "Коронки, и вкладки восстанавливают разрушенные и отсутствующие зубы.",
       "icon": "crown",
       "items": [
         {
           "title": "Циркониевая коронка",
-          "price": "19 900 ₽"
+          "price": "19 900 ₽",
+          "page": ""
         },
         {
           "title": "Металлокерамическая коронка",
@@ -47,14 +47,15 @@
         },
         {
           "title": "Съёмный протез Acry-Free",
-          "price": "40 000 ₽"
+          "price": "40 000 ₽",
+          "page": ""
         }
       ],
-      "order": 20
+      "order": 20,
+      "id": "prosthetics",
+      "slug": "protezirovanie"
     },
     {
-      "id": "implants",
-      "slug": "implantacia",
       "title": "Имплантация",
       "description": "Импланты разных систем с коронкой, изготовленной в нашей лаборатории, под ключ.",
       "icon": "anchor",
@@ -66,7 +67,8 @@
         },
         {
           "title": "Astra Tech + циркониевая коронка",
-          "price": "100 000 ₽"
+          "price": "100 000 ₽",
+          "page": ""
         },
         {
           "title": "All-on-4 с немедленной нагрузкой",
@@ -74,40 +76,44 @@
           "page": "protezy-na-implantah-vse-na-4-implantah-osstem-nemedlennaya-nagruzka"
         }
       ],
-      "order": 30
+      "order": 30,
+      "id": "implants",
+      "slug": "implantacia"
     },
     {
-      "id": "surgery",
-      "slug": "hirurgiya",
       "title": "Хирургия",
       "description": "Удаление зубов любой сложности — с анестезией и контролем заживления.",
       "icon": "scissors",
       "items": [
         {
           "title": "Удаление постоянного зуба",
-          "price": "5 000 ₽"
+          "price": "5 000 ₽",
+          "page": ""
         },
         {
           "title": "Удаление зуба сложное",
-          "price": "от 6 000 ₽"
+          "price": "от 6 000 ₽",
+          "page": ""
         },
         {
           "title": "Удаление 8-го зуба",
-          "price": "От 8000 ₽"
+          "price": "От 8000 ₽",
+          "page": ""
         }
       ],
-      "order": 40
+      "order": 40,
+      "id": "surgery",
+      "slug": "hirurgiya"
     },
     {
-      "id": "therapy",
-      "slug": "terapiya",
       "title": "Терапия",
       "description": "Лечение кариеса и каналов — сохраняем собственный зуб, боремся за него.",
       "icon": "stethoscope",
       "items": [
         {
           "title": "Лечение среднего кариеса",
-          "price": "5 800 ₽"
+          "price": "5 800 ₽",
+          "page": ""
         },
         {
           "title": "Лечение пульпита, 1 канал",
@@ -120,11 +126,11 @@
           "page": "lechenie-kanalov-endodontiya-pomosch-pri-ostroy-boli"
         }
       ],
-      "order": 50
+      "order": 50,
+      "id": "therapy",
+      "slug": "terapiya"
     },
     {
-      "id": "hygiene",
-      "slug": "gigiena",
       "title": "Гигиена и отбеливание",
       "description": "Профессиональная чистка и щадящее отбеливание.",
       "icon": "sun",
@@ -141,10 +147,13 @@
         },
         {
           "title": "Отбеливание зубов Belle",
-          "price": "9 000 ₽"
+          "price": "9 000 ₽",
+          "page": ""
         }
       ],
-      "order": 60
+      "order": 60,
+      "id": "hygiene",
+      "slug": "gigiena"
     }
   ]
 }
