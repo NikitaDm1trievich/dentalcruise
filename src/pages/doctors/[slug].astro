@@ -268,6 +268,15 @@ if (years) {
               );
             })}
           </div>
+          {
+            d.servicesMore && (
+              <Reveal>
+                <p class="dc-doc-page__more" data-cms={`doctors/${doctor.id}:servicesMore`}>
+                  {d.servicesMore}
+                </p>
+              </Reveal>
+            )
+          }
         </div>
       </section>
     )
@@ -428,6 +437,19 @@ if (years) {
     gap: var(--space-6);
     grid-auto-rows: 1fr;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  }
+
+  /* Крупно под карточками: карточки — примеры, а не весь список работ
+     врача. Иначе пациент решает, что врач делает только перечисленное. */
+  .dc-doc-page__more {
+    margin: var(--space-10) 0 0;
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: var(--fw-black);
+    line-height: var(--lh-heading);
+    color: var(--text-strong);
+    text-align: center;
+    text-wrap: balance;
   }
 
   .dc-container--aside {

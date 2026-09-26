@@ -60,6 +60,9 @@ const doctors = defineCollection({
     skills: list(z.string()),
     /** Слаги услуг из service-pages, которые ведёт врач */
     services: list(z.string()),
+    /** Крупная надпись под карточками услуг («И другие виды протезирования»):
+        карточки — только примеры, врач делает больше */
+    servicesMore: text(),
     seoTitle: text(),
     seoDescription: text(),
     ...orderable,
