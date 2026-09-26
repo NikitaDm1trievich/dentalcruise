@@ -20,7 +20,10 @@ import FaqAccordion from '../../components/content/FaqAccordion.astro';
 import TrustBar from '../../components/content/TrustBar.astro';
 import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
 import { clinic } from '../../data/site';
+import { pricesPage, servicePage as copy } from '../../data/pages';
 import { pageHref } from '../../lib/asset';
+import { cmsItem, cmsList, cmsPage, cmsSite } from '../../lib/cms-ref';
+import { fill } from '../../lib/format';
 import { absolute, clampText, clinicRef, isFromPrice, priceValue } from '../../lib/seo';
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -48,10 +51,16 @@ const pricelistHref = pageHref('pricelist');
 
 /** Короткие факты в шапке — показываем только заполненные */
 const facts = [
-  s.price && { icon: 'wallet', label: 'Цена', value: s.price, note: s.priceNote },
-  s.duration && { icon: 'clock', label: 'Сроки', value: s.duration },
-  s.warranty && { icon: 'shield-check', label: 'Гарантия', value: s.warranty },
-].filter(Boolean) as { icon: string; label: string; value: string; note?: string }[];
+  s.price && { icon: 'wallet', label: copy.facts.price, key: 'price', value: s.price, note: s.priceNote },
+  s.duration && { icon: 'clock', label: copy.facts.duration, key: 'duration', value: s.duration },
+  s.warranty && { icon: 'shield-check', label: copy.facts.warranty, key: 'warranty', value: s.warranty },
+].filter(Boolean) as { icon: string; label: string; key: string; value: string; note?: string }[];
+
+/** Запись этой услуги в редакторе: блоки страницы ведут в её поля */
+const entry = `service-pages/${page.id}`;
+
+/** Метки заголовка вопросов — тот же набор уходит в предпросмотр редактора */
+const faqVars = { услуга: s.title.toLowerCase() };
 
 /**
  * Карточка услуги для поисковика: тип Service с ценой и исполнителем.
@@ -116,25 +125,32 @@ if (amount) {
     )
   }
   path={`/uslugi/${page.id}`}
-  eyebrow={category?.data.title ?? 'Услуги'}
+  eyebrow={category?.data.title ?? copy.category}
   heading={s.title}
   lead={s.lead}
   breadcrumbs={[
-    { label: 'Прайс-лист', href: pricelistHref },
+    { label: pricesPage.breadcrumb, href: pricelistHref, cms: cmsPage('prices', 'breadcrumb') },
     ...(category
-      ? [{ label: category.data.title, href: pageHref(`pricelist#${category.data.slug}`) }]
+      ? [
+          {
+            label: category.data.title,
+            href: pageHref(`pricelist#${category.data.slug}`),
+            cms: cmsItem('catalog', category.data.id, 'title'),
+          },
+        ]
       : []),
     { label: s.title },
   ]}
   schema={[serviceSchema]}
   faq={s.faq}
+  cms={entry}
 >
   <div slot="head-extra" class="dc-service__actions">
-    <Button variant="primary" size="lg" data-open="dc-book">
+    <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('service-page', 'book')}>
       <Icon slot="icon" name="calendar" size={20} />
-      Записаться на консультацию
+      {copy.book}
     </Button>
-    <Button variant="secondary" size="lg" href={clinic.phoneHref}>
+    <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
       <Icon slot="icon" name="phone" size={20} />
       {clinic.phone}
     </Button>
@@ -142,7 +158,7 @@ if (amount) {
 
   {
     facts.length > 0 && (
-      <section class="dc-section--tight dc-bg-white">
+      <section class="dc-section--tight dc-bg-white" data-cms={entry}>
         <div class="dc-container">
           <Reveal>
             <ul class="dc-facts-row" role="list">
@@ -152,7 +168,9 @@ if (amount) {
                     <Icon name={fact.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
                   </span>
                   <span class="dc-facts-row__body">
-                    <span class="dc-facts-row__label">{fact.label}</span>
+                    <span class="dc-facts-row__label" data-cms={cmsPage('service-page', `facts.${fact.key}`)}>
+                      {fact.label}
+                    </span>
                     <span class="dc-facts-row__value">{fact.value}</span>
                     {fact.note && <span class="dc-facts-row__note">{fact.note}</span>}
                   </span>
@@ -167,12 +185,12 @@ if (amount) {
 
   {
     (s.includes.length > 0 || s.indications.length > 0) && (
-      <section class="dc-section dc-bg-white">
+      <section class="dc-section dc-bg-white" data-cms={entry}>
         <div class="dc-container dc-two-col">
           {s.includes.length > 0 && (
             <Reveal>
-              <div class="dc-panel">
-                <h2>Что входит в цену</h2>
+              <div class="dc-panel" data-cms={`${entry}:includes`}>
+                <h2 data-cms={cmsPage('service-page', 'includes')}>{copy.includes}</h2>
                 <ul class="dc-checklist" role="list">
                   {s.includes.map((item) => (
                     <li>
@@ -187,8 +205,8 @@ if (amount) {
 
           {s.indications.length > 0 && (
             <Reveal delay={90}>
-              <div class="dc-panel dc-panel--quiet">
-                <h2>Когда подходит</h2>
+              <div class="dc-panel dc-panel--quiet" data-cms={`${entry}:indications`}>
+                <h2 data-cms={cmsPage('service-page', 'indications')}>{copy.indications}</h2>
                 <ul class="dc-checklist" role="list">
                   {s.indications.map((item) => (
                     <li>
@@ -207,15 +225,19 @@ if (amount) {
 
   {
     s.steps.length > 0 && (
-      <section class="dc-section dc-bg-warm">
+      <section class="dc-section dc-bg-warm" data-cms={`${entry}:steps`}>
         <div class="dc-container">
           <Reveal>
-            <SectionHeading eyebrow="Как проходит" title="Этапы работы" />
+            <SectionHeading
+              eyebrow={copy.steps.eyebrow}
+              title={copy.steps.title}
+              cms={cmsPage('service-page', 'steps')}
+            />
           </Reveal>
           <ol class="dc-steps" role="list">
             {s.steps.map((step, i) => (
               <Reveal as="li" delay={i * 70}>
-                <div class="dc-step">
+                <div class="dc-step" data-cms={`${entry}:steps.${i}`}>
                   <span class="dc-step__num">{i + 1}</span>
                   <h3>{step.title}</h3>
                   <p>{step.text}</p>
@@ -230,18 +252,18 @@ if (amount) {
 
   {
     s.prices.length > 0 && (
-      <section class="dc-section dc-bg-white">
+      <section class="dc-section dc-bg-white" data-cms={`${entry}:prices`}>
         <div class="dc-container dc-container--aside">
           <Reveal>
-            <div class="dc-aside-col">
+            <div class="dc-aside-col" data-cms={cmsPage('service-page', 'prices')}>
               <SectionHeading
                 class="dc-aside-heading"
-                eyebrow="Цены"
-                title="Сколько это стоит"
-                lead="Итоговую сумму врач называет после осмотра — до начала лечения и без доплат по ходу."
+                eyebrow={copy.prices.eyebrow}
+                title={copy.prices.title}
+                lead={copy.prices.lead}
               />
               <Button variant="secondary" href={pageHref(`pricelist#${s.category}`)}>
-                Весь раздел прайса
+                {copy.prices.all}
               </Button>
             </div>
           </Reveal>
@@ -255,21 +277,17 @@ if (amount) {
     )
   }
 
-  <section class="dc-section dc-bg-aqua">
+  <section class="dc-section dc-bg-aqua" data-cms={entry}>
     <div class="dc-container dc-two-col">
       <Reveal>
         <PhotoPlaceholder label={s.photoLabel} src={s.photo} alt={s.title} ratio="4 / 3" />
       </Reveal>
       <Reveal delay={90}>
-        <div class="dc-panel">
-          <h2>Почему у нас дешевле</h2>
-          <p>
-            Коронки, виниры и протезы делает зуботехническая лаборатория клиники — с 2013 года и в
-            том же здании, где ведут приём врачи. Между вами и техником нет подрядчика с наценкой, а
-            правки по форме и цвету вносятся на месте, часто в тот же визит.
-          </p>
+        <div class="dc-panel" data-cms={cmsPage('service-page', 'why')}>
+          <h2>{copy.why.title}</h2>
+          <p>{copy.why.text}</p>
           <div class="dc-actions">
-            <Button variant="primary" size="lg" data-open="dc-book">Записаться на приём</Button>
+            <Button variant="primary" size="lg" data-open="dc-book">{copy.why.book}</Button>
           </div>
         </div>
       </Reveal>
@@ -278,18 +296,23 @@ if (amount) {
 
   {
     s.faq.length > 0 && (
-      <section class="dc-section dc-bg-cool">
+      <section class="dc-section dc-bg-cool" data-cms={`${entry}:faq`}>
         <div class="dc-container dc-container--aside">
           <Reveal>
             <SectionHeading
               class="dc-aside-heading"
-              eyebrow="Вопросы"
-              title={`Что спрашивают про «${s.title.toLowerCase()}»`}
-              lead="Если вашего вопроса тут нет — задайте его администратору по телефону."
+              eyebrow={copy.faq.eyebrow}
+              title={fill(copy.faq.title, faqVars)}
+              titleCms={cmsPage('service-page', 'faq.title')}
+              titleVars={faqVars}
+              lead={copy.faq.lead}
+              cms={cmsPage('service-page', 'faq')}
             />
           </Reveal>
           <Reveal delay={90}>
-            <FaqAccordion items={s.faq.map((item, i) => ({ id: `svc-${i}`, q: item.q, a: item.a }))} />
+            <FaqAccordion
+              items={s.faq.map((item, i) => ({ id: `svc-${i}`, q: item.q, a: item.a, cms: `${entry}:faq.${i}` }))}
+            />
           </Reveal>
         </div>
       </section>
@@ -301,14 +324,14 @@ if (amount) {
       <section class="dc-section dc-bg-warm">
         <div class="dc-container">
           <Reveal>
-            <div class="dc-related__head">
+            <div class="dc-related__head" data-cms={cmsPage('service-page', 'related')}>
               <SectionHeading
-                eyebrow={category?.data.title ?? 'Услуги'}
-                title="Другие услуги этого направления"
+                eyebrow={category?.data.title ?? copy.category}
+                title={copy.related.title}
               />
               {category && (
                 <Button variant="secondary" href={pageHref(`pricelist#${category.data.slug}`)}>
-                  Весь прайс-лист
+                  {copy.related.all}
                   <Icon slot="icon" name="arrow-right" size={18} />
                 </Button>
               )}
@@ -319,7 +342,11 @@ if (amount) {
             <ul class="dc-related__grid" role="list">
               {siblings.slice(0, 8).map((sibling, i) => (
                 <Reveal as="li" delay={i * 50}>
-                  <a href={pageHref(`uslugi/${sibling.id}`)} class="dc-related__card">
+                  <a
+                    href={pageHref(`uslugi/${sibling.id}`)}
+                    class="dc-related__card"
+                    data-cms={`service-pages/${sibling.id}`}
+                  >
                     <span class="dc-related__title">{sibling.data.title}</span>
                     {sibling.data.price && <span class="dc-related__price">{sibling.data.price}</span>}
                   </a>
@@ -332,7 +359,7 @@ if (amount) {
     )
   }
 
-  <section class="dc-section--tight dc-bg-white">
+  <section class="dc-section--tight dc-bg-white" data-cms={cmsList('trust')}>
     <div class="dc-container">
       <Reveal>
         <TrustBar items={trust.map((t) => t.data)} />

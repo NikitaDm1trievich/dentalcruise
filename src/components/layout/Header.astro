@@ -9,8 +9,9 @@
 import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
 import BrandIcon from '../core/BrandIcon.astro';
-import { clinic, navLinks } from '../../data/site';
+import { clinic, menu } from '../../data/site';
 import { pageHref, withBase } from '../../lib/asset';
+import { cmsItem, cmsSite } from '../../lib/cms-ref';
 import { getCollection } from 'astro:content';
 
 interface Props {
@@ -31,13 +32,16 @@ const categories = (await getCollection('service-categories')).sort(
 /* Ссылки на страницы — только через pageHref: адрес со слешем на конце
    совпадает с canonical и картой сайта, без лишнего редиректа. */
 const pricelistHref = pageHref('pricelist');
-const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelist');
 ---
 
-<div class:list={['dc-header', overHero && 'dc-header--over-hero']} data-scrolled={String(!overHero)}>
+<div
+  class:list={['dc-header', overHero && 'dc-header--over-hero']}
+  data-scrolled={String(!overHero)}
+  data-cms={cmsSite('menu')}
+>
   <header class="dc-header__bar">
     <div class="dc-header__inner">
-      <a href={base} class="dc-header__logo" aria-label={`${clinic.name} — на главную`}>
+      <a href={base} class="dc-header__logo" aria-label={`${clinic.name} — на главную`} data-cms-lock="logo">
         <img src={logo} alt={clinic.name} width="180" height="44" />
       </a>
 
@@ -48,8 +52,9 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
             class="dc-header__nav-toggle"
             aria-expanded="false"
             aria-controls="header-services"
+            data-cms={cmsSite('menu', 'services.label')}
           >
-            Услуги
+            {menu.services.label}
             <Icon name="chevron-down" size={16} />
           </button>
           <div class="dc-header__dropdown" id="header-services">
@@ -57,18 +62,22 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
               {
                 categories.map((cat) => (
                   <li>
-                    <a href={pageHref(`pricelist#${cat.data.slug}`)}>{cat.data.title}</a>
+                    <a href={pageHref(`pricelist#${cat.data.slug}`)} data-cms={cmsItem('catalog', cat.data.id, 'title')}>{cat.data.title}</a>
                   </li>
                 ))
               }
             </ul>
-            <a href={pricelistHref} class="dc-header__dropdown-all">
-              Весь прайс-лист
+            <a href={pricelistHref} class="dc-header__dropdown-all" data-cms={cmsSite('menu', 'services.all')}>
+              {menu.services.all}
               <Icon name="arrow-right" size={16} />
             </a>
           </div>
         </div>
-        {restLinks.map((link) => <a href={pageHref(link.href)}>{link.label}</a>)}
+        {
+          menu.main.map((link, i) => (
+            <a href={pageHref(link.href)} data-cms={cmsSite('menu', `main.${i}`)}>{link.label}</a>
+          ))
+        }
       </nav>
 
       <div class="dc-header__contacts">
@@ -79,31 +88,50 @@ const restLinks = navLinks.filter((l) => l.href !== '/' && l.href !== '/pricelis
             rel="noopener"
             class="dc-header__address"
             title="Открыть на Яндекс Картах"
+            data-cms={cmsSite('clinic', 'address.streetShort')}
           >
             <Icon name="map-pin" size={14} />
             {clinic.address.streetShort}
           </a>
-          <span class="dc-header__schedule">{clinic.scheduleShort}</span>
+          <span class="dc-header__schedule" data-cms={cmsSite('clinic', 'scheduleShort')}>{clinic.scheduleShort}</span>
         </div>
-        <a href={clinic.phoneHref} class="dc-header__phone">{clinic.phone}</a>
+        <a href={clinic.phoneHref} class="dc-header__phone" data-cms={cmsSite('clinic', 'phone')}>{clinic.phone}</a>
       </div>
 
       <div class="dc-header__actions">
         {
           max && (
-            <IconButton label="Написать в Max" href={max} size={44} class="dc-header__social">
+            <IconButton
+              label="Написать в Max"
+              href={max}
+              size={44}
+              class="dc-header__social"
+              data-cms={cmsSite('clinic', 'links.max')}
+            >
               <BrandIcon name="max" size={20} />
             </IconButton>
           )
         }
         {
           vk && (
-            <IconButton label="Написать во ВКонтакте" href={vk} size={44} class="dc-header__social">
+            <IconButton
+              label="Написать во ВКонтакте"
+              href={vk}
+              size={44}
+              class="dc-header__social"
+              data-cms={cmsSite('clinic', 'links.vk')}
+            >
               <BrandIcon name="vk" size={20} />
             </IconButton>
           )
         }
-        <IconButton label={`Позвонить ${clinic.phone}`} href={clinic.phoneHref} variant="accent" size={44}>
+        <IconButton
+          label={`Позвонить ${clinic.phone}`}
+          href={clinic.phoneHref}
+          variant="accent"
+          size={44}
+          data-cms={cmsSite('clinic', 'phone')}
+        >
           <Icon name="phone" size={20} />
         </IconButton>
 

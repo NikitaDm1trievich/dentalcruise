@@ -8,9 +8,10 @@
  * метро столкнулся бы с коралловым, который у нас закреплён за акциями.
  */
 import { clinic } from '../../data/site';
+import { cmsSite } from '../../lib/cms-ref';
 
 interface Props {
-  /** Приписка вроде «5 минут пешком» — идёт после списка станций */
+  /** Приписка вроде «5 минут пешком» (clinic.metroWalk) — идёт после списка станций */
   note?: string;
 }
 
@@ -18,7 +19,7 @@ const { note } = Astro.props;
 const stations = clinic.metroStations;
 ---
 
-<span class="dc-metro">
+<span class="dc-metro" data-cms={cmsSite('clinic', 'metroStations')}>
   <svg class="dc-metro__logo" viewBox="337.5 232.3 125 85.9" role="img" aria-label="метро">
     <polygon
       fill="currentColor"
@@ -38,7 +39,7 @@ const stations = clinic.metroStations;
     ))
   }
 
-  {note && <span class="dc-metro__note">{note}</span>}
+  {note && <span class="dc-metro__note" data-cms={cmsSite('clinic', 'metroWalk')}>{note}</span>}
 </span>
 
 <style>

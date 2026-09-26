@@ -12,7 +12,9 @@ import Icon from '../components/core/Icon.astro';
 import PhotoPlaceholder from '../components/media/PhotoPlaceholder.astro';
 import TrustBar from '../components/content/TrustBar.astro';
 import { clinic } from '../data/site';
+import { doctorPage, teamPage as page } from '../data/pages';
 import { pageHref } from '../lib/asset';
+import { cmsList, cmsPage, cmsSite } from '../lib/cms-ref';
 
 type Ordered = { data: { order: number } };
 const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
@@ -25,19 +27,25 @@ const trust = (await getCollection('trust')).sort(byOrder);
  * руками и отстали от жизни: обещали зубного техника и керамиста, которых
  * владелец уже удалил, и стаж, которого ни у кого нет. Список врачей
  * меняется через редактор, поэтому и текст должен считаться из данных.
+ * Владелец может задать их сам в «Страницы сайта» → «Врачи — страница
+ * списка»; пустые поля — собираем, как раньше.
  */
 const specialities = [...new Set(doctors.map((d) => d.data.speciality.toLowerCase().split(/,\s*/)).flat())];
 const names = doctors.map((d) => d.data.name).join(', ');
 ---
 
 <PageLayout
-  title={`Врачи стоматологии «${clinic.name}» — ${specialities.join(', ')}`}
-  description={`Команда клиники «${clinic.name}»: ${names}. Своя зуботехническая лаборатория, ${clinic.address.locality}, ${clinic.address.streetShort}.`}
+  title={page.seo.title || `Врачи стоматологии «${clinic.name}» — ${specialities.join(', ')}`}
+  description={
+    page.seo.description ||
+    `Команда клиники «${clinic.name}»: ${names}. Своя зуботехническая лаборатория, ${clinic.address.locality}, ${clinic.address.streetShort}.`
+  }
   path="/doctors"
-  eyebrow="Врачи"
-  heading="Команда, которая работает вместе"
-  lead="Врач и зубной техник обсуждают вашу работу лично — они принимают в одном здании, а не переписываются с подрядчиком."
-  breadcrumbs={[{ label: 'Врачи' }]}
+  eyebrow={page.eyebrow}
+  heading={page.heading}
+  lead={page.lead}
+  breadcrumbs={[{ label: page.breadcrumb }]}
+  cms={cmsPage('team')}
 >
   <section class="dc-section dc-bg-white">
     <div class="dc-container">
@@ -45,7 +53,7 @@ const names = doctors.map((d) => d.data.name).join(', ');
         {
           doctors.map((doctor, i) => (
             <Reveal as="li" delay={i * 70}>
-              <a href={pageHref(`doctors/${doctor.id}`)} class="dc-team__card">
+              <a href={pageHref(`doctors/${doctor.id}`)} class="dc-team__card" data-cms={`doctors/${doctor.id}`}>
                 <PhotoPlaceholder
                   label={doctor.data.photoLabel}
                   src={doctor.data.photo}
@@ -57,10 +65,10 @@ const names = doctors.map((d) => d.data.name).join(', ');
                 <span class="dc-team__body">
                   <span class="dc-team__name">{doctor.data.name}</span>
                   <span class="dc-team__spec">{doctor.data.speciality}</span>
-                  <span class="dc-team__exp">Стаж {doctor.data.experience}</span>
+                  <span class="dc-team__exp">{doctorPage.experience} {doctor.data.experience}</span>
                   <span class="dc-team__note">{doctor.data.note}</span>
-                  <span class="dc-team__more">
-                    Подробнее о враче
+                  <span class="dc-team__more" data-cms={cmsPage('team', 'more')}>
+                    {page.more}
                     <Icon name="arrow-right" size={16} />
                   </span>
                 </span>
@@ -72,11 +80,11 @@ const names = doctors.map((d) => d.data.name).join(', ');
 
       <Reveal delay={320}>
         <div class="dc-actions">
-          <Button variant="primary" size="lg" data-open="dc-book">
+          <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('team', 'book')}>
             <Icon slot="icon" name="calendar" size={20} />
-            Записаться на приём
+            {page.book}
           </Button>
-          <Button variant="secondary" size="lg" href={clinic.phoneHref}>
+          <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
             <Icon slot="icon" name="phone" size={20} />
             {clinic.phone}
           </Button>
@@ -85,7 +93,7 @@ const names = doctors.map((d) => d.data.name).join(', ');
     </div>
   </section>
 
-  <section class="dc-section--tight dc-bg-cool">
+  <section class="dc-section--tight dc-bg-cool" data-cms={cmsList('trust')}>
     <div class="dc-container">
       <Reveal>
         <TrustBar items={trust.map((t) => t.data)} />

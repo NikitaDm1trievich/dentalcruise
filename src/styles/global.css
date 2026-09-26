@@ -401,6 +401,10 @@ a:hover {
 .dc-cms-pick [data-cms] {
   cursor: pointer;
 }
+/* Блок без поля в редакторе (виджет карты, логотип): нажимать нечего. */
+.dc-cms-pick [data-cms-lock] {
+  cursor: not-allowed;
+}
 /* Виджеты Яндекса — чужие фреймы: они перехватили бы наведение и клик. */
 .dc-cms-pick iframe {
   pointer-events: none;

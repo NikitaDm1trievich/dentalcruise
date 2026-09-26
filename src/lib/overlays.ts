@@ -39,7 +39,12 @@ export function closeOverlay(): void {
   opener?.focus();
 }
 
-export function openOverlay(id: string, opener: HTMLElement | null = null): void {
+/**
+ * `focus: false` — открыть, не перенося фокус внутрь. Нужно предпросмотру
+ * редактора: там окно открывается само, а фокус во фрейме забирал бы его у
+ * формы редактора, и набранная буква пропадала.
+ */
+export function openOverlay(id: string, opener: HTMLElement | null = null, { focus = true } = {}): void {
   const root = document.getElementById(id);
   if (!root) return;
   if (open) {
@@ -58,7 +63,7 @@ export function openOverlay(id: string, opener: HTMLElement | null = null): void
   open = { root, opener };
   lockScroll(true);
 
-  root.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+  if (focus) root.querySelector<HTMLElement>(FOCUSABLE)?.focus();
 }
 
 export function initOverlays(): void {

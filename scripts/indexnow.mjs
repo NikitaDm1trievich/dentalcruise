@@ -25,8 +25,9 @@ if (!base) {
   process.exit(0);
 }
 
-const key = JSON.parse(readFileSync(new URL('../src/data/seo.json', import.meta.url), 'utf8'))
-  .indexNowKey.trim();
+const key = (
+  JSON.parse(readFileSync(new URL('../src/data/seo.json', import.meta.url), 'utf8')).indexNowKey ?? ''
+).trim();
 if (!key) {
   console.log('IndexNow: ключ в редакторе не заполнен — уведомление пропущено.');
   process.exit(0);

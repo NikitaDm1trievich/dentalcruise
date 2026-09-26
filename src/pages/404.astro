@@ -1,13 +1,16 @@
 ---
 import StubLayout from '../layouts/StubLayout.astro';
+import { notFoundPage as page } from '../data/pages';
+import { cmsPage } from '../lib/cms-ref';
 ---
 
 <StubLayout
-  title="Страница не найдена — Дентал Круиз"
-  description="Такой страницы на сайте клиники «Дентал Круиз» нет."
+  title={page.seo.title}
+  description={page.seo.description}
   path="/404"
   noindex
-  eyebrow="Ошибка 404"
-  heading="Такой страницы нет"
-  lead="Возможно, ссылка устарела или в адресе опечатка. Вернитесь на главную или позвоните — подскажем."
+  eyebrow={page.eyebrow}
+  heading={page.heading}
+  lead={page.lead}
+  cms={cmsPage('not-found')}
 />

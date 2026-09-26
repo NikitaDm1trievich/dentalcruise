@@ -13,74 +13,46 @@ import MetroStations from '../components/core/MetroStations.astro';
 import BrandIcon from '../components/core/BrandIcon.astro';
 import YandexEmbed from '../components/content/YandexEmbed.astro';
 import { clinic } from '../data/site';
+import { blocks } from '../data/ui';
+import { contactsPage as page } from '../data/pages';
+import { cmsPage, cmsSite } from '../lib/cms-ref';
 import { clampText } from '../lib/seo';
 
 const { yandexPin, yandexOrg, vk, max, instagram } = clinic.links;
-
-/** Мелкие блоки под картой — каждый отвечает на один вопрос */
-const blocks = [
-  {
-    icon: 'train',
-    title: 'На метро',
-    /** Станции выводим знаком метро с кругами линий, а не строкой */
-    metro: true,
-    lines: ['Выход к 4-й Магистральной улице, дальше вдоль домов до дома 5с1.'],
-  },
-  {
-    icon: 'car',
-    title: 'На машине',
-    metro: false,
-    lines: [
-      'Съезд с Хорошёвского шоссе на 4-ю Магистральную.',
-      'Парковка вдоль улицы рядом со входом.',
-    ],
-  },
-  {
-    icon: 'clock',
-    title: 'Режим приёма',
-    metro: false,
-    lines: [clinic.scheduleLong, 'Приём по записи, в день обращения — по свободному времени.'],
-  },
-  {
-    icon: 'phone',
-    title: 'Как записаться',
-    metro: false,
-    lines: [
-      'Позвоните или оставьте заявку — администратор перезвонит и подберёт время.',
-      'Первичная консультация со снимком и планом лечения — бесплатно.',
-    ],
-  },
-];
 ---
 
+{/* Тексты — в редакторе, «Страницы сайта» → «Контакты». Адрес, телефон,
+    режим работы и метро — в «Шапка, подвал и контакты». Мелкие блоки под
+    картой: каждый отвечает на один вопрос; станции метро и режим работы
+    берутся из контактов клиники галочками, а не строками. */}
 <PageLayout
-  title="Контакты и схема проезда — Дентал Круиз, м. Полежаевская"
-  description={clampText(
-    'Как добраться до клиники «Дентал Круиз»: 5 минут от м. Полежаевская, Москва, 4-я Магистральная, 5с1, 2 этаж. Пн–сб 10:00–22:00, тел. +7 925 577-76-77.',
-  )}
+  title={page.seo.title}
+  description={clampText(page.seo.description)}
   path="/contacts"
-  eyebrow="Контакты"
-  heading="Приезжайте или позвоните"
+  eyebrow={page.eyebrow}
+  heading={page.heading}
   lead={`${clinic.address.locality}, ${clinic.address.street}. ${clinic.scheduleLong}.`}
-  breadcrumbs={[{ label: 'Контакты' }]}
+  breadcrumbs={[{ label: page.breadcrumb }]}
   hideContactsCta
+  cms={cmsPage('contacts')}
+  leadCms={cmsSite('clinic')}
 >
   <p slot="head-extra" class="dc-lead-metro">
-    <MetroStations note="5 минут пешком" />
+    <MetroStations note={clinic.metroWalk} />
   </p>
 
   <div slot="head-extra" class="dc-actions">
-    <Button variant="primary" size="lg" data-open="dc-book">
+    <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('contacts', 'book')}>
       <Icon slot="icon" name="calendar" size={20} />
-      Записаться на приём
+      {page.book}
     </Button>
-    <Button variant="secondary" size="lg" href={clinic.phoneHref}>
+    <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
       <Icon slot="icon" name="phone" size={20} />
       {clinic.phone}
     </Button>
-    <Button variant="ghost" size="lg" href={yandexPin}>
+    <Button variant="ghost" size="lg" href={yandexPin} data-cms={cmsPage('contacts', 'route')}>
       <Icon slot="icon" name="navigation" size={20} />
-      Построить маршрут
+      {page.route}
     </Button>
   </div>
 
@@ -96,33 +68,35 @@ const blocks = [
           title="Дентал Круиз на Яндекс Картах"
           height={440}
           linkHref={yandexOrg}
-          linkLabel={`${clinic.address.streetShort} · ${clinic.metro} — открыть в Яндекс Картах`}
+          linkLabel={`${clinic.address.streetShort} · ${clinic.metro} — ${blocks.place.mapLink}`}
+          cms={cmsSite('blocks', 'place.mapLink')}
         />
       </Reveal>
     </div>
   </section>
 
-  <section class="dc-section dc-bg-warm">
+  <section class="dc-section dc-bg-warm" data-cms={cmsPage('contacts', 'way')}>
     <div class="dc-container">
       <Reveal>
-        <SectionHeading eyebrow="Дорога" title="Как до нас добраться" />
+        <SectionHeading eyebrow={page.way.eyebrow} title={page.way.title} />
       </Reveal>
 
       <ul class="dc-info" role="list">
         {
-          blocks.map((block, i) => (
+          page.way.blocks.map((block, i) => (
             <Reveal as="li" delay={i * 70}>
-              <div class="dc-info__card">
+              <div class="dc-info__card" data-cms={cmsPage('contacts', `way.blocks.${i}`)}>
                 <span class="dc-info__icon">
                   <Icon name={block.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
                 </span>
                 <h3>{block.title}</h3>
                 {block.metro && (
                   <p>
-                    <MetroStations note="5 минут пешком" />
+                    <MetroStations note={clinic.metroWalk} />
                   </p>
                 )}
-                {block.lines.map((line) => (
+                {block.schedule && <p data-cms={cmsSite('clinic', 'scheduleLong')}>{clinic.scheduleLong}</p>}
+                {(block.lines ?? []).map((line) => (
                   <p>{line}</p>
                 ))}
               </div>
@@ -136,23 +110,20 @@ const blocks = [
   <section class="dc-section dc-bg-aqua">
     <div class="dc-container dc-two-col">
       <Reveal>
-        <div class="dc-panel">
-          <h2>Написать нам</h2>
-          <p>
-            Если звонить неудобно — напишите в мессенджер или на почту. Отвечаем в рабочие часы
-            клиники.
-          </p>
+        <div class="dc-panel" data-cms={cmsPage('contacts', 'write')}>
+          <h2>{page.write.title}</h2>
+          <p>{page.write.text}</p>
           <ul class="dc-links" role="list">
             <li>
               <Icon name="mail" size={20} color="var(--text-accent)" />
-              <a href={`mailto:${clinic.email}`}>{clinic.email}</a>
+              <a href={`mailto:${clinic.email}`} data-cms={cmsSite('clinic', 'email')}>{clinic.email}</a>
             </li>
             {
               max && (
                 <li>
                   <span class="dc-links__mark"><BrandIcon name="max" size={20} /></span>
                   <a href={max} target="_blank" rel="noopener">
-                    Написать в Max
+                    {page.write.max}
                   </a>
                 </li>
               )
@@ -162,7 +133,7 @@ const blocks = [
                 <li>
                   <span class="dc-links__mark"><BrandIcon name="vk" size={20} /></span>
                   <a href={vk} target="_blank" rel="noopener">
-                    Группа ВКонтакте
+                    {page.write.vk}
                   </a>
                 </li>
               )
@@ -184,14 +155,11 @@ const blocks = [
       </Reveal>
 
       <Reveal delay={90}>
-        <div class="dc-panel">
-          <h2>Документы</h2>
-          <p>
-            Клиника работает по лицензии на медицинскую деятельность. Скан лицензии и приложение
-            показываем по запросу на приёме и в отдельном окне на сайте.
-          </p>
+        <div class="dc-panel" data-cms={cmsPage('contacts', 'docs')}>
+          <h2>{page.docs.title}</h2>
+          <p>{page.docs.text}</p>
           <div class="dc-actions">
-            <Button variant="secondary" data-open="dc-license">Посмотреть лицензию</Button>
+            <Button variant="secondary" data-open="dc-license">{page.docs.button}</Button>
           </div>
         </div>
       </Reveal>

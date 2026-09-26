@@ -18,7 +18,9 @@ import SectionHeading from '../../components/core/SectionHeading.astro';
 import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
 import ServiceCatalogCard from '../../components/content/ServiceCatalogCard.astro';
 import { clinic } from '../../data/site';
+import { doctorPage as copy, teamPage } from '../../data/pages';
 import { pageHref } from '../../lib/asset';
+import { cmsPage, cmsSite } from '../../lib/cms-ref';
 import { absolute, clampText, clinicRef, experienceYears } from '../../lib/seo';
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -110,24 +112,28 @@ if (years) {
     )
   }
   path={`/doctors/${doctor.id}`}
-  eyebrow={`${d.speciality} · стаж ${d.experience}`}
+  eyebrow={`${d.speciality} · ${copy.experience.toLowerCase()} ${d.experience}`}
   heading={d.name}
   lead={d.note}
-  breadcrumbs={[{ label: 'Врачи', href: doctorsHref }, { label: d.name }]}
+  breadcrumbs={[
+    { label: teamPage.breadcrumb, href: doctorsHref, cms: cmsPage('team', 'breadcrumb') },
+    { label: d.name },
+  ]}
   schema={[doctorSchema]}
+  cms={`doctors/${doctor.id}`}
 >
   <div slot="head-extra" class="dc-doc-page__actions">
-    <Button variant="primary" size="lg" data-open="dc-book">
+    <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('doctor-page', 'book')}>
       <Icon slot="icon" name="calendar" size={20} />
-      Записаться к врачу
+      {copy.book}
     </Button>
-    <Button variant="secondary" size="lg" href={clinic.phoneHref}>
+    <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
       <Icon slot="icon" name="phone" size={20} />
       {clinic.phone}
     </Button>
   </div>
 
-  <section class="dc-section dc-bg-white">
+  <section class="dc-section dc-bg-white" data-cms={`doctors/${doctor.id}`}>
     <div class="dc-container dc-doc-page__top">
       <Reveal>
         <PhotoPlaceholder
@@ -143,7 +149,7 @@ if (years) {
           {
             d.about.length > 0 && (
               <div class="dc-doc-page__about">
-                <h2>О враче</h2>
+                <h2 data-cms={cmsPage('doctor-page', 'about')}>{copy.about}</h2>
                 {d.about.map((paragraph) => (
                   <p>{paragraph}</p>
                 ))}
@@ -154,7 +160,7 @@ if (years) {
           {
             d.skills.length > 0 && (
               <div class="dc-panel">
-                <h2>Что делает</h2>
+                <h2 data-cms={cmsPage('doctor-page', 'skills')}>{copy.skills}</h2>
                 <ul class="dc-checklist" role="list">
                   {d.skills.map((skill) => (
                     <li>
@@ -175,10 +181,15 @@ if (years) {
 
   {
     d.education.length > 0 && (
-      <section class="dc-section dc-bg-warm">
+      <section class="dc-section dc-bg-warm" data-cms={`doctors/${doctor.id}:education`}>
         <div class="dc-container dc-container--aside">
           <Reveal>
-            <SectionHeading class="dc-aside-heading" eyebrow="Подготовка" title="Образование и курсы" />
+            <SectionHeading
+              class="dc-aside-heading"
+              eyebrow={copy.education.eyebrow}
+              title={copy.education.title}
+              cms={cmsPage('doctor-page', 'education')}
+            />
           </Reveal>
           <Reveal delay={90}>
             <div class="dc-edu">
@@ -198,7 +209,11 @@ if (years) {
                       он отделяет курсы от дипломов. Если годов нет вовсе,
                       список идёт прямо под «Образование и курсы» — иначе
                       диплом вуза оказался бы подписан как курс. */}
-                  {dated.length > 0 && <h3 class="dc-edu__subtitle">Курсы и повышение квалификации</h3>}
+                  {dated.length > 0 && (
+                    <h3 class="dc-edu__subtitle" data-cms={cmsPage('doctor-page', 'education.courses')}>
+                      {copy.education.courses}
+                    </h3>
+                  )}
                   <ul class="dc-edu__list" role="list">
                     {undated.map((row) => (
                       <li>{row.text}</li>
@@ -215,13 +230,14 @@ if (years) {
 
   {
     services.length > 0 && (
-      <section class="dc-section dc-bg-aqua">
+      <section class="dc-section dc-bg-aqua" data-cms={`doctors/${doctor.id}:services`}>
         <div class="dc-container">
           <Reveal>
             <SectionHeading
-              eyebrow="Услуги"
-              title="Что можно сделать у этого врача"
-              lead="Цены — за единицу работы. Итоговую сумму врач называет после осмотра."
+              eyebrow={copy.services.eyebrow}
+              title={copy.services.title}
+              lead={copy.services.lead}
+              cms={cmsPage('doctor-page', 'services')}
             />
           </Reveal>
           <div class="dc-catalog-grid">
@@ -246,6 +262,7 @@ if (years) {
                     icon={category?.data.icon ?? 'sparkles'}
                     items={items}
                     href={pageHref(`uslugi/${page.id}`)}
+                    cms={`service-pages/${page.id}`}
                   />
                 </Reveal>
               );
@@ -259,14 +276,14 @@ if (years) {
   <section class="dc-section--tight dc-bg-white">
     <div class="dc-container">
       <Reveal>
-        <div class="dc-doc-page__foot">
+        <div class="dc-doc-page__foot" data-cms={cmsPage('doctor-page', 'foot')}>
           <p>
-            Приём по записи: {clinic.scheduleLong}. {clinic.address.locality},
+            {copy.foot.text} {clinic.scheduleLong}. {clinic.address.locality},
             {' '}{clinic.address.street}.
           </p>
           <div class="dc-actions">
-            <Button variant="primary" size="lg" data-open="dc-book">Записаться на приём</Button>
-            <Button variant="ghost" size="lg" href={doctorsHref}>Все врачи</Button>
+            <Button variant="primary" size="lg" data-open="dc-book">{copy.foot.book}</Button>
+            <Button variant="ghost" size="lg" href={doctorsHref}>{copy.foot.all}</Button>
           </div>
         </div>
       </Reveal>

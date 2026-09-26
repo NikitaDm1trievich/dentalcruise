@@ -7,6 +7,11 @@ import Icon from '../core/Icon.astro';
 import Button from '../core/Button.astro';
 import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
 import { clinic } from '../../data/site';
+import { blocks } from '../../data/ui';
+import { withBase } from '../../lib/asset';
+import { cmsSite } from '../../lib/cms-ref';
+
+const copy = blocks.license;
 ---
 
 <div class="dc-drawer" id="dc-license" data-state="closed" aria-hidden="true" inert>
@@ -17,6 +22,7 @@ import { clinic } from '../../data/site';
     role="dialog"
     aria-modal="true"
     aria-labelledby="dc-license-title"
+    data-cms={cmsSite('blocks', 'license')}
   >
     <div aria-hidden="true" class="dc-drawer__grip"></div>
 
@@ -25,16 +31,16 @@ import { clinic } from '../../data/site';
         <span class="dc-drawer__mark">
           <Icon name="shield-check" size={24} color="var(--text-accent)" />
         </span>
-        <h2 id="dc-license-title">Лицензия</h2>
+        <h2 id="dc-license-title">{copy.title}</h2>
       </div>
       <p>
-        {clinic.license.title} выдана на клинику «{clinic.name}», {clinic.address.locality},
-        {clinic.address.streetShort}. Документ можно посмотреть здесь или запросить в клинике.
+        {clinic.license.title} {copy.issued} «{clinic.name}», {clinic.address.locality},
+        {clinic.address.streetShort}. {copy.note}
       </p>
     </div>
 
     <PhotoPlaceholder
-      label="Здесь скан лицензии на медицинскую деятельность"
+      label={copy.scanLabel}
       src={clinic.license.scan || undefined}
       alt={clinic.license.title}
       ratio="3 / 4"
@@ -43,12 +49,19 @@ import { clinic } from '../../data/site';
     <div class="dc-drawer__actions">
       {
         clinic.license.pdf && (
-          <Button variant="primary" size="lg" fullWidth href={clinic.license.pdf} target="_blank" rel="noopener">
-            Открыть документ
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            href={withBase(clinic.license.pdf)}
+            target="_blank"
+            rel="noopener"
+          >
+            {copy.open}
           </Button>
         )
       }
-      <Button variant="secondary" size="lg" fullWidth data-close>Закрыть</Button>
+      <Button variant="secondary" size="lg" fullWidth data-close>{copy.close}</Button>
     </div>
   </section>
 </div>

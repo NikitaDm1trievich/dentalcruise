@@ -11,6 +11,7 @@
 import Icon from '../core/Icon.astro';
 import PhotoPlaceholder from './PhotoPlaceholder.astro';
 import { withBase } from '../../lib/asset';
+import type { CmsLock } from '../../lib/cms-ref';
 
 interface Props {
   photos?: string[];
@@ -23,6 +24,8 @@ interface Props {
   interval?: number;
   cover?: boolean;
   class?: string;
+  /** Фото лежат файлами в папке, а не в записи редактора: замок в предпросмотре */
+  cmsLock?: CmsLock;
 }
 
 const {
@@ -34,6 +37,7 @@ const {
   interval = 5000,
   cover = false,
   class: className,
+  cmsLock,
 } = Astro.props;
 
 const many = photos.length > 1;
@@ -48,6 +52,7 @@ const many = photos.length > 1;
       style={`--dc-gal-ratio:${ratio};--dc-gal-radius:${radius}`}
       data-gallery
       data-interval={many ? interval : 0}
+      data-cms-lock={cmsLock}
     >
       <div class="dc-gal__frame">
         {photos.map((src, i) => (

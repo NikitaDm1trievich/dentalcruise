@@ -14,9 +14,7 @@ import copy from '../../data/home.json';
 interface Props {
   note?: string;
 }
-const {
-  note = 'Мы не публикуем придуманные отзывы — читайте настоящие в карточке клиники на Яндекс Картах.',
-} = Astro.props;
+const { note = copy.reviews.cardNote } = Astro.props;
 
 const value = copy.reviews.rating.value;
 const count = copy.reviews.count.value;
@@ -41,13 +39,19 @@ const filled = Math.round(value);
         ))
       }
     </span>
-    <span class="dc-reviews__count"><CountUp value={count} /> отзывов</span>
+    <span class="dc-reviews__count" data-cms={cmsText('reviews.count')}><CountUp value={count} /> {copy.reviews.countLabel}</span>
   </div>
 
-  <p class="dc-reviews__note">{note}</p>
+  <p class="dc-reviews__note" data-cms={cmsText('reviews.cardNote')}>{note}</p>
 
-  <Button variant="secondary" href={clinic.links.yandexOrg} target="_blank" rel="noopener">
-    Смотреть отзывы на Яндекс Картах
+  <Button
+    variant="secondary"
+    href={clinic.links.yandexOrg}
+    target="_blank"
+    rel="noopener"
+    data-cms={cmsText('reviews.cardButton')}
+  >
+    {copy.reviews.cardButton}
     <Icon slot="icon-right" name="arrow-up-right" size={20} />
   </Button>
 </div>

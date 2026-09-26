@@ -15,20 +15,23 @@ import Button from '../core/Button.astro';
 import Icon from '../core/Icon.astro';
 import BrandIcon from '../core/BrandIcon.astro';
 import { clinic } from '../../data/site';
+import { form } from '../../data/ui';
 import { pageHref } from '../../lib/asset';
+import { cmsSite } from '../../lib/cms-ref';
 
 const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
+const { fields, done } = form;
 ---
 
 <form class="dc-form" data-booking-form data-endpoint={endpoint} novalidate>
   <div class="dc-field">
-    <label for="dc-name">Ваше имя</label>
+    <label for="dc-name">{fields.name}</label>
     <input id="dc-name" name="name" type="text" required autocomplete="name" maxlength="80" />
     <p class="dc-field__error" id="dc-name-error" hidden></p>
   </div>
 
   <div class="dc-field">
-    <label for="dc-contact">Телефон</label>
+    <label for="dc-contact">{fields.phone}</label>
     <!-- maxlength с запасом к маске: вставка «+7 (925) 577-76-77» не должна обрезаться до форматирования -->
     <input
       id="dc-contact"
@@ -38,15 +41,15 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
       autocomplete="tel"
       inputmode="tel"
       maxlength="40"
-      placeholder="+7 900 000-00-00"
+      placeholder={fields.phonePlaceholder}
       aria-describedby="dc-contact-hint"
     />
     <p class="dc-field__error" id="dc-contact-error" hidden></p>
-    <span class="dc-field__hint" id="dc-contact-hint">Перезвоним или напишем в Max</span>
+    <span class="dc-field__hint" id="dc-contact-hint">{fields.phoneHint}</span>
   </div>
 
   <div class="dc-field">
-    <label for="dc-comment">Что беспокоит (необязательно)</label>
+    <label for="dc-comment">{fields.comment}</label>
     <textarea id="dc-comment" name="comment" rows="3" maxlength="600"></textarea>
   </div>
 
@@ -69,36 +72,36 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
       <!-- Ссылка внутри label: клик по интерактивному потомку по спецификации
            не переключает чекбокс, а Tab доходит до ссылки как до любой другой -->
       <span>
-        Согласен на обработку персональных данных —
-        <a href={pageHref('privacy')} target="_blank" rel="noopener">политика конфиденциальности</a>
+        {fields.consent}
+        <a href={pageHref('privacy')} target="_blank" rel="noopener">{fields.consentLink}</a>
       </span>
     </label>
     <p class="dc-field__error" id="dc-consent-error" hidden></p>
   </div>
 
-  <Button type="submit" variant="primary" size="lg" fullWidth>Оставить заявку</Button>
+  <Button type="submit" variant="primary" size="lg" fullWidth>{form.submit}</Button>
 
   <p class="dc-form__error" data-form-error hidden role="alert"></p>
 
   <p class="dc-form__fallback">
-    Или просто позвоните: <a href={clinic.phoneHref}>{clinic.phone}</a>
+    {form.fallback} <a href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>{clinic.phone}</a>
   </p>
 </form>
 
 <div class="dc-form-done" data-booking-done hidden tabindex="-1" role="status" aria-live="polite">
   <Icon name="circle-check" size={34} color="var(--text-accent)" />
-  <h3>Заявка отправлена</h3>
-  <p>Перезвоним в рабочее время — {clinic.scheduleShort}.</p>
+  <h3>{done.title}</h3>
+  <p>{done.text} {clinic.scheduleShort}.</p>
   <div class="dc-form-done__actions">
     <Button href={clinic.phoneHref} variant="primary">
       <Icon slot="icon" name="phone" size={20} />
-      Позвонить
+      {done.call}
     </Button>
     {
       clinic.links.max && (
         <Button href={clinic.links.max} variant="secondary" target="_blank" rel="noopener">
           <BrandIcon slot="icon" name="max" size={20} />
-          Написать в Max
+          {done.max}
         </Button>
       )
     }
@@ -241,6 +244,9 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
 
 <script>
   import { maskPhone, phoneToE164 } from '../../lib/phone';
+  // Сообщения формы правит владелец в редакторе («Шапка, подвал и
+  // контакты» → «Форма записи»). В браузер уходит только этот файл.
+  import copy from '../../data/form.json';
 
   const form = document.querySelector<HTMLFormElement>('[data-booking-form]');
   const done = document.querySelector<HTMLElement>('[data-booking-done]');
@@ -249,7 +255,7 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
   const phoneField = form?.querySelector<HTMLInputElement>('#dc-contact');
   const consentField = form?.querySelector<HTMLInputElement>('#dc-consent');
 
-  const GENERIC_ERROR = 'Не удалось отправить заявку. Попробуйте ещё раз или позвоните нам.';
+  const GENERIC_ERROR = copy.errors.generic;
 
   /** Ошибка формы целиком: сеть, сервер, неподключённый эндпоинт */
   const fail = (message: string) => {
@@ -313,11 +319,11 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
       const phone = phoneToE164(phoneField.value);
       const problems: Array<[HTMLInputElement, string]> = [];
       if (nameField.value.trim().length < 2) {
-        problems.push([nameField, 'Укажите имя — не короче двух букв']);
+        problems.push([nameField, copy.errors.name]);
       }
-      if (!phone) problems.push([phoneField, 'Введите номер в формате +7 900 000-00-00']);
+      if (!phone) problems.push([phoneField, copy.errors.phone]);
       if (!consentField.checked) {
-        problems.push([consentField, 'Нужно согласие на обработку персональных данных']);
+        problems.push([consentField, copy.errors.consent]);
       }
       const first = problems[0];
       if (first) {
@@ -327,13 +333,13 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
       }
 
       if (!navigator.onLine) {
-        fail('Нет соединения. Проверьте интернет или позвоните нам.');
+        fail(copy.errors.offline);
         return;
       }
 
       const endpoint = form.dataset.endpoint;
       if (!endpoint) {
-        fail('Форма пока не подключена к серверу. Позвоните нам — ответим сразу.');
+        fail(copy.errors.noEndpoint);
         return;
       }
 
@@ -343,7 +349,7 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
       form.setAttribute('aria-busy', 'true');
       if (submit) {
         submit.disabled = true;
-        submit.textContent = 'Отправляем…';
+        submit.textContent = copy.sending;
       }
 
       // Откуда пришла заявка — адрес с utm-метками и реферер
@@ -378,13 +384,13 @@ const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
         fail(typeof data?.error === 'string' && data.error ? data.error : GENERIC_ERROR);
       } catch (err) {
         const timedOut = err instanceof DOMException && err.name === 'TimeoutError';
-        fail(timedOut ? 'Сервер не ответил. Попробуйте ещё раз или позвоните нам.' : GENERIC_ERROR);
+        fail(timedOut ? copy.errors.timeout : GENERIC_ERROR);
       } finally {
         sending = false;
         form.removeAttribute('aria-busy');
         if (submit) {
           submit.disabled = false;
-          submit.textContent = label ?? 'Оставить заявку';
+          submit.textContent = label ?? copy.submit;
         }
       }
     });

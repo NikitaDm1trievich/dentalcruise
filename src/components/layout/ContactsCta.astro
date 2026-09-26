@@ -11,7 +11,8 @@ import Icon from '../core/Icon.astro';
 import PlaceCard from '../content/PlaceCard.astro';
 import YandexEmbed from '../content/YandexEmbed.astro';
 import { clinic } from '../../data/site';
-import { cmsText } from '../../lib/cms-ref';
+import { blocks } from '../../data/ui';
+import { cmsSite, cmsText } from '../../lib/cms-ref';
 /* Тексты блока правит владелец в редакторе — раздел «Главная страница».
    Метро в подводке не называем строкой: карточка ниже показывает обе
    станции со знаком метрополитена и цветами линий, вышло бы вразнобой. */
@@ -57,7 +58,8 @@ const {
           title="Дентал Круиз на Яндекс Картах"
           height={400}
           linkHref={clinic.links.yandexOrg}
-          linkLabel={`${clinic.address.streetShort} · ${clinic.metro} — открыть в Яндекс Картах`}
+          linkLabel={`${clinic.address.streetShort} · ${clinic.metro} — ${blocks.place.mapLink}`}
+          cms={cmsSite('blocks', 'place.mapLink')}
         />
       </Reveal>
     </div>

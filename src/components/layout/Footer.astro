@@ -5,25 +5,21 @@
  */
 import BrandIcon from '../core/BrandIcon.astro';
 import MetroStations from '../core/MetroStations.astro';
-import { clinic, navLinks } from '../../data/site';
+import { clinic, menu } from '../../data/site';
 import { pageHref, withBase } from '../../lib/asset';
+import { cmsSite } from '../../lib/cms-ref';
 
 const year = new Date().getFullYear();
-
-const infoLinks = [
-  { label: 'Отзывы', href: '/#reviews' },
-  { label: 'Контакты', href: '/#contacts' },
-  { label: 'Политика конфиденциальности', href: '/privacy' },
-];
+const { footer } = menu;
 
 const socials = [
-  { label: 'ВКонтакте', mark: 'vk' as const, href: clinic.links.vk },
-  { label: 'Max', mark: 'max' as const, href: clinic.links.max },
-  { label: 'Instagram', mark: 'instagram' as const, href: clinic.links.instagram },
+  { label: 'ВКонтакте', mark: 'vk' as const, href: clinic.links.vk, cms: 'links.vk' },
+  { label: 'Max', mark: 'max' as const, href: clinic.links.max, cms: 'links.max' },
+  { label: 'Instagram', mark: 'instagram' as const, href: clinic.links.instagram, cms: 'links.instagram' },
 ].filter((s) => s.href);
 ---
 
-<footer class="dc-footer">
+<footer class="dc-footer" data-cms={cmsSite('menu', 'footer')}>
   <div class="dc-footer__grid">
     <div class="dc-footer__brand">
       <img
@@ -32,13 +28,14 @@ const socials = [
         width="180"
         height="40"
         class="dc-footer__logo"
+        data-cms-lock="logo"
       />
-      <p>Центр стоматологии с собственной зуботехнической лабораторией.</p>
+      <p data-cms={cmsSite('menu', 'footer.text')}>{footer.text}</p>
       {
         socials.length > 0 && (
           <div class="dc-footer__socials">
             {socials.map((s) => (
-              <a href={s.href} aria-label={s.label} target="_blank" rel="noopener">
+              <a href={s.href} aria-label={s.label} target="_blank" rel="noopener" data-cms={cmsSite('clinic', s.cms)}>
                 <BrandIcon name={s.mark} size={20} />
               </a>
             ))}
@@ -48,12 +45,12 @@ const socials = [
     </div>
 
     <nav class="dc-footer__col" aria-label="Страницы сайта">
-      <h2>Страницы</h2>
+      <h2 data-cms={cmsSite('menu', 'footer.pagesTitle')}>{footer.pagesTitle}</h2>
       <ul>
         {
-          navLinks.map((l) => (
+          footer.pages.map((l, i) => (
             <li>
-              <a href={pageHref(l.href)}>{l.label}</a>
+              <a href={pageHref(l.href)} data-cms={cmsSite('menu', `footer.pages.${i}`)}>{l.label}</a>
             </li>
           ))
         }
@@ -61,20 +58,20 @@ const socials = [
     </nav>
 
     <nav class="dc-footer__col" aria-label="Информация">
-      <h2>Информация</h2>
+      <h2 data-cms={cmsSite('menu', 'footer.infoTitle')}>{footer.infoTitle}</h2>
       <ul>
         {
-          infoLinks.map((l) => (
+          footer.info.map((l, i) => (
             <li>
-              <a href={pageHref(l.href)}>{l.label}</a>
+              <a href={pageHref(l.href)} data-cms={cmsSite('menu', `footer.info.${i}`)}>{l.label}</a>
             </li>
           ))
         }
       </ul>
     </nav>
 
-    <div class="dc-footer__col">
-      <h2>Контакты</h2>
+    <div class="dc-footer__col" data-cms={cmsSite('clinic')}>
+      <h2 data-cms={cmsSite('menu', 'footer.contactsTitle')}>{footer.contactsTitle}</h2>
       <a href={clinic.phoneHref} class="dc-footer__phone">{clinic.phone}</a>
       <p>{clinic.address.locality}, {clinic.address.street}</p>
       <p><MetroStations /></p>
@@ -83,13 +80,13 @@ const socials = [
     </div>
   </div>
 
-  <div class="dc-footer__legal">
-    <span>© {year} {clinic.name}</span>
+  <div class="dc-footer__legal" data-cms={cmsSite('clinic', 'license')}>
+    <span data-cms={cmsSite('clinic', 'name')}>© {year} {clinic.name}</span>
     <span>
       {clinic.license.title}{clinic.license.number && ` № ${clinic.license.number}`}
     </span>
-    {clinic.legal.ogrn && <span>ОГРН {clinic.legal.ogrn}</span>}
-    {clinic.legal.inn && <span>ИНН {clinic.legal.inn}</span>}
+    {clinic.legal.ogrn && <span data-cms={cmsSite('clinic', 'legal.ogrn')}>ОГРН {clinic.legal.ogrn}</span>}
+    {clinic.legal.inn && <span data-cms={cmsSite('clinic', 'legal.inn')}>ИНН {clinic.legal.inn}</span>}
   </div>
 </footer>
 

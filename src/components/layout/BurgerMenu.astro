@@ -10,8 +10,9 @@ import IconButton from '../core/IconButton.astro';
 import BrandIcon from '../core/BrandIcon.astro';
 import MetroStations from '../core/MetroStations.astro';
 import Button from '../core/Button.astro';
-import { clinic, navLinks } from '../../data/site';
+import { clinic, menu } from '../../data/site';
 import { pageHref, withBase } from '../../lib/asset';
+import { cmsItem, cmsSite } from '../../lib/cms-ref';
 import { getCollection } from 'astro:content';
 
 const { vk, max } = clinic.links;
@@ -26,9 +27,15 @@ const pricelistHref = pageHref('pricelist');
 <div class="dc-burger" id="dc-menu" data-state="closed" aria-hidden="true" inert>
   <div class="dc-burger__scrim" data-close></div>
 
-  <div class="dc-burger__panel" role="dialog" aria-modal="true" aria-label="Меню сайта">
+  <div class="dc-burger__panel" role="dialog" aria-modal="true" aria-label="Меню сайта" data-cms={cmsSite('menu')}>
     <div class="dc-burger__head">
-      <a href={pageHref('')} class="dc-burger__logo" aria-label={`${clinic.name} — на главную`} data-close>
+      <a
+        href={pageHref('')}
+        class="dc-burger__logo"
+        aria-label={`${clinic.name} — на главную`}
+        data-close
+        data-cms-lock="logo"
+      >
         <img src={logo} alt={clinic.name} width="150" height="36" />
       </a>
       <IconButton label="Закрыть меню" variant="bare" data-close>
@@ -44,10 +51,11 @@ const pricelistHref = pageHref('pricelist');
             class="dc-burger__accordion-toggle"
             aria-expanded="false"
             aria-controls="burger-services"
+            data-cms={cmsSite('menu', 'services.label')}
           >
             {/* Название то же, что у дропдауна в десктопной шапке: один
                 раздел не должен называться в двух меню по-разному */}
-            Услуги
+            {menu.services.label}
             <Icon name="chevron-down" size={22} />
           </button>
           <div class="dc-burger__accordion-body" id="burger-services" inert>
@@ -55,7 +63,11 @@ const pricelistHref = pageHref('pricelist');
               {
                 categories.map((cat) => (
                   <li>
-                    <a href={pageHref(`pricelist#${cat.data.slug}`)} data-close>
+                    <a
+                      href={pageHref(`pricelist#${cat.data.slug}`)}
+                      data-close
+                      data-cms={cmsItem('catalog', cat.data.id, 'title')}
+                    >
                       {cat.data.title}
                     </a>
                   </li>
@@ -63,9 +75,14 @@ const pricelistHref = pageHref('pricelist');
               }
               <li>
                 {/* Вход на сам прайс-лист — как в десктопном дропдауне;
-                    из общего списка страниц он убран (см. фильтр ниже) */}
-                <a href={pricelistHref} class="dc-burger__sublist-all" data-close>
-                  Весь прайс-лист
+                    в общем списке страниц его нет */}
+                <a
+                  href={pricelistHref}
+                  class="dc-burger__sublist-all"
+                  data-close
+                  data-cms={cmsSite('menu', 'services.all')}
+                >
+                  {menu.services.all}
                   <Icon name="arrow-right" size={18} />
                 </a>
               </li>
@@ -74,15 +91,13 @@ const pricelistHref = pageHref('pricelist');
         </li>
 
         {
-          navLinks
-            .filter((l) => l.href !== '/' && l.href !== '/pricelist')
-            .map((link) => (
-              <li>
-                <a href={pageHref(link.href)} data-close>
-                  {link.label}
-                </a>
-              </li>
-            ))
+          menu.main.map((link, i) => (
+            <li>
+              <a href={pageHref(link.href)} data-close data-cms={cmsSite('menu', `main.${i}`)}>
+                {link.label}
+              </a>
+            </li>
+          ))
         }
       </ul>
     </nav>
@@ -90,36 +105,44 @@ const pricelistHref = pageHref('pricelist');
     <div class="dc-burger__socials">
       {
         max && (
-          <IconButton label="Написать в Max" href={max}>
+          <IconButton label="Написать в Max" href={max} data-cms={cmsSite('clinic', 'links.max')}>
             <BrandIcon name="max" size={20} />
           </IconButton>
         )
       }
       {
         vk && (
-          <IconButton label="ВКонтакте" href={vk}>
+          <IconButton label="ВКонтакте" href={vk} data-cms={cmsSite('clinic', 'links.vk')}>
             <BrandIcon name="vk" size={20} />
           </IconButton>
         )
       }
-      <IconButton label="Позвонить" href={clinic.phoneHref} variant="accent">
+      <IconButton label="Позвонить" href={clinic.phoneHref} variant="accent" data-cms={cmsSite('clinic', 'phone')}>
         <Icon name="phone" size={20} />
       </IconButton>
     </div>
 
-    <div class="dc-burger__info">
+    <div class="dc-burger__info" data-cms={cmsSite('clinic')}>
       <a href={clinic.phoneHref} class="dc-burger__phone">{clinic.phone}</a>
       <p>{clinic.scheduleLong}</p>
       <p>{clinic.address.locality}, {clinic.address.street}</p>
       <a href={`mailto:${clinic.email}`} class="dc-burger__mail">{clinic.email}</a>
-      <p class="dc-burger__route"><MetroStations note="5 минут пешком" /></p>
-      <a href={clinic.links.yandexOrg} target="_blank" rel="noopener" class="dc-burger__map">
+      <p class="dc-burger__route"><MetroStations note={clinic.metroWalk} /></p>
+      <a
+        href={clinic.links.yandexOrg}
+        target="_blank"
+        rel="noopener"
+        class="dc-burger__map"
+        data-cms={cmsSite('menu', 'burger.route')}
+      >
         <Icon name="map-pin" size={18} />
-        Как добраться?
+        {menu.burger.route}
       </a>
     </div>
 
-    <Button variant="primary" size="lg" fullWidth data-open="dc-book">Записаться на приём</Button>
+    <Button variant="primary" size="lg" fullWidth data-open="dc-book" data-cms={cmsSite('menu', 'burger.book')}>
+      {menu.burger.book}
+    </Button>
   </div>
 </div>
 

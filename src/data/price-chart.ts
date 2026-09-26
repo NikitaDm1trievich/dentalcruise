@@ -47,6 +47,10 @@ export const priceChart: {
   year: string;
   /** Месяц, по которому считается разница под графиком */
   anchorMonth: string;
+  /** Фраза о разнице: {месяце} — «сентябре», {сумма} — разница жирным */
+  gap: string;
+  /** Пометка прогнозного месяца в подсказке над графиком */
+  forecast: string;
   note: string;
   data: PriceChartPoint[];
 } = raw;

@@ -17,7 +17,8 @@ import seo from '../data/seo.json';
  * проверку. Отправку уведомлений делает шаг в GitHub Actions после сборки.
  */
 export const getStaticPaths: GetStaticPaths = () => {
-  const key = seo.indexNowKey.trim();
+  // Пустое поле редактор может записать и как null
+  const key = (seo.indexNowKey ?? '').trim();
   return key ? [{ params: { indexnow: key } }] : [];
 };
 

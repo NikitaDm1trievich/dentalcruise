@@ -3,16 +3,24 @@
 import Icon from '../core/Icon.astro';
 import IconButton from '../core/IconButton.astro';
 import AppointmentForm from './AppointmentForm.astro';
+import { form } from '../../data/ui';
+import { cmsSite } from '../../lib/cms-ref';
 ---
 
 <div class="dc-modal" id="dc-book" data-state="closed" aria-hidden="true" inert>
   <div class="dc-modal__scrim" data-close></div>
 
-  <div class="dc-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="dc-book-title">
+  <div
+    class="dc-modal__dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dc-book-title"
+    data-cms={cmsSite('form')}
+  >
     <div class="dc-modal__head">
       <div>
-        <h2 id="dc-book-title">Записаться на приём</h2>
-        <p>Оставьте номер — мы перезвоним и подберём удобное время.</p>
+        <h2 id="dc-book-title">{form.title}</h2>
+        <p>{form.lead}</p>
       </div>
       <IconButton label="Закрыть" variant="bare" data-close>
         <Icon name="x" size={24} />

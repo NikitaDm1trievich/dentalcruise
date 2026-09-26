@@ -18,11 +18,14 @@
  * О первом страница показывает плашку.
  *
  * Выбор блока. В режиме выбора страница обводит блок под курсором и по
- * клику сообщает редактору, какое поле открыть. Блоки главной размечены
- * атрибутом data-cms="<коллекция>/<запись>:<путь>" (src/lib/cms-ref.ts):
- * карточки акций, врачи, вопросы и т.п. лежат в других записях, и по тексту
- * их не найти. Внутри открытой записи поле уточняется обратным поиском:
- * текст под курсором сравнивается со строками записи, как при подмене.
+ * клику сообщает редактору, какое поле открыть. Блоки всех страниц, шапка,
+ * подвал и нижняя панель размечены атрибутом
+ * data-cms="<коллекция>/<запись>:<путь>" (src/lib/cms-ref.ts): карточки
+ * акций, врачи, телефон клиники, пункты меню лежат в других записях, и по
+ * тексту их не найти. Внутри открытой записи поле уточняется обратным
+ * поиском: текст под курсором сравнивается со строками записи, как при
+ * подмене. То, чего в редакторе нет (виджет Яндекс Карт, логотип), помечено
+ * data-cms-lock и показывается с замком и причиной.
  * Рамка — отдельный слой поверх страницы, стили блоков не трогаются.
  * Клики в режиме выбора перехватываются: ссылка не уводит фрейм со
  * страницы, кнопка не открывает модалку.
@@ -34,6 +37,8 @@
  */
 import { ArrowUpRight, Lock, Pencil, createElement, type IconNode } from 'lucide';
 import { themeEntries } from './theme-vars';
+import { openOverlay } from './overlays';
+import { fillParts } from './format';
 
 type Leaves = Map<string, string>;
 
@@ -130,21 +135,78 @@ function containerFor(entry: string | null, path: string): Element | null {
 }
 
 /**
- * Сначала ищем строку в блоке, к которому относится поле: в размеченном
- * блоке открытой записи (`promo.title` → секция «Акции», `items.2.price` →
- * третья карточка файла), иначе в элементе с id, равным первому сегменту
- * пути. Без этого правка кнопки «Записаться на приём» в блоке контактов
- * перекрашивала бы одноимённые кнопки по всей странице. Блока нет или
- * строки в нём нет — ищем по всей странице.
+ * Сначала ищем строку в блоках, к которым относится поле: во всех
+ * размеченных блоках открытой записи, внутри которых оно лежит
+ * (`promo.title` → секция «Акции», `items.2.price` → третья карточка
+ * файла, `phone` → телефон в шапке, подвале, карточке адреса), иначе в
+ * элементе с id, равным первому сегменту пути. Без этого правка кнопки
+ * «Записаться на приём» в блоке контактов перекрашивала бы одноимённые
+ * кнопки по всей странице. Блоков нет или строки в них нет — ищем по всей
+ * странице.
  */
 function bindScoped(text: string, path: string, entry: string | null): Binding[] {
-  const key = path.split('.')[0];
-  const scope = containerFor(entry, path) ?? (key ? document.getElementById(key) : null);
-  if (scope) {
-    const inside = bind(text, scope);
-    if (inside.length > 0) return inside;
+  const scopes: Element[] = [];
+  if (entry) {
+    for (const element of document.querySelectorAll('[data-cms]')) {
+      const ref = readRef(element);
+      if (ref && ref.entry === entry && within(path, ref.path)) scopes.push(element);
+    }
   }
-  return bind(text, document.body);
+  const key = path.split('.')[0];
+  const byId = scopes.length === 0 && key ? document.getElementById(key) : null;
+  if (byId) scopes.push(byId);
+
+  // Блоки бывают вложены друг в друга: один текстовый узел — одна привязка.
+  const seen = new Set<Text>();
+  const found: Binding[] = [];
+  for (const scope of scopes) {
+    for (const binding of bind(text, scope)) {
+      if (seen.has(binding.node)) continue;
+      seen.add(binding.node);
+      found.push(binding);
+    }
+  }
+  return found.length > 0 ? found : bind(text, document.body);
+}
+
+/**
+ * Элементы, чей текст — поле `path` записи `entry` с метками. Вёрстка
+ * помечает их data-cms с точным путём поля и data-cms-vars со значениями
+ * меток (PageLayout, SectionHeading, PriceChart).
+ */
+function templatesFor(entry: string | null, path: string): Element[] {
+  if (!entry) return [];
+  return [...document.querySelectorAll('[data-cms-vars]')].filter((element) => {
+    const ref = readRef(element);
+    return ref?.entry === entry && ref.path === path;
+  });
+}
+
+/**
+ * Собрать текст с метками заново: fillParts — тот же, что в сборке.
+ * Только текстовые узлы и `<b>` с textContent: разметку из редактора
+ * или из атрибута вставить нельзя. Метка из data-cms-bold — жирным.
+ */
+function renderTemplate(element: Element, template: string) {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(element.getAttribute('data-cms-vars') ?? '');
+  } catch {
+    return;
+  }
+  if (!parsed || typeof parsed !== 'object') return;
+  const vars: Record<string, string> = {};
+  for (const [key, value] of Object.entries(parsed)) if (typeof value === 'string') vars[key] = value;
+
+  const bold = element.getAttribute('data-cms-bold');
+  element.replaceChildren(
+    ...fillParts(template, vars).map((part) => {
+      if (!bold || part.key !== bold) return document.createTextNode(part.text);
+      const strong = document.createElement('b');
+      strong.textContent = part.text;
+      return strong;
+    }),
+  );
 }
 
 function isColor(value: string): boolean {
@@ -181,6 +243,8 @@ interface Target {
   level: Level;
   entry: string;
   path: string;
+  /** Ключ из data-cms-lock: почему у блока нет поля (для подписи замка) */
+  lock?: string;
 }
 
 /**
@@ -207,7 +271,20 @@ const normalize = (text: string) => text.replace(/\s+/g, ' ').trim();
 
 /** Строки длиннее не сравниваем: это уже целый блок, а не одно поле. */
 const MAX_FIELD_TEXT = 600;
-const LOCKED_LABEL = 'Шапку, подвал и кнопки сайта меняет разработчик';
+
+/**
+ * Подписи замка. Замок — только у того, чего в редакторе действительно
+ * нет: чужие виджеты и файлы сайта. Ключ ставит вёрстка атрибутом
+ * data-cms-lock (lib/cms-ref, тип CmsLock); неразмеченный блок вне
+ * страницы получает общую подпись.
+ */
+const LOCK_LABELS: Record<string, string> = {
+  map: 'Карту показывает Яндекс: она меняется в карточке клиники на Яндекс Картах',
+  reviews: 'Отзывы и оценку показывает Яндекс: в редакторе их не поменять',
+  logo: 'Логотип — файл сайта, его меняет разработчик',
+  photos: 'Фото клиники — файлы сайта, их меняет разработчик',
+};
+const LOCKED_LABEL = 'Этот элемент в редакторе не меняется';
 
 /**
  * Название блока: заголовок внутри него (имя врача, название раздела,
@@ -361,8 +438,17 @@ export function initCmsPreview() {
   // Редактор открывает файлы-списки главной на их блоке (`?cms-preview#faq`).
   // Модуль грузится уже после разбора страницы, и собственный переход
   // браузера к якорю к этому моменту мог не случиться — докручиваем сами.
+  // Якорь на окно (`#dc-book` у формы записи) окно открывает: иначе правки
+  // его текстов не было бы видно.
   const anchor = window.location.hash.slice(1);
-  if (anchor) document.getElementById(decodeURIComponent(anchor))?.scrollIntoView({ block: 'start' });
+  const anchored = anchor ? document.getElementById(decodeURIComponent(anchor)) : null;
+  if (anchored?.hasAttribute('data-state')) {
+    // Без переноса фокуса: курсор в поле окна внутри фрейма увёл бы ввод из
+    // формы редактора — blur() фокус родительскому окну не возвращает.
+    openOverlay(anchored.id, null, { focus: false });
+  } else {
+    anchored?.scrollIntoView({ block: 'start' });
+  }
 
   let previous: Leaves | null = null;
   const bindings = new Map<string, Binding[]>();
@@ -433,6 +519,13 @@ export function initCmsPreview() {
     const container = start.closest('[data-cms]');
     const ref = readRef(container);
 
+    // Замок ближе размеченного блока (логотип в шапке, карта в блоке
+    // контактов): у этого места нет поля, открывать нечего.
+    const lock = start.closest('[data-cms-lock]');
+    if (lock && (!container || container.contains(lock))) {
+      return { element: lock, level: 'locked', entry: '', path: '', lock: lock.getAttribute('data-cms-lock') ?? '' };
+    }
+
     if (current) {
       // Внутри блока открытой записи или на странице самой записи
       // (врач, услуга) ищем конкретное поле по тексту.
@@ -452,8 +545,8 @@ export function initCmsPreview() {
       };
     }
 
-    // Внутри страницы, но без поля: молчим. Снаружи — шапка, подвал,
-    // нижняя панель: их меняет только разработчик.
+    // Внутри страницы, но без поля: молчим. Снаружи всё, что правится
+    // (шапка, подвал, нижняя панель), размечено — остальное под замком.
     if (start.closest('main')) return null;
     let top = start;
     while (top.parentElement && top.parentElement !== document.body) top = top.parentElement;
@@ -464,7 +557,7 @@ export function initCmsPreview() {
   /* ── Подпись над рамкой ── */
 
   function chip(target: Target, state: State): { text: string; icon: keyof typeof ICONS } {
-    if (target.level === 'locked') return { text: LOCKED_LABEL, icon: 'locked' };
+    if (target.level === 'locked') return { text: LOCK_LABELS[target.lock ?? ''] ?? LOCKED_LABEL, icon: 'locked' };
 
     const [collectionName, ...rest] = target.entry.split('/');
     const entryName = rest.join('/');
@@ -725,6 +818,21 @@ export function initCmsPreview() {
     for (const [path, value] of leaves) {
       const old = previous.get(path);
       if (old === undefined || old === value) continue;
+
+      // Текст с метками ({позиций}, {услуга}) на странице дословно не
+      // найти: собираем его заново так же, как сборка.
+      const templated = templatesFor(current, path);
+      if (templated.length > 0) {
+        for (const element of templated) renderTemplate(element, value);
+        const first = templated[0];
+        if (first instanceof HTMLElement) flash(first);
+        if (!scrolled && path !== lastScrolled) {
+          first.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          lastScrolled = path;
+          scrolled = true;
+        }
+        continue;
+      }
 
       // Место строки ищем один раз, по прежнему значению, и дальше держим
       // узлы: иначе поле, стёртое до пустоты, потеряло бы привязку.

@@ -17,21 +17,31 @@
  */
 import Icon from '../core/Icon.astro';
 import BrandIcon from '../core/BrandIcon.astro';
-import { clinic } from '../../data/site';
+import { clinic, menu } from '../../data/site';
+import { cmsSite } from '../../lib/cms-ref';
 
 const { max } = clinic.links;
+const { sticky } = menu;
 ---
 
 <div class="dc-sticky__sentinel" data-sticky-sentinel></div>
 
-<nav class="dc-sticky" aria-label="Быстрые действия" data-sticky-actions data-visible="false" inert>
+<nav
+  class="dc-sticky"
+  aria-label="Быстрые действия"
+  data-sticky-actions
+  data-visible="false"
+  inert
+  data-cms={cmsSite('menu', 'sticky')}
+>
   <a
     href={clinic.phoneHref}
     class="dc-sticky__btn dc-sticky__btn--quiet dc-sticky__btn--call"
-    aria-label={`Позвонить ${clinic.phone}`}
+    aria-label={`${sticky.call} ${clinic.phone}`}
+    data-cms={cmsSite('menu', 'sticky.call')}
   >
     <Icon name="phone" size={20} strokeWidth={2} />
-    <span class="dc-sticky__label">Позвонить</span>
+    <span class="dc-sticky__label">{sticky.call}</span>
   </a>
 
   <button
@@ -40,9 +50,10 @@ const { max } = clinic.links;
     data-open="dc-book"
     aria-controls="dc-book"
     aria-haspopup="dialog"
+    data-cms={cmsSite('menu', 'sticky.book')}
   >
     <Icon name="calendar" size={20} strokeWidth={2} />
-    Записаться
+    {sticky.book}
   </button>
 
   {
@@ -53,9 +64,10 @@ const { max } = clinic.links;
         aria-label="Написать в Max"
         target="_blank"
         rel="noopener"
+        data-cms={cmsSite('menu', 'sticky.max')}
       >
         <BrandIcon name="max" size={20} />
-        <span class="dc-sticky__label">Max</span>
+        <span class="dc-sticky__label">{sticky.max}</span>
       </a>
     )
   }

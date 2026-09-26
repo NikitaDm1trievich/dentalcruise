@@ -1,122 +1,141 @@
 /**
  * Единственный источник правды по клинике (NAP — name/address/phone).
- * Используется в шапке, подвале, бургер-меню, карточке места и в JSON-LD.
- * Меняем данные только здесь.
+ * Используется в шапке, подвале, бургер-меню, карточке места, форме записи
+ * и в JSON-LD.
+ *
+ * Сами данные лежат в clinic.json — их правит владелец в редакторе сайта
+ * («Шапка, подвал и контакты» → «Контакты и реквизиты клиники»). Здесь
+ * только типы и то, что из них считается. Меню шапки и подвала — в
+ * menu.json, общие подписи блоков — в blocks.json и form.json.
+ *
+ * Про отдельные поля (история решений, менять только осознанно):
+ *   • станции метро — один пересадочный узел: Полежаевская и Хорошёвская
+ *     связаны переходом; цвета — официальные цвета линий на схеме;
+ *   • ссылки на справочники (2ГИС, Google, ПроДокторов, Zoon) уходят в
+ *     sameAs микроразметки — основной сигнал локального поиска. Пустое поле
+ *     никуда не выводится, выдуманных адресов здесь быть не должно;
+ *   • Instagram принадлежит Meta, признанной в России экстремистской; с
+ *     01.09.2025 размещение рекламы на её площадках запрещено. Ссылку с
+ *     сайта сняли, в редакторе поле скрыто. Профиль клиники:
+ *     instagram.com/dentalcruise, если решение изменится;
+ *   • отдельного Telegram у клиники нет — кнопка не выводится, пока поле пустое;
+ *   • почтовый индекс, номер лицензии, ИНН и ОГРН клиника ещё не прислала:
+ *     пустые поля в разметку и в подвал не попадают.
+ *
+ * Рейтинг и число отзывов живут в src/data/home.json (раздел «Отзывы»
+ * редактора), а в микроразметку не отдаются вовсе: самооценка организации в
+ * aggregateRating противоречит правилам Google и Яндекса, а цифры на сайте
+ * обязаны совпадать с виджетом Яндекс Карт.
  */
+import raw from './clinic.json';
+import menuRaw from './menu.json';
+type Link = { label: string; href: string };
+
+/**
+ * Необязательное поле: редактор пишет незаполненное значение как "" (текст)
+ * или null (картинка, файл). Оба варианта значат «нет», проверка — по
+ * истинности (`clinic.links.max && …`).
+ */
+type Optional = string | null;
+
+type Clinic = {
+  name: string;
+  legalName: string;
+  description: string;
+  phone: string;
+  email: string;
+  address: {
+    street: string;
+    streetShort: string;
+    locality: string;
+    region: string;
+    country: string;
+    postalCode: Optional;
+  };
+  metro: string;
+  metroStations: { name: string; line: string; color: string }[];
+  /** Приписка к станциям метро: «5 минут пешком» */
+  metroWalk: string;
+  scheduleShort: string;
+  scheduleLong: string;
+  /** Часы для микроразметки: дни в формате schema.org (Mo, Tu, …) */
+  openingHours: { days: string[]; opens: string; closes: string }[];
+  paymentAccepted: string;
+  links: {
+    max: Optional;
+    vk: Optional;
+    telegram: Optional;
+    instagram: Optional;
+    yandexOrg: string;
+    /** Короткая ссылка на точку клиники — открывается по адресу в шапке */
+    yandexPin: string;
+    yandexMapWidget: string;
+    yandexReviewsWidget: string;
+    twoGis: Optional;
+    googleMaps: Optional;
+    prodoctorov: Optional;
+    zoon: Optional;
+  };
+  /** Картинка «Схема проезда» — путь от корня сайта, как в JSON-контенте */
+  routeImage: Optional;
+  geo: { lat: number; lng: number };
+  license: { title: string; number: Optional; scan: Optional; pdf: Optional };
+  legal: { inn: Optional; ogrn: Optional };
+};
+
+const data: Clinic = raw;
+
+/**
+ * Номер в E.164 для ссылки tel: и микроразметки. Владелец пишет телефон
+ * один раз, как его читают люди.
+ *
+ * К коду +7 приводим только российский номер: 11 цифр с 7 или 8 в начале
+ * или 10 цифр без кода. Номер с другим кодом страны (+375 …) оставляем как
+ * ввели — цифры с плюсом. Короче или длиннее, чем бывает, — ссылка всё
+ * равно собирается, но сборка пишет предупреждение: иначе опечатка молча
+ * уехала бы в каждую кнопку «Позвонить».
+ */
+export function phoneToTel(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  const plus = /^\s*\+/.test(phone);
+  const foreign = plus && !/^\s*\+\s*7/.test(phone);
+  if (!foreign) {
+    if (digits.length === 11 && /^[78]/.test(digits)) return `+7${digits.slice(1)}`;
+    if (digits.length === 10 && !plus) return `+7${digits}`;
+  } else if (digits.length >= 8 && digits.length <= 15) {
+    return `+${digits}`;
+  }
+  console.warn(
+    `[контакты] Телефон клиники «${phone}» похож на неполный или ошибочный — проверьте его в редакторе: ` +
+      '«Шапка, подвал и контакты» → «Контакты и реквизиты клиники».',
+  );
+  return `+${digits}`;
+}
+
+const phoneE164 = phoneToTel(data.phone);
 
 export const clinic = {
-  name: 'Дентал Круиз',
-  legalName: 'Дентал Круиз',
-  /** Строка под названием клиники в hero */
-  tagline: 'Путешествие в мир прекрасных улыбок',
-  description:
-    'Центр стоматологии с собственной зуботехнической лабораторией: коронки, виниры и протезирование под ключ изготавливаются на месте, без наценки посредника.',
-  foundingYear: 2013,
-
-  phone: '+7 925 577-76-77',
-  phoneHref: 'tel:+79255777677',
+  ...data,
   /** E.164 — для JSON-LD и микроразметки */
-  phoneE164: '+79255777677',
-  email: 'info@dentalcruise.ru',
+  phoneE164,
+  phoneHref: `tel:${phoneE164}`,
+};
 
-  address: {
-    street: '4-я Магистральная улица, 5с1, 2 этаж',
-    streetShort: '4-я Магистральная, 5с1',
-    locality: 'Москва',
-    region: 'Москва',
-    country: 'RU',
-    /** TODO: уточнить почтовый индекс у клиники — в JSON-LD пока не выводим. */
-    postalCode: '',
-  },
-
-  metro: 'м. Полежаевская',
-  /**
-   * Один пересадочный узел: Полежаевская и Хорошёвская связаны переходом.
-   * Цвета — официальные цвета линий на схеме метрополитена, по ним человек
-   * сразу видит, с какой ветки к нам ехать.
-   */
-  metroStations: [
-    { name: 'Полежаевская', line: 'Таганско-Краснопресненская линия', color: '#800080' },
-    { name: 'Хорошёвская', line: 'Большая кольцевая линия', color: '#82C0C0' },
-  ],
-
-  geo: { lat: 55.774426, lng: 37.520284 },
-
-  /** Пн–Сб 10:00–22:00, воскресенье — выходной */
-  openingHours: [
-    { days: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'], opens: '10:00', closes: '22:00' },
-  ],
-  scheduleShort: 'пн–сб 10:00–22:00',
-  scheduleLong: 'Пн–Сб 10:00–22:00 · Вс — выходной',
-
-  /* Рейтинг и число отзывов живут в src/data/home.json (раздел «Отзывы»
-     редактора), а в микроразметку не отдаются вовсе: самооценка
-     организации в aggregateRating противоречит правилам Google и Яндекса,
-     а цифры на сайте обязаны совпадать с виджетом Яндекс Карт. */
-
-  links: {
-    yandexOrg: 'https://yandex.ru/maps/org/dental_kruiz/154025048590/',
-    /** Короткая ссылка на точку клиники — открывается по адресу в шапке */
-    yandexPin: 'https://yandex.ru/maps/-/CTdFz09l',
-    yandexMapWidget: 'https://yandex.ru/map-widget/v1/?ll=37.520284%2C55.774426&z=17',
-    yandexReviewsWidget: 'https://yandex.ru/maps-reviews-widget/154025048590?comments',
-    vk: 'https://vk.ru/dentalcruise',
-    /**
-     * Карточки клиники в справочниках. Каждая заполненная ссылка уходит
-     * в sameAs микроразметки: по ней поисковик связывает сайт с картой,
-     * отзывами и рейтингом — это основной сигнал локального поиска.
-     * Пустое поле никуда не выводится, выдуманных адресов здесь быть не должно.
-     */
-    /** TODO: ссылка на карточку клиники в 2ГИС — https://2gis.ru/moscow/firm/<id> */
-    twoGis: '',
-    /** TODO: ссылка на профиль в Google Картах (Google Business Profile) */
-    googleMaps: '',
-    /** TODO: карточка клиники на ПроДокторов */
-    prodoctorov: '',
-    /** TODO: карточка клиники на Zoon */
-    zoon: '',
-    /**
-     * Instagram принадлежит Meta, признанной в России экстремистской;
-     * с 01.09.2025 размещение рекламы на её площадках запрещено. Ссылку
-     * с сайта клиники сняли — поле пустое, кнопки не выводятся нигде.
-     * Профиль клиники: instagram.com/dentalcruise, если решение изменится.
-     */
-    instagram: '',
-    /** Max открывает чат по рабочему номеру клиники */
-    max: 'https://max.ru/+79255777677',
-    /** Отдельного Telegram у клиники нет — кнопка не выводится, пока поле пустое */
-    telegram: '',
-  },
-
-  /** TODO: подставить номер и дату лицензии со скана. */
-  license: {
-    title: 'Лицензия на осуществление медицинской деятельности',
-    number: '',
-    scan: '',
-    pdf: '',
-  },
-
-  /** TODO: получить от клиники ИНН/ОГРН для юридического блока в подвале. */
-  legal: { inn: '', ogrn: '' },
-} as const;
-
-/** Карта сайта. Порядок = порядок в бургер-меню и подвале. */
-export const navLinks = [
-  { label: 'Главная', href: '/' },
-  { label: 'Прайс-лист', href: '/pricelist' },
-  { label: 'О клинике', href: '/about' },
-  { label: 'Врачи', href: '/doctors' },
-  { label: 'Галерея работ', href: '/gallery' },
-  { label: 'Контакты', href: '/contacts' },
-] as const;
-
-/** Якоря внутри главной — показываем только на главной. */
-export const homeAnchors = [
-  { label: 'Акции', href: '#promo' },
-  { label: 'Услуги', href: '#services' },
-  { label: 'Почему мы', href: '#why' },
-  { label: 'Врачи', href: '#doctors' },
-  { label: 'Вопросы', href: '#faq' },
-  { label: 'Отзывы', href: '#reviews' },
-  { label: 'Контакты', href: '#contacts' },
-] as const;
+/** Меню шапки, бургер-меню и подвала. Ссылки на страницы — через pageHref. */
+export const menu: {
+  services: { label: string; all: string };
+  /** Шапка и бургер-меню после «Услуг» */
+  main: Link[];
+  burger: { route: string; book: string };
+  footer: {
+    text: string;
+    pagesTitle: string;
+    pages: Link[];
+    infoTitle: string;
+    info: Link[];
+    contactsTitle: string;
+  };
+  sticky: { call: string; book: string; max: string };
+  /** Первая хлебная крошка на внутренних страницах */
+  crumbsHome: string;
+} = menuRaw;

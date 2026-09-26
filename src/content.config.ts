@@ -12,7 +12,24 @@ import { z } from 'astro/zod';
  *   glob()  — один файл на запись (длинные/растущие списки: врачи, кейсы).
  */
 
-const orderable = { order: z.number().default(100) };
+/*
+ * Пустые необязательные поля. Редактор (Sveltia CMS) пишет незаполненное
+ * поле не пропуском, а значением: текст — "", объект (логотип без файла) —
+ * null, флажок — false. Всё пустое приводим к «нет значения»: сборка не
+ * падает на null, а на сайт не выходят пустые ссылки, подписи и
+ * зачёркнутые цены. Проверки в шаблонах поэтому могут опираться на
+ * `undefined`, а не перебирать "" и null.
+ */
+const text = () => z.string().nullish().transform((value) => value || undefined);
+const textOr = (fallback: string) => z.string().nullish().transform((value) => value || fallback);
+const flag = () => z.boolean().nullish().transform((value) => value ?? false);
+const list = <T extends z.ZodType>(item: T) =>
+  z
+    .array(item)
+    .nullish()
+    .transform((value) => value ?? []);
+
+const orderable = { order: z.number().nullish().transform((value) => value ?? 100) };
 
 /**
  * Списочные коллекции лежат в файле как `{ "items": [...] }`, а не голым
@@ -28,23 +45,23 @@ const doctors = defineCollection({
     speciality: z.string(),
     experience: z.string(),
     note: z.string(),
-    extra: z.string().optional(),
-    photo: z.string().optional(),
-    photoLabel: z.string().default('Здесь фото врача'),
-    featured: z.boolean().default(false),
+    extra: text(),
+    photo: text(),
+    photoLabel: textOr('Здесь фото врача'),
+    featured: flag(),
     /* ── Поля персональной страницы /doctors/<файл>. Все необязательные:
           пустые блоки на странице не рисуются. ───────────────────────── */
     /** Пара абзацев о подходе врача */
-    about: z.array(z.string()).default([]),
+    about: list(z.string()),
     /** Образование и курсы. Год необязателен: у курсов даты обычно нет,
         а выдумывать её нельзя — такие строки идут отдельным списком. */
-    education: z.array(z.object({ year: z.string().default(''), text: z.string() })).default([]),
+    education: list(z.object({ year: textOr(''), text: z.string() })),
     /** Что делает: короткие пункты для списка */
-    skills: z.array(z.string()).default([]),
+    skills: list(z.string()),
     /** Слаги услуг из service-pages, которые ведёт врач */
-    services: z.array(z.string()).default([]),
-    seoTitle: z.string().optional(),
-    seoDescription: z.string().optional(),
+    services: list(z.string()),
+    seoTitle: text(),
+    seoDescription: text(),
     ...orderable,
   }),
 });
@@ -54,15 +71,15 @@ const services = defineCollection({
   schema: z.object({
     title: z.string(),
     price: z.string(),
-    priceNote: z.string().optional(),
-    badge: z.string().optional(),
+    priceNote: text(),
+    badge: text(),
     benefit: z.string(),
-    features: z.array(z.string()).default([]),
-    photo: z.string().optional(),
-    photoLabel: z.string().default('Здесь фото работы'),
+    features: list(z.string()),
+    photo: text(),
+    photoLabel: textOr('Здесь фото работы'),
     /** Ключ категории — связывает услугу с кейсами «до/после» в галерее. */
     category: z.string(),
-    featured: z.boolean().default(false),
+    featured: flag(),
     ...orderable,
   }),
 });
@@ -74,7 +91,7 @@ const cases = defineCollection({
     category: z.string(),
     before: z.string(),
     after: z.string(),
-    note: z.string().optional(),
+    note: text(),
     ...orderable,
   }),
 });
@@ -95,19 +112,19 @@ const promos = defineCollection({
     id: z.string(),
     title: z.string(),
     price: z.string(),
-    was: z.string().optional(),
-    note: z.string().optional(),
+    was: text(),
+    note: text(),
     /**
      * Характеристики материала (срок службы, внешний вид и т.п.) —
      * поясняют, за счёт чего позиция «горячая», а не только цену.
      * Общие свойства материалов, не измеренные клиникой лично значения.
      */
-    attributes: z.array(z.object({ label: z.string(), value: z.string() })).default([]),
+    attributes: list(z.object({ label: z.string(), value: z.string() })),
     /**
      * Слаг раздела из service-categories: карточка акции ведёт в прайс
      * с якорем на нужное направление.
      */
-    category: z.string().optional(),
+    category: text(),
     ...orderable,
   }),
 });
@@ -123,9 +140,13 @@ const brands = defineCollection({
      * заранее и лента поставщиков дёргается при догрузке (CLS).
      */
     logo: z
-      .object({ src: z.string(), width: z.number(), height: z.number() })
-      .optional(),
-    note: z.string().optional(),
+      .object({ src: text(), width: z.number().nullish(), height: z.number().nullish() })
+      .nullish()
+      // Логотип без файла или без размеров — как без логотипа: в ленте имя.
+      .transform((logo) =>
+        logo?.src && logo.width && logo.height ? { src: logo.src, width: logo.width, height: logo.height } : undefined,
+      ),
+    note: text(),
     ...orderable,
   }),
 });
@@ -134,14 +155,14 @@ const brands = defineCollection({
 const priceItem = z.object({
   title: z.string(),
   price: z.string(),
-  was: z.string().optional(),
-  note: z.string().optional(),
+  was: text(),
+  note: text(),
   /**
    * Метка «Акция» у строки прайса. Указана старая цена — метка появляется
    * сама, отдельно включать не нужно; флаг нужен для позиций, которые
    * выделяем без скидки.
    */
-  promo: z.boolean().default(false),
+  promo: flag(),
 });
 
 /**
@@ -157,7 +178,7 @@ const priceList = defineCollection({
   schema: z.object({
     slug: z.string(),
     category: z.string(),
-    note: z.string().optional(),
+    note: text(),
     groups: z.array(
       z.object({
         title: z.string(),
@@ -186,36 +207,36 @@ const servicePages = defineCollection({
      * По нему цена в pricelist.astro находит эту карточку; не задано —
      * ищем по `title`.
      */
-    matchTitle: z.string().optional(),
+    matchTitle: text(),
     /**
      * Название группы прайса, если такая же строка есть в нескольких
      * группах раздела («На импланте, винтовая фиксация» повторяется у
      * циркониевых, металлокерамических, E.max и временных коронок).
      * Без группы строки всех четырёх групп вели на одну страницу.
      */
-    matchGroup: z.string().optional(),
+    matchGroup: text(),
     /** Короткое пояснение под заголовком — одно-два предложения */
     lead: z.string(),
     /** Слаг категории из service-categories: хлебные крошки и ссылка в прайс */
     category: z.string(),
-    price: z.string().optional(),
-    priceNote: z.string().optional(),
-    duration: z.string().optional(),
-    warranty: z.string().optional(),
-    photo: z.string().optional(),
-    photoLabel: z.string().default('Здесь фото работы'),
+    price: text(),
+    priceNote: text(),
+    duration: text(),
+    warranty: text(),
+    photo: text(),
+    photoLabel: textOr('Здесь фото работы'),
     /** «Что входит в цену» */
-    includes: z.array(z.string()).default([]),
+    includes: list(z.string()),
     /** «Когда подходит» / показания */
-    indications: z.array(z.string()).default([]),
+    indications: list(z.string()),
     /** Этапы работы: заголовок + описание */
-    steps: z.array(z.object({ title: z.string(), text: z.string() })).default([]),
+    steps: list(z.object({ title: z.string(), text: z.string() })),
     /** Позиции прайса, которые показываем прямо на странице */
-    prices: z.array(priceItem).default([]),
+    prices: list(priceItem),
     /** Вопросы конкретно по этой услуге */
-    faq: z.array(z.object({ q: z.string(), a: z.string() })).default([]),
-    seoTitle: z.string().optional(),
-    seoDescription: z.string().optional(),
+    faq: list(z.object({ q: z.string(), a: z.string() })),
+    seoTitle: text(),
+    seoDescription: text(),
     ...orderable,
   }),
 });
@@ -245,7 +266,7 @@ const serviceCategories = defineCollection({
          * каталоге короче («Проф. гигиена, ультразвук»), и совпадение
          * находилось лишь у половины позиций.
          */
-        page: z.string().optional(),
+        page: text(),
       }),
     ),
     ...orderable,
@@ -259,10 +280,10 @@ const trust = defineCollection({
     id: z.string(),
     title: z.string(),
     text: z.string(),
-    icon: z.string().default('shield-check'),
-    href: z.string().optional(),
+    icon: textOr('shield-check'),
+    href: text(),
     /** true — открывает шторку лицензии вместо перехода по ссылке */
-    opensLicense: z.boolean().default(false),
+    opensLicense: flag(),
     ...orderable,
   }),
 });

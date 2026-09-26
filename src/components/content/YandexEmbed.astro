@@ -6,6 +6,8 @@
  * оба виджета тяжёлые, а сидят они в самом низу страницы — грузить их
  * на первом экране незачем.
  */
+import type { CmsLock } from '../../lib/cms-ref';
+
 interface Props {
   src: string;
   title: string;
@@ -13,10 +15,14 @@ interface Props {
   /** Подпись под виджетом со ссылкой на карточку организации */
   linkHref?: string;
   linkLabel?: string;
+  /** Адрес подписи-ссылки в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+  cms?: string;
+  /** Что за виджет: карта или лента отзывов — от этого подпись замка в предпросмотре */
+  lock?: Extract<CmsLock, 'map' | 'reviews'>;
   class?: string;
 }
 
-const { src, title, height = 400, linkHref, linkLabel, class: className } = Astro.props;
+const { src, title, height = 400, linkHref, linkLabel, cms, lock = 'map', class: className } = Astro.props;
 ---
 
 <div
@@ -26,13 +32,14 @@ const { src, title, height = 400, linkHref, linkLabel, class: className } = Astr
   data-src={src}
   data-title={title}
 >
-  <div class="dc-embed__frame">
+  {/* Сам виджет рисует Яндекс: в редакторе сайта его не поменять */}
+  <div class="dc-embed__frame" data-cms-lock={lock}>
     <div class="dc-embed__skeleton" aria-hidden="true"></div>
   </div>
 
   {
     linkHref && (
-      <a class="dc-embed__link" href={linkHref} target="_blank" rel="noopener">
+      <a class="dc-embed__link" href={linkHref} target="_blank" rel="noopener" data-cms={cms}>
         {linkLabel ?? 'Открыть в Яндекс Картах'}
       </a>
     )

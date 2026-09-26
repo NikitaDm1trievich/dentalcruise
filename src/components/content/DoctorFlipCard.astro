@@ -2,6 +2,11 @@
 /** Карточка врача с переворотом. Портировано из DoctorFlipCard.dc.html. */
 import Icon from '../core/Icon.astro';
 import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+import { doctorPage } from '../../data/pages';
+import { cmsText } from '../../lib/cms-ref';
+/* Подписи карточки правит владелец: «Главная страница» → «6. Врачи»;
+   слово «Стаж» — общее со страницами врачей («Страницы сайта»). */
+import copy from '../../data/home.json';
 
 interface Props {
   name: string;
@@ -22,7 +27,7 @@ interface Props {
 }
 
 const { name, speciality, experience, note, extra, photo, photoLabel, href, cms } = Astro.props;
-const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[];
+const facts = [`${doctorPage.experience} ${experience}`, note, extra].filter(Boolean) as string[];
 ---
 
 <div class="dc-doc" data-flip data-cms={cms}>
@@ -40,10 +45,10 @@ const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[
       <div class="dc-doc__body">
         <h3>{name}</h3>
         <p class="dc-doc__spec">{speciality}</p>
-        <span class="dc-doc__exp">Стаж {experience}</span>
-        <span class="dc-doc__hint">
+        <span class="dc-doc__exp">{doctorPage.experience} {experience}</span>
+        <span class="dc-doc__hint" data-cms={cmsText('doctors.cardHint')}>
           <Icon name="repeat-2" size={18} strokeWidth={2.2} />
-          Подробнее
+          {copy.doctors.cardHint}
         </span>
       </div>
     </article>
@@ -66,14 +71,14 @@ const facts = [`Стаж ${experience}`, note, extra].filter(Boolean) as string[
       <div class="dc-doc__actions">
         {
           href && (
-            <a href={href} class="dc-doc__more">
-              Страница врача
+            <a href={href} class="dc-doc__more" data-cms={cmsText('doctors.cardPage')}>
+              {copy.doctors.cardPage}
               <Icon name="arrow-right" size={16} strokeWidth={2.2} />
             </a>
           )
         }
-        <button type="button" class="dc-doc__cta" data-open="dc-book">
-          Записаться к врачу
+        <button type="button" class="dc-doc__cta" data-open="dc-book" data-cms={cmsText('doctors.cardBook')}>
+          {copy.doctors.cardBook}
           <Icon name="arrow-right" size={20} />
         </button>
       </div>

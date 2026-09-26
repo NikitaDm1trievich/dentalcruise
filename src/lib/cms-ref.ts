@@ -1,9 +1,11 @@
 /**
  * Адреса полей редактора для выбора блока в живом предпросмотре.
  *
- * Блок главной, который берёт данные из редактора, несёт атрибут
+ * Блок, который берёт данные из редактора, несёт атрибут
  * `data-cms="<коллекция>/<запись>:<путь>"` — имена те же, что в
- * public/admin/config.yml (`home/promos:items.2`, `doctors/terapevt`).
+ * public/admin/config.yml (`home/promos:items.2`, `doctors/terapevt`,
+ * `site/clinic:phone`). Блок без поля в редакторе (виджет Яндекс Карт,
+ * логотип) несёт `data-cms-lock="<ключ>"` — предпросмотр пометит его замком.
  * Во фрейме редактора src/lib/cms-preview.ts по нему понимает, какую
  * запись и какое поле открыть по клику. На опубликованном сайте атрибут
  * ни на что не влияет.
@@ -55,3 +57,42 @@ export function cmsChart(path: string): string {
 export function cmsList(list: keyof typeof lists): string {
   return `${lists[list].entry}:items`;
 }
+
+/**
+ * Файлы раздела «Страницы сайта» (src/data/pages/*.json): тексты
+ * внутренних страниц и шаблонов страниц врача и услуги.
+ */
+type PageFile =
+  | 'about'
+  | 'contacts'
+  | 'team'
+  | 'prices'
+  | 'gallery'
+  | 'privacy'
+  | 'not-found'
+  | 'doctor-page'
+  | 'service-page';
+
+/** `cmsPage('contacts', 'way.title')` → `pages/contacts:way.title`. */
+export function cmsPage(file: PageFile, path = ''): string {
+  return `pages/${file}:${path}`;
+}
+
+/**
+ * Файлы раздела «Шапка, подвал и контакты»: контакты клиники
+ * (clinic.json), меню (menu.json), общие блоки (blocks.json) и форма
+ * записи (form.json). Эти блоки стоят на всех страницах.
+ */
+type SiteFile = 'clinic' | 'menu' | 'blocks' | 'form';
+
+/** `cmsSite('clinic', 'phone')` → `site/clinic:phone`. */
+export function cmsSite(file: SiteFile, path = ''): string {
+  return `site/${file}:${path}`;
+}
+
+/**
+ * Что в предпросмотре честно помечено замком: у этих блоков нет поля в
+ * редакторе. Ключ уходит в атрибут data-cms-lock, подпись к нему — в
+ * src/lib/cms-preview.ts.
+ */
+export type CmsLock = 'map' | 'reviews' | 'logo' | 'photos';

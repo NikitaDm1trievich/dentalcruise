@@ -85,11 +85,13 @@ export function clinicId(site: URL | undefined): string {
 export function breadcrumbSchema(
   trail: { label: string; path?: string }[],
   site: URL | undefined,
+  /** Подпись первой крошки — та же, что на странице (меню в редакторе) */
+  homeLabel = 'Главная',
 ): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: [{ label: 'Главная', path: '/' }, ...trail].map((crumb, index) => ({
+    itemListElement: [{ label: homeLabel, path: '/' }, ...trail].map((crumb, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       name: crumb.label,

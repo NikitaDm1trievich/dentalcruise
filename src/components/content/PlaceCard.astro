@@ -6,7 +6,9 @@ import BrandIcon from '../core/BrandIcon.astro';
 import IconButton from '../core/IconButton.astro';
 import Button from '../core/Button.astro';
 import { clinic } from '../../data/site';
+import { blocks } from '../../data/ui';
 import { withBase } from '../../lib/asset';
+import { cmsSite } from '../../lib/cms-ref';
 
 interface Props {
   /**
@@ -23,14 +25,14 @@ const Heading = headingLevel;
 const { max, telegram, instagram, yandexOrg } = clinic.links;
 ---
 
-<div class="dc-place">
+<div class="dc-place" data-cms={cmsSite('clinic')}>
   <Heading class="dc-place__title">{clinic.name}</Heading>
 
   <div class="dc-place__row">
     <Icon name="map-pin" size={22} color="var(--text-accent)" />
     <div>
       <span class="dc-place__main">{clinic.address.locality}, {clinic.address.street}</span>
-      <span class="dc-place__sub"><MetroStations note="5 минут пешком" /></span>
+      <span class="dc-place__sub"><MetroStations note={clinic.metroWalk} /></span>
     </div>
   </div>
 
@@ -51,14 +53,14 @@ const { max, telegram, instagram, yandexOrg } = clinic.links;
   <div class="dc-place__actions">
     {
       max && (
-        <IconButton label="Написать в Max" href={max}>
+        <IconButton label="Написать в Max" href={max} data-cms={cmsSite('clinic', 'links.max')}>
           <BrandIcon name="max" size={20} />
         </IconButton>
       )
     }
     {
       telegram && (
-        <IconButton label="Написать в Telegram" href={telegram}>
+        <IconButton label="Написать в Telegram" href={telegram} data-cms={cmsSite('clinic', 'links.telegram')}>
           <Icon name="send" size={20} />
         </IconButton>
       )
@@ -70,20 +72,32 @@ const { max, telegram, instagram, yandexOrg } = clinic.links;
         </IconButton>
       )
     }
-    <Button variant="secondary" size="sm" href={yandexOrg} target="_blank" rel="noopener">
-      <Icon slot="icon" name="navigation" size={18} />
-      Как добраться
-    </Button>
     <Button
-      variant="ghost"
+      variant="secondary"
       size="sm"
-      href={withBase('images/map/route-to-clinic.png')}
+      href={yandexOrg}
       target="_blank"
       rel="noopener"
+      data-cms={cmsSite('blocks', 'place.route')}
     >
-      <Icon slot="icon" name="image" size={18} />
-      Схема проезда картинкой
+      <Icon slot="icon" name="navigation" size={18} />
+      {blocks.place.route}
     </Button>
+    {
+      clinic.routeImage && (
+        <Button
+          variant="ghost"
+          size="sm"
+          href={withBase(clinic.routeImage)}
+          target="_blank"
+          rel="noopener"
+          data-cms={cmsSite('blocks', 'place.routeImage')}
+        >
+          <Icon slot="icon" name="image" size={18} />
+          {blocks.place.routeImage}
+        </Button>
+      )
+    }
   </div>
 </div>
 

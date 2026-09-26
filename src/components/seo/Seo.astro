@@ -12,7 +12,7 @@
  * так поисковик видит одну клинику с врачами и прайсом, а не десяток
  * независимых организаций с одинаковым адресом.
  */
-import { clinic } from '../../data/site';
+import { clinic, menu } from '../../data/site';
 import seo from '../../data/seo.json';
 import { absolute, breadcrumbSchema, clinicId, isIndexable, siteRoot } from '../../lib/seo';
 
@@ -109,7 +109,7 @@ const business: Record<string, unknown> = {
   })),
   priceRange: '₽₽',
   currenciesAccepted: 'RUB',
-  paymentAccepted: 'Наличные, банковская карта, рассрочка',
+  paymentAccepted: clinic.paymentAccepted,
   medicalSpecialty: 'Dentistry',
   /* Ближайшее метро — сильный локальный запрос: «стоматология
      Полежаевская» ищут чаще, чем по улице. */
@@ -150,7 +150,8 @@ const faqSchema =
       }
     : null;
 
-const crumbSchema = breadcrumbs && breadcrumbs.length > 0 ? breadcrumbSchema(breadcrumbs, site) : null;
+const crumbSchema =
+  breadcrumbs && breadcrumbs.length > 0 ? breadcrumbSchema(breadcrumbs, site, menu.crumbsHome) : null;
 
 /* Организацию и сайт описываем только на главной. На внутренних страницах
    хватает ссылки по `@id` из блоков врача и услуги: дубль полной карточки

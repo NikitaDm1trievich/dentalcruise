@@ -9,7 +9,9 @@
 import BaseLayout from './BaseLayout.astro';
 import Reveal from '../components/core/Reveal.astro';
 import Icon from '../components/core/Icon.astro';
+import { menu } from '../data/site';
 import { pageHref } from '../lib/asset';
+import { cmsSite } from '../lib/cms-ref';
 
 interface Props {
   title: string;
@@ -18,14 +20,23 @@ interface Props {
   eyebrow?: string;
   heading: string;
   lead?: string;
-  /** Хлебные крошки без «Главная» — она добавляется сама */
-  breadcrumbs?: { label: string; href?: string }[];
+  /** Хлебные крошки без «Главная» — она добавляется сама. cms — адрес подписи в редакторе */
+  breadcrumbs?: { label: string; href?: string; cms?: string }[];
   noindex?: boolean;
   hideContactsCta?: boolean;
   /** Дополнительные блоки JSON-LD страницы: врач, услуга, галерея */
   schema?: Record<string, unknown>[];
   /** Вопросы страницы — уходят в схему FAQPage и в сниппет выдачи */
   faq?: { q: string; a: string }[];
+  /** Запись шапки страницы в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+  cms?: string;
+  /** Адрес лида в редакторе, если он не в записи шапки (адрес клиники на «Контактах») */
+  leadCms?: string;
+  /**
+   * Лид — текст из редактора с метками (`{позиций}`): значения меток. По ним
+   * предпросмотр редактора собирает лид так же, как сборка (lib/cms-preview).
+   */
+  leadVars?: Record<string, string>;
 }
 
 const {
@@ -40,6 +51,9 @@ const {
   hideContactsCta = false,
   schema,
   faq,
+  cms,
+  leadCms,
+  leadVars,
 } = Astro.props;
 ---
 
@@ -53,15 +67,19 @@ const {
   faq={faq}
   breadcrumbs={breadcrumbs.map((crumb) => ({ label: crumb.label, path: crumb.href }))}
 >
-  <header class="dc-page__top">
+  <header class="dc-page__top" data-cms={cms}>
     <div class="dc-page__inner">
       <nav class="dc-crumbs" aria-label="Хлебные крошки">
-        <a href={pageHref('')}>Главная</a>
+        <a href={pageHref('')} data-cms={cmsSite('menu', 'crumbsHome')}>{menu.crumbsHome}</a>
         {
           breadcrumbs.map((crumb) => (
             <>
               <Icon name="chevron-right" size={14} />
-              {crumb.href ? <a href={crumb.href}>{crumb.label}</a> : <span>{crumb.label}</span>}
+              {crumb.href ? (
+                <a href={crumb.href} data-cms={crumb.cms}>{crumb.label}</a>
+              ) : (
+                <span data-cms={crumb.cms}>{crumb.label}</span>
+              )}
             </>
           ))
         }
@@ -71,7 +89,7 @@ const {
         <div class="dc-page__head">
           {eyebrow && <span class="dc-page__eyebrow">{eyebrow}</span>}
           <h1 class="dc-page__title">{heading}</h1>
-          {lead && <p class="dc-page__lead">{lead}</p>}
+          {lead && <p class="dc-page__lead" data-cms={leadCms} data-cms-vars={leadVars && JSON.stringify(leadVars)}>{lead}</p>}
           <slot name="head-extra" />
         </div>
       </Reveal>

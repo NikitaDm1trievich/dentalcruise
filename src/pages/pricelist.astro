@@ -16,8 +16,10 @@ import Icon from '../components/core/Icon.astro';
 import PriceTable from '../components/content/PriceTable.astro';
 import OfferStrip from '../components/content/OfferStrip.astro';
 import { clinic } from '../data/site';
+import { pricesPage as page } from '../data/pages';
 import { pageHref } from '../lib/asset';
-import { plural } from '../lib/format';
+import { cmsItem, cmsPage, cmsSite } from '../lib/cms-ref';
+import { fill, plural } from '../lib/format';
 import { absolute, clampText, clinicRef, isFromPrice, priceValue } from '../lib/seo';
 import { servicePageIndex } from '../lib/services';
 
@@ -36,6 +38,7 @@ const sections = categories
   .map((category) => {
     const price = prices.find((p) => p.data.slug === category.data.slug);
     return {
+      id: category.data.id,
       slug: category.data.slug,
       title: category.data.title,
       icon: category.data.icon,
@@ -103,28 +106,46 @@ const total = sections.reduce(
   (sum, s) => sum + (s.price?.data.groups ?? []).reduce((n, g) => n + g.items.length, 0),
   0,
 );
+/** Метки текста под заголовком — тот же набор уходит в предпросмотр редактора */
+const leadVars = { позиций: `${total} ${plural(total, ['позиция', 'позиции', 'позиций'])}` };
 ---
 
+{/* Тексты страницы — в редакторе, «Страницы сайта» → «Прайс-лист — тексты
+    страницы». Разделы и цены — в «Прайс-листе», названия разделов — в
+    «Главная страница» → «4. Услуги — разделы и цены». */}
 <PageLayout
-  title="Цены на лечение зубов в Москве — прайс-лист Дентал Круиз"
-  description={clampText(
-    'Полные цены клиники «Дентал Круиз»: коронки от 15 000 ₽, виниры от 25 000 ₽, имплантация под ключ от 65 000 ₽, All-on-4 от 150 000 ₽. Консультация бесплатно. Москва, 4-я Магистральная, 5с1.',
-  )}
+  title={page.seo.title}
+  description={clampText(page.seo.description)}
   path="/pricelist"
-  heading="Цены на лечение"
-  lead={`${total} ${plural(total, ['позиция', 'позиции', 'позиций'])} по шести направлениям. Цены указаны за единицу работы. Коронки, виниры и протезы делает зуботехническая лаборатория клиники — поэтому в цене нет наценки посредника.`}
-  breadcrumbs={[{ label: 'Прайс-лист' }]}
+  heading={page.heading}
+  lead={fill(page.lead, leadVars)}
+  leadCms={cmsPage('prices', 'lead')}
+  leadVars={leadVars}
+  breadcrumbs={[{ label: page.breadcrumb }]}
   schema={[catalogSchema]}
+  cms={cmsPage('prices')}
 >
   <!-- Панель фильтра: липнет под шапкой при прокрутке -->
   <div class="dc-filter" data-price-filter>
     <div class="dc-filter__inner">
-      <button type="button" class="dc-filter__chip" data-filter="all" aria-pressed="true">
-        Все направления
+      <button
+        type="button"
+        class="dc-filter__chip"
+        data-filter="all"
+        aria-pressed="true"
+        data-cms={cmsPage('prices', 'filterAll')}
+      >
+        {page.filterAll}
       </button>
       {
         sections.map((section) => (
-          <button type="button" class="dc-filter__chip" data-filter={section.slug} aria-pressed="false">
+          <button
+            type="button"
+            class="dc-filter__chip"
+            data-filter={section.slug}
+            aria-pressed="false"
+            data-cms={cmsItem('catalog', section.id, 'title')}
+          >
             {section.title}
           </button>
         ))
@@ -136,30 +157,24 @@ const total = sections.reduce(
     <div class="dc-container">
       <Reveal>
         <OfferStrip
-          items={[
-            {
-              icon: 'calendar-check',
-              title: 'Консультация бесплатно',
-              text: 'Осмотр, снимок и план лечения с итоговой суммой — до того, как вы что-то оплатите.',
-            },
-            {
-              icon: 'wallet',
-              title: 'Рассрочка без переплат',
-              text: 'Доступная рассрочка без % от клиники и банков-партнёров на масштабные планы лечения.',
-            },
-          ]}
+          items={page.terms.map((term, i) => ({ ...term, cms: cmsPage('prices', `terms.${i}`) }))}
         />
       </Reveal>
 
       {
         sections.map((section, i) => (
           <Reveal delay={i * 60}>
-            <section class="dc-price-block" id={section.slug} data-price-section={section.slug}>
+            <section
+              class="dc-price-block"
+              id={section.slug}
+              data-price-section={section.slug}
+              data-cms={`price-list/${section.price?.id}`}
+            >
               <header class="dc-price-block__head">
                 <span class="dc-price-block__icon">
                   <Icon name={section.icon} size={24} strokeWidth={1.75} color="var(--text-accent)" />
                 </span>
-                <h2>{section.title}</h2>
+                <h2 data-cms={cmsItem('catalog', section.id, 'title')}>{section.title}</h2>
                 {section.price?.data.note && <p>{section.price.data.note}</p>}
               </header>
 
@@ -174,17 +189,14 @@ const total = sections.reduce(
       }
 
       <Reveal>
-        <div class="dc-price-page__foot">
-          <p>
-            Цены действуют на сентябрь 2026 года и не являются публичной офертой: итоговую сумму
-            врач называет после осмотра и снимка — до начала лечения и без доплат по ходу.
-          </p>
+        <div class="dc-price-page__foot" data-cms={cmsPage('prices', 'foot')}>
+          <p>{page.foot}</p>
           <div class="dc-actions">
-            <Button variant="primary" size="lg" data-open="dc-book">
+            <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('prices', 'book')}>
               <Icon slot="icon" name="calendar" size={20} />
-              Записаться на консультацию
+              {page.book}
             </Button>
-            <Button variant="secondary" size="lg" href={clinic.phoneHref}>
+            <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
               <Icon slot="icon" name="phone" size={20} />
               {clinic.phone}
             </Button>

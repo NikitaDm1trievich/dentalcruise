@@ -12,6 +12,10 @@ interface Props {
   title: string;
   note?: string;
   ctaLabel?: string;
+  /** Ленточка через угол карточки */
+  ribbon?: string;
+  /** Адрес подписи ленточки в редакторе: она общая, а не у каждой карточки своя */
+  ribbonCms?: string;
   items: {
     id: string;
     title: string;
@@ -31,6 +35,8 @@ const {
   title,
   note,
   ctaLabel = 'Записаться по акции',
+  ribbon = 'Акция',
+  ribbonCms,
   items,
 } = Astro.props;
 ---
@@ -48,7 +54,7 @@ const {
         const Tag = item.href ? 'a' : 'div';
         return (
         <Tag class="dc-promo__card" href={item.href} data-cms={item.cms}>
-          <span class="dc-promo__ribbon" aria-hidden="true">Акция</span>
+          <span class="dc-promo__ribbon" aria-hidden="true" data-cms={ribbonCms}>{ribbon}</span>
           <span class="dc-promo__label">{item.title}</span>
           <span class="dc-promo__price">{item.price}</span>
           {item.was && <span class="dc-promo__was">{item.was}</span>}

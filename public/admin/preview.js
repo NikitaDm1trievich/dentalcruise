@@ -59,11 +59,38 @@
     faq: 'faq',
   };
 
+  /* «Страницы сайта»: файл → адрес страницы. Шаблоны врача и услуги
+     показывают страницу, выбранную в самой записи («Служебное: … для
+     предпросмотра»), — у шаблона своей страницы нет. */
+  var PAGES = {
+    about: 'about/',
+    contacts: 'contacts/',
+    team: 'doctors/',
+    prices: 'pricelist/',
+    gallery: 'gallery/',
+    privacy: 'privacy/',
+    // Такой страницы нет: сайт отвечает своей страницей 404 — её и показываем.
+    'not-found': '404/',
+  };
+
+  /* «Шапка, подвал и контакты» стоят на всех страницах — показываем
+     главную: карточку адреса — у блока контактов, форму записи — открытой. */
+  var SITE_ANCHORS = {
+    blocks: 'contacts',
+    form: 'dc-book',
+  };
+
   /** Какую страницу показать для записи. */
   function pageFor(collection, slug, data) {
     switch (collection) {
       case 'home':
         return HOME_ANCHORS[slug] ? '#' + HOME_ANCHORS[slug] : '';
+      case 'pages':
+        if (slug === 'doctor-page') return data && data.preview ? 'doctors/' + data.preview + '/' : 'doctors/';
+        if (slug === 'service-page') return data && data.preview ? 'uslugi/' + data.preview + '/' : 'pricelist/';
+        return PAGES[slug] || '';
+      case 'site':
+        return SITE_ANCHORS[slug] ? '#' + SITE_ANCHORS[slug] : '';
       case 'doctors':
         return slug ? 'doctors/' + slug + '/' : 'doctors/';
       case 'service-pages':
@@ -155,8 +182,10 @@
   /**
    * Уточнить поле по тексту под курсором. Блок из другой записи страница
    * знает только целиком (`hero`), а нажали, например, на заголовок: ищем
-   * внутри блока строку записи, равную этому тексту. Не нашлась или
-   * нашлось несколько — открываем блок целиком.
+   * внутри блока строку записи, равную этому тексту. Равной нет — берём
+   * самую длинную строку записи, которая входит в текст целиком: адрес
+   * «Москва, 4-я Магистральная улица…» сайт склеивает из города и улицы.
+   * Не нашлась или нашлось несколько равных — открываем блок целиком.
    */
   function refinePath(data, path, text) {
     var needle = (text || '').replace(/\s+/g, ' ').trim();
@@ -168,16 +197,28 @@
       node = node[parts[i]];
     }
     var found = [];
+    var inside = null;
+    var insideLength = 0;
     (function walk(value, at) {
       if (typeof value === 'string' || typeof value === 'number') {
-        if (String(value).replace(/\s+/g, ' ').trim() === needle) found.push(at);
+        var clean = String(value).replace(/\s+/g, ' ').trim();
+        if (clean === needle) found.push(at);
+        // Короткие строки («Max», «RU») нашлись бы в любом тексте.
+        else if (clean.length >= 4 && clean.length > insideLength && needle.indexOf(clean) >= 0) {
+          inside = at;
+          insideLength = clean.length;
+        }
       } else if (value && typeof value === 'object') {
         Object.keys(value).forEach(function (key) {
           walk(value[key], at ? at + '.' + key : key);
         });
       }
     })(node, path);
-    return found.length === 1 ? found[0] : path;
+    if (found.length === 1) return found[0];
+    // Длинный текст — это нажатие мимо строк, на блок целиком: по вхождению
+    // там нашлось бы случайное поле.
+    if (found.length === 0 && inside && needle.length <= 300) return inside;
+    return path;
   }
 
   /**
@@ -705,7 +746,9 @@
 
   /* Имена файлов из config.yml (для коллекций из одного файла) и имена
      коллекций-папок. Все файлы «Главной» показывают главную; нужную
-     страницу для папок шаблон выбирает по самой записи (pageFor). */
+     страницу для остальных шаблон выбирает по самой записи (pageFor).
+     Новый файл или коллекцию в config.yml нужно дописать и сюда: иначе
+     справа вместо сайта будет голый список полей. */
   [
     'palette',
     'settings',
@@ -717,6 +760,21 @@
     'chart',
     'trust',
     'faq',
+    // «Страницы сайта»
+    'about',
+    'contacts',
+    'team',
+    'doctor-page',
+    'prices',
+    'service-page',
+    'gallery',
+    'privacy',
+    'not-found',
+    // «Шапка, подвал и контакты»
+    'clinic',
+    'menu',
+    'blocks',
+    'form',
     'price-list',
     'service-pages',
     'doctors',

@@ -13,6 +13,7 @@
  * плавный фейд и читается как переход, а не как сбой; вдвое быстрая волна
  * лишь переместила бы момент обрыва на разворот зубов в воздухе.
  */
+import { clinic } from '../../data/site';
 ---
 
 <section class="dc-preloader dental-loader" data-preloader aria-label="Загрузка страницы" aria-busy="true">
@@ -171,7 +172,7 @@
       </svg>
     </div>
     <div class="loader-copy" role="status" aria-live="polite">
-      <p class="loader-title">Дентал Круиз</p>
+      <p class="loader-title">{clinic.name}</p>
     </div>
     <div class="loader-progress" aria-hidden="true"><span></span></div>
   </div>

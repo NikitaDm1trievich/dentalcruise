@@ -13,6 +13,15 @@ interface Props {
    * (заглушки на StubLayout); стили от уровня не зависят.
    */
   as?: 'h1' | 'h2';
+  /** Адрес текстов заголовка в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+  cms?: string;
+  /**
+   * Заголовок — текст из редактора с метками (`{услуга}`): адрес его поля и
+   * значения меток. По ним предпросмотр редактора собирает заголовок так же,
+   * как сборка (lib/cms-preview).
+   */
+  titleCms?: string;
+  titleVars?: Record<string, string>;
 }
 const {
   eyebrow,
@@ -23,15 +32,19 @@ const {
   id,
   class: className,
   as = 'h2',
+  cms,
+  titleCms,
+  titleVars,
 } = Astro.props;
 const Title = as;
 ---
 
 <header
   class:list={['dc-heading', align === 'center' && 'dc-heading--center', onDark && 'dc-heading--dark', className]}
+  data-cms={cms}
 >
   {eyebrow && <span class="dc-heading__eyebrow">{eyebrow}</span>}
-  <Title class="dc-heading__title" id={id}>{title}</Title>
+  <Title class="dc-heading__title" id={id} data-cms={titleCms} data-cms-vars={titleVars && JSON.stringify(titleVars)}>{title}</Title>
   {lead && <p class="dc-heading__lead">{lead}</p>}
   <slot />
 </header>

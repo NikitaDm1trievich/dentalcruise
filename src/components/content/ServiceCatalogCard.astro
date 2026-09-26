@@ -8,6 +8,10 @@
  * прятаться за переворотом, как в ServiceFlipCard.
  */
 import Icon from '../core/Icon.astro';
+import { cmsText } from '../../lib/cms-ref';
+/* Подпись ссылки «Смотреть все услуги» — одна на все карточки, и на главной,
+   и на страницах врачей: редактор, «Главная страница» → «4. Услуги». */
+import copy from '../../data/home.json';
 
 interface Props {
   title: string;
@@ -55,8 +59,8 @@ const shown = items.slice(0, 3);
     }
   </ul>
 
-  <a href={href} class="dc-catalog-card__link">
-    Смотреть все услуги
+  <a href={href} class="dc-catalog-card__link" data-cms={cmsText('services.more')}>
+    {copy.services.more}
     <Icon name="arrow-right" size={18} />
   </a>
 </article>

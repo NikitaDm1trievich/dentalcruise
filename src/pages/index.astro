@@ -78,10 +78,8 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
 ---
 
 <BaseLayout
-  title="Стоматология у м. Полежаевская — Дентал Круиз, своя лаборатория"
-  description={clampText(
-    'Коронки от 19 900 ₽, виниры от 25 000 ₽, протезирование под ключ от 65 000 ₽. Своя лаборатория — без наценки посредника. Москва, м. Полежаевская.',
-  )}
+  title={copy.seo.title}
+  description={clampText(copy.seo.description)}
   path="/"
   overHero
   faq={faqItems}
@@ -97,11 +95,11 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     <div class="dc-hero__actions">
       <Button variant="primary" size="lg" data-open="dc-book">
         <Icon slot="icon" name="calendar" size={20} />
-        Записаться на приём
+        {copy.hero.book}
       </Button>
       <Button variant="onDark" size="lg" href={clinic.phoneHref}>
         <Icon slot="icon" name="phone" size={20} />
-        Позвонить
+        {copy.hero.call}
       </Button>
     </div>
   </OceanHero>
@@ -120,7 +118,11 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     <div class="dc-container">
       <Reveal>
         <PromoBoard
+          eyebrow={copy.promo.eyebrow}
           title={copy.promo.title}
+          ctaLabel={copy.promo.cta}
+          ribbon={copy.promo.ribbon}
+          ribbonCms={cmsText('promo.ribbon')}
           items={promos.map((p) => ({
             ...p.data,
             href: p.data.category ? pageHref(`pricelist#${p.data.category}`) : undefined,
@@ -228,7 +230,12 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
         <SectionHeading eyebrow={copy.why.eyebrow} title={copy.why.title} lead={copy.why.lead} />
       </Reveal>
       <Reveal delay={90}>
-        <ComparisonColumns theirItems={them} ourItems={us} />
+        <ComparisonColumns
+          theirTitle={copy.why.theirTitle}
+          ourTitle={copy.why.ourTitle}
+          theirItems={them}
+          ourItems={us}
+        />
       </Reveal>
       <Reveal delay={140}>
         <PriceChart />
@@ -266,6 +273,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
           label={copy.about.galleryLabel}
           ratio="4 / 3"
           interval={4000}
+          cmsLock="photos"
         />
       </Reveal>
     </div>
@@ -328,6 +336,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
             height={526}
             linkHref={clinic.links.yandexOrg}
             linkLabel={copy.reviews.linkLabel}
+            lock="reviews"
           />
         </Reveal>
       </div>

@@ -18,6 +18,7 @@
 import PriceChartPlot from './PriceChartPlot.astro';
 import { MONTH_IN, priceChart } from '../../data/price-chart';
 import { cmsChart } from '../../lib/cms-ref';
+import { fillParts } from '../../lib/format';
 
 const { data, title, marketLabel, clinicLabel, note, year } = priceChart;
 
@@ -35,6 +36,13 @@ const anchor =
 const anchorMonth = anchor?.month ?? '';
 const gap = anchor ? anchor.market - anchor.clinic : 0;
 const rub = new Intl.NumberFormat('ru-RU');
+
+/* Фраза о разнице — текст из редактора с метками {месяце} и {сумма}.
+   Сумма выделяется жирным, поэтому текст собираем по кускам. Значения меток
+   уходят в data-cms-vars: по ним предпросмотр редактора собирает фразу так
+   же, пока владелец её правит (lib/cms-preview). */
+const gapVars = { месяце: MONTH_IN[anchorMonth] ?? anchorMonth, сумма: `${rub.format(gap)} ₽` };
+const gapParts = fillParts(priceChart.gap, gapVars);
 ---
 
 <figure
@@ -74,8 +82,13 @@ const rub = new Intl.NumberFormat('ru-RU');
 
   {
     gap > 0 && (
-      <p class="dc-chart__gap">
-        В {MONTH_IN[anchorMonth] ?? anchorMonth} разница составляет <b>{rub.format(gap)} ₽</b> на каждой коронке.
+      <p
+        class="dc-chart__gap"
+        data-cms={cmsChart('gap')}
+        data-cms-vars={JSON.stringify(gapVars)}
+        data-cms-bold="сумма"
+      >
+        {gapParts.map((part) => (part.key === 'сумма' ? <b>{part.text}</b> : part.text))}
       </p>
     )
   }
@@ -84,6 +97,9 @@ const rub = new Intl.NumberFormat('ru-RU');
 </figure>
 
 <script>
+  // Слово «прогноз» в подсказке — из редактора, как и остальные подписи графика
+  import { priceChart } from '../../data/price-chart';
+
   document.querySelectorAll<HTMLElement>('[data-chart]').forEach((chart) => {
     const svg = chart.querySelector('svg');
     const tip = chart.querySelector<HTMLElement>('[data-chart-tip]');
@@ -109,7 +125,7 @@ const rub = new Intl.NumberFormat('ru-RU');
         // innerHTML, чтобы текст из данных не стал разметкой.
         const date = document.createElement('span');
         date.className = 'dc-chart__tip-date';
-        date.textContent = [d.month, labels.year].filter(Boolean).join(' ') + (d.forecast === 'true' ? ' · прогноз' : '');
+        date.textContent = [d.month, labels.year].filter(Boolean).join(' ') + (d.forecast === 'true' ? ` · ${priceChart.forecast}` : '');
         const row = (label: string, color: string, value: string) => {
           const line = document.createElement('span');
           line.className = 'dc-chart__tip-row';

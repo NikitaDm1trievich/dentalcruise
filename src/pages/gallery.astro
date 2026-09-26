@@ -1,16 +1,19 @@
 ---
 import StubLayout from '../layouts/StubLayout.astro';
+import { galleryPage as page } from '../data/pages';
+import { cmsPage } from '../lib/cms-ref';
 ---
 
 {/* Заглушка «раздел готовится» — в индексе ей делать нечего. Открыть для
     индексации (убрать noindex) и вернуть в sitemap (astro.config.mjs),
-    когда раздел наполнится. */}
+    когда раздел наполнится. Тексты — в редакторе, «Страницы сайта». */}
 <StubLayout
-  title="Работы до и после — стоматология Дентал Круиз"
-  description="Работы стоматологии «Дентал Круиз»: виниры, коронки и протезирование — реальные фотографии до и после, изготовлено в собственной лаборатории клиники."
+  title={page.seo.title}
+  description={page.seo.description}
   path="/gallery"
   noindex
-  eyebrow="Галерея работ"
-  heading="Наши работы до и после"
-  lead="Галерея с фильтром по типу работ готовится — сейчас идёт съёмка кейсов. Показать примеры работ может врач на консультации."
+  eyebrow={page.eyebrow}
+  heading={page.heading}
+  lead={page.lead}
+  cms={cmsPage('gallery')}
 />

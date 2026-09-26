@@ -1,0 +1,75 @@
+{
+  "name": "Дентал Круиз",
+  "legalName": "Дентал Круиз",
+  "description": "Центр стоматологии с собственной зуботехнической лабораторией: коронки, виниры и протезирование под ключ изготавливаются на месте, без наценки посредника.",
+  "phone": "+7 925 577-76-77",
+  "email": "info@dentalcruise.ru",
+  "address": {
+    "street": "4-я Магистральная улица, 5с1, 2 этаж",
+    "streetShort": "4-я Магистральная, 5с1",
+    "locality": "Москва",
+    "region": "Москва",
+    "postalCode": "",
+    "country": "RU"
+  },
+  "metro": "м. Полежаевская",
+  "metroStations": [
+    {
+      "name": "Полежаевская",
+      "line": "Таганско-Краснопресненская линия",
+      "color": "#800080"
+    },
+    {
+      "name": "Хорошёвская",
+      "line": "Большая кольцевая линия",
+      "color": "#82C0C0"
+    }
+  ],
+  "metroWalk": "5 минут пешком",
+  "scheduleShort": "пн–сб 10:00–22:00",
+  "scheduleLong": "Пн–Сб 10:00–22:00 · Вс — выходной",
+  "openingHours": [
+    {
+      "days": [
+        "Mo",
+        "Tu",
+        "We",
+        "Th",
+        "Fr",
+        "Sa"
+      ],
+      "opens": "10:00",
+      "closes": "22:00"
+    }
+  ],
+  "paymentAccepted": "Наличные, банковская карта, рассрочка",
+  "links": {
+    "max": "https://max.ru/+79255777677",
+    "vk": "https://vk.ru/dentalcruise",
+    "telegram": "",
+    "instagram": "",
+    "yandexOrg": "https://yandex.ru/maps/org/dental_kruiz/154025048590/",
+    "yandexPin": "https://yandex.ru/maps/-/CTdFz09l",
+    "yandexMapWidget": "https://yandex.ru/map-widget/v1/?ll=37.520284%2C55.774426&z=17",
+    "yandexReviewsWidget": "https://yandex.ru/maps-reviews-widget/154025048590?comments",
+    "twoGis": "",
+    "googleMaps": "",
+    "prodoctorov": "",
+    "zoon": ""
+  },
+  "routeImage": "/images/map/route-to-clinic.png",
+  "license": {
+    "title": "Лицензия на осуществление медицинской деятельности",
+    "number": "",
+    "scan": "",
+    "pdf": ""
+  },
+  "legal": {
+    "inn": "",
+    "ogrn": ""
+  },
+  "geo": {
+    "lat": 55.774426,
+    "lng": 37.520284
+  }
+}

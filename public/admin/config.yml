@@ -3,9 +3,17 @@
 # Каждая коллекция ниже — это реальный JSON-файл в репозитории. Правка в
 # редакторе = коммит в ветку main = пересборка сайта через GitHub Actions.
 #
-# Порядок в левом меню повторяет меню сайта: сначала «Главная» со всеми
-# своими блоками, затем остальные страницы, в конце настройки. Номер в
+# Порядок в левом меню: сначала тексты страниц («Главная» со всеми своими
+# блоками, «Страницы сайта»), затем данные (прайс, услуги, врачи), в конце
+# общее для всех страниц («Шапка, подвал и контакты») и настройки. Номер в
 # подписях «Главной» совпадает с номером блока на странице сверху вниз.
+#
+# Новый файл или коллекцию нужно добавить и в preview.js: в список
+# registerPreviewTemplate (иначе справа будет голый список полей вместо
+# сайта) и в pageFor (какую страницу показать). Подписи рамок в
+# предпросмотре preview.js читает из этого файла своим мини-парсером:
+# держите стиль — блочные списки `- name:` и однострочные
+# `{ name, label, widget }`, без якорей YAML (`&`, `*`).
 #
 # Технические имена коллекций и файлов (`name`) не менять без нужды: на них
 # завязаны preview.js (шаблоны предпросмотра, переход к полю по клику в
@@ -71,13 +79,19 @@ collections:
             label: 1. Первый экран
             widget: object
             hint: >-
-              Где на сайте: самый верх главной, текст поверх видео. Кнопки
-              «Записаться на приём» и «Позвонить» и само видео меняет
-              разработчик.
+              Где на сайте: самый верх главной, текст поверх видео. Само видео
+              меняет разработчик.
             fields:
               - { name: eyebrow, label: Надпись над заголовком, widget: string }
               - { name: title, label: Крупный заголовок, widget: string }
               - { name: lead, label: Текст под заголовком, widget: text }
+              - { name: book, label: Кнопка записи, widget: string, hint: Открывает форму записи. }
+              - name: call
+                label: Кнопка звонка
+                widget: string
+                hint: >-
+                  Звонит по телефону клиники. Сам номер — в «Шапка, подвал и
+                  контакты» → «Контакты и реквизиты клиники».
 
           - name: terms
             label: 2. Условия под первым экраном
@@ -128,8 +142,11 @@ collections:
               текст под карточками. Карточки акций — в пункте «3. Акции —
               карточки» этого же раздела.
             fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
               - { name: title, label: Заголовок блока, widget: string }
               - { name: note, label: Текст под карточками, widget: text }
+              - { name: cta, label: Текст кнопки, widget: string, hint: Кнопка под карточками открывает форму записи. }
+              - { name: ribbon, label: Ленточка на карточке, widget: string, hint: Надпись на ленте через угол каждой карточки. }
 
           - name: services
             label: 4. Услуги
@@ -143,6 +160,10 @@ collections:
               - { name: eyebrow, label: Надпись над заголовком, widget: string }
               - { name: title, label: Заголовок блока, widget: string }
               - { name: lead, label: Текст под заголовком, widget: text }
+              - name: more
+                label: Ссылка внизу карточки
+                widget: string
+                hint: Одна на все карточки — и здесь, и на страницах врачей. Ведёт в раздел прайса.
 
           - name: brands
             label: 5. Поставщики
@@ -170,6 +191,14 @@ collections:
                 label: Текст кнопки
                 widget: string
                 hint: Кнопка под карточками, ведёт на страницу со всеми врачами.
+              - name: cardHint
+                label: 'Карточка: подсказка «перевернуть»'
+                widget: string
+                hint: >-
+                  Внизу лицевой стороны. Слово перед стажем — в «Страницы
+                  сайта» → «Страница врача — общие тексты».
+              - { name: cardPage, label: 'Карточка: ссылка на страницу врача', widget: string }
+              - { name: cardBook, label: 'Карточка: кнопка записи', widget: string }
 
           - name: why
             label: 7. Почему мы
@@ -184,6 +213,8 @@ collections:
               - { name: eyebrow, label: Надпись над заголовком, widget: string }
               - { name: title, label: Заголовок блока, widget: string }
               - { name: lead, label: Текст под заголовком, widget: text }
+              - { name: theirTitle, label: Заголовок левой колонки, widget: string }
+              - { name: ourTitle, label: Заголовок правой колонки, widget: string }
 
           - name: about
             label: 9. О клинике
@@ -271,6 +302,12 @@ collections:
                   - { name: caption, label: Подпись под годом, widget: string }
               - { name: note, label: Текст рядом с годом, widget: text }
               - { name: linkLabel, label: Текст ссылки под виджетом Яндекса, widget: string }
+              - name: countLabel
+                label: Слово после числа отзывов
+                widget: string
+                hint: В карточке с оценкой, например «60 отзывов».
+              - { name: cardNote, label: Текст в карточке с оценкой, widget: text }
+              - { name: cardButton, label: Кнопка в карточке с оценкой, widget: string }
 
           - name: contacts
             label: 12. Контакты — внизу всех страниц
@@ -278,8 +315,8 @@ collections:
             collapsed: true
             hint: >-
               Где на сайте: последний блок перед подвалом на всех страницах,
-              кроме «Контакты». Адрес для карты, телефон и станции метро меняет
-              разработчик.
+              кроме «Контакты». Адрес, телефон, режим работы и станции метро в
+              карточке — в «Шапка, подвал и контакты». Карту рисует Яндекс.
             fields:
               - { name: eyebrow, label: Надпись над заголовком, widget: string }
               - { name: title, label: Заголовок блока, widget: string }
@@ -293,6 +330,18 @@ collections:
                 label: Текст кнопки
                 widget: string
                 hint: Кнопка открывает форму записи.
+
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: не на странице, а в выдаче Яндекса и Google и в
+              превью ссылки в мессенджерах. Заголовок — до ~60 знаков,
+              описание — до ~160: длиннее поисковик обрежет.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string }
+              - { name: description, label: Описание страницы в поиске, widget: text }
 
       # Разделитель между текстами и списками здесь не поставить: Sveltia
       # 0.209.1 понимает `divider` только в списке коллекций, а в `files`
@@ -506,9 +555,8 @@ collections:
             widget: list
             summary: '{{fields.side}}: {{fields.text | truncate(70)}}'
             hint: >-
-              Заголовки колонок «Обычная клиника» и «Дентал Круиз» меняет
-              разработчик. Заголовок блока — в «Тексты блоков», группа «7.
-              Почему мы».
+              Заголовки колонок «Обычная клиника» и «Дентал Круиз» и заголовок
+              блока — в «Тексты блоков», группа «7. Почему мы».
             fields:
               - name: side
                 label: Колонка
@@ -594,6 +642,18 @@ collections:
               По нему считается фраза «В сентябре разница составляет … ₽ на
               каждой коронке». Если цена клиники в этом месяце не ниже
               рыночной, фраза не показывается.
+          - name: gap
+            label: Фраза о разнице под графиком
+            widget: string
+            hint: >-
+              {месяце} сайт заменит на месяц из поля выше («сентябре»), {сумма} —
+              на разницу цен жирным («10 100 ₽»). Метки в фигурных скобках не
+              переводите и не удаляйте: метка с опечаткой попадёт на сайт как
+              есть, а без {сумма} разница пропадёт из фразы.
+          - name: forecast
+            label: Пометка прогнозного месяца
+            widget: string
+            hint: В подсказке при наведении на месяц, например «Ноя 2026 · прогноз».
           - name: note
             label: Сноска под графиком
             widget: text
@@ -692,6 +752,467 @@ collections:
                 hint: >-
                   Латиницей, один раз при создании. У существующих записей не
                   менять — сломаются ссылки.
+
+  # ── Страницы сайта ───────────────────────────────────────────────────
+  # Тексты внутренних страниц (src/data/pages/*.json), по файлу на
+  # страницу, и общие тексты шаблонов страниц врача и услуги. Данные, которые
+  # страница собирает сама (цены, врачи, адрес и телефон), здесь не
+  # повторяются — они в своих разделах.
+  - name: pages
+    label: Страницы сайта
+    icon: description
+    description: >-
+      Тексты всех страниц, кроме главной: заголовки, подписи, кнопки и то, как
+      страница выглядит в поиске. Врачи, услуги, цены, адрес и телефон — в
+      своих разделах слева. В предпросмотре справа можно нажать на блок —
+      слева откроется нужное поле.
+    files:
+      - name: about
+        label: О клинике
+        file: src/data/pages/about.json
+        fields:
+          - name: eyebrow
+            label: Надпись над заголовком
+            widget: string
+            hint: >-
+              Где на сайте: страница «О клинике». Пока это заглушка «раздел
+              готовится» и закрыта от поисковиков. Кнопки внизу — в «Шапка,
+              подвал и контакты» → «Общие блоки».
+          - { name: heading, label: Заголовок страницы, widget: string }
+          - { name: lead, label: Текст под заголовком, widget: text }
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: не на странице, а в выдаче Яндекса и Google и в
+              превью ссылки в мессенджерах. Заголовок — до ~60 знаков,
+              описание — до ~160: длиннее поисковик обрежет.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string }
+              - { name: description, label: Описание страницы в поиске, widget: text }
+
+      - name: contacts
+        label: Контакты
+        file: src/data/pages/contacts.json
+        fields:
+          - name: eyebrow
+            label: Надпись над заголовком
+            widget: string
+            hint: >-
+              Где на сайте: верх страницы «Контакты». Адрес и режим работы под
+              заголовком, телефон, станции метро и карточка с адресом — в
+              «Шапка, подвал и контакты» → «Контакты и реквизиты клиники».
+          - { name: heading, label: Заголовок страницы, widget: string }
+          - { name: book, label: Кнопка записи, widget: string }
+          - { name: route, label: Кнопка маршрута, widget: string, hint: Открывает точку клиники на Яндекс Картах. }
+          - name: way
+            label: Как до нас добраться
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: карточки под картой — метро, машина, режим, запись.'
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - name: blocks
+                label: Карточки
+                label_singular: карточка
+                widget: list
+                collapsed: true
+                summary: '{{fields.title}}'
+                fields:
+                  - { name: title, label: Заголовок карточки, widget: string }
+                  - name: lines
+                    label: Строки текста
+                    label_singular: строка
+                    widget: list
+                    required: false
+                    field: { name: line, label: Строка, widget: text }
+                  - name: metro
+                    label: Показать станции метро
+                    widget: boolean
+                    default: false
+                    hint: Станции и «5 минут пешком» — из контактов клиники, над строками.
+                  - name: schedule
+                    label: Показать режим работы
+                    widget: boolean
+                    default: false
+                    hint: Режим работы — из контактов клиники, над строками.
+                  - name: icon
+                    label: Иконка
+                    widget: select
+                    options:
+                      - { label: Поезд метро, value: train }
+                      - { label: Автомобиль, value: car }
+                      - { label: Автобус, value: bus }
+                      - { label: Пешком, value: footprints }
+                      - { label: Парковка, value: square-parking }
+                      - { label: Часы, value: clock }
+                      - { label: Календарь с галочкой, value: calendar-check }
+                      - { label: Телефон, value: phone }
+                      - { label: Письмо, value: mail }
+                      - { label: Сообщение, value: message-circle }
+                      - { label: Метка на карте, value: map-pin }
+                      - { label: Стрелка навигации, value: navigation }
+                      - { label: Здание, value: building-2 }
+                      - { label: Открытая дверь, value: door-open }
+                      - { label: Доступная среда, value: accessibility }
+                      - { label: Кошелёк, value: wallet }
+                      - { label: Информация, value: info }
+          - name: write
+            label: Написать нам
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: блок с почтой и мессенджерами. Сами адреса — в
+              контактах клиники; пустая ссылка убирает строку.
+            fields:
+              - { name: title, label: Заголовок, widget: string }
+              - { name: text, label: Текст, widget: text }
+              - { name: max, label: Текст ссылки на Max, widget: string }
+              - { name: vk, label: Текст ссылки на ВКонтакте, widget: string }
+          - name: docs
+            label: Документы
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: блок рядом с «Написать нам». Кнопка открывает окно
+              с лицензией — его тексты в «Шапка, подвал и контакты» → «Общие
+              блоки».
+            fields:
+              - { name: title, label: Заголовок, widget: string }
+              - { name: text, label: Текст, widget: text }
+              - { name: button, label: Кнопка, widget: string }
+          - name: breadcrumb
+            label: Название в хлебных крошках
+            widget: string
+            hint: Строка «Главная › Контакты» над заголовком.
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: не на странице, а в выдаче Яндекса и Google и в
+              превью ссылки в мессенджерах. Заголовок — до ~60 знаков,
+              описание — до ~160: длиннее поисковик обрежет.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string }
+              - { name: description, label: Описание страницы в поиске, widget: text }
+
+      - name: team
+        label: Врачи — страница списка
+        file: src/data/pages/team.json
+        fields:
+          - name: eyebrow
+            label: Надпись над заголовком
+            widget: string
+            hint: >-
+              Где на сайте: страница «Врачи» со всеми врачами. Сами врачи — в
+              разделе «Врачи» слева.
+          - { name: heading, label: Заголовок страницы, widget: string }
+          - { name: lead, label: Текст под заголовком, widget: text }
+          - { name: more, label: Ссылка внизу карточки врача, widget: string }
+          - { name: book, label: Кнопка записи под карточками, widget: string }
+          - name: breadcrumb
+            label: Название в хлебных крошках
+            widget: string
+            hint: Строка «Главная › Врачи» здесь и на страницах врачей.
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: в выдаче Яндекса и Google. Можно не заполнять: пустые
+              поля сайт соберёт сам из имён и специальностей врачей. Заголовок —
+              до ~60 знаков, описание — до ~160.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string, required: false }
+              - { name: description, label: Описание страницы в поиске, widget: text, required: false }
+
+      - name: doctor-page
+        label: Страница врача — общие тексты
+        file: src/data/pages/doctor-page.json
+        fields:
+          - name: experience
+            label: Слово перед стажем
+            widget: string
+            hint: >-
+              Где на сайте: на личных страницах всех врачей, в карточках врачей
+              на главной и на странице «Врачи» — «Стаж 6 лет». Имя, стаж,
+              тексты о враче — в разделе «Врачи».
+          - { name: book, label: Кнопка записи под именем, widget: string }
+          - { name: about, label: 'Заголовок «О враче»', widget: string }
+          - { name: skills, label: 'Заголовок «Что делает»', widget: string }
+          - name: education
+            label: Образование и курсы
+            widget: object
+            collapsed: true
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - name: courses
+                label: Подзаголовок курсов
+                widget: string
+                hint: Виден, только если у врача есть записи и с годом, и без года.
+          - name: services
+            label: Услуги врача
+            widget: object
+            collapsed: true
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - { name: lead, label: Текст под заголовком, widget: text }
+          - name: foot
+            label: Низ страницы
+            widget: object
+            collapsed: true
+            hint: >-
+              После текста сайт сам дописывает режим работы и адрес клиники.
+            fields:
+              - { name: text, label: Текст перед режимом работы, widget: string }
+              - { name: book, label: Кнопка записи, widget: string }
+              - { name: all, label: Кнопка «все врачи», widget: string }
+          - name: preview
+            label: 'Служебное: врач для предпросмотра'
+            widget: relation
+            collection: doctors
+            value_field: '{{slug}}'
+            search_fields: [name]
+            display_fields: [name]
+            hint: На сайт не влияет. На странице этого врача справа показывается предпросмотр.
+
+      - name: prices
+        label: Прайс-лист — тексты страницы
+        file: src/data/pages/prices.json
+        fields:
+          - name: heading
+            label: Заголовок страницы
+            widget: string
+            hint: >-
+              Где на сайте: страница «Прайс-лист». Цены — в разделе
+              «Прайс-лист», названия направлений — в «Главная страница» → «4.
+              Услуги — разделы и цены».
+          - name: lead
+            label: Текст под заголовком
+            widget: text
+            hint: >-
+              {позиций} сайт заменит на число позиций прайса со словом: «71
+              позиция». Метку в фигурных скобках не переводите и не удаляйте:
+              метка с опечаткой попадёт на сайт как есть, её увидят посетители.
+          - { name: filterAll, label: 'Кнопка фильтра «все»', widget: string }
+          - name: terms
+            label: Карточки условий
+            label_singular: карточка
+            widget: list
+            collapsed: true
+            summary: '{{fields.title}}'
+            hint: 'Где на сайте: две карточки над таблицами цен.'
+            fields:
+              - { name: title, label: Заголовок карточки, widget: string }
+              - { name: text, label: Текст карточки, widget: text }
+              - name: icon
+                label: Иконка
+                widget: select
+                options:
+                  - { label: Календарь с галочкой, value: calendar-check }
+                  - { label: Кошелёк, value: wallet }
+                  - { label: Щит с галочкой, value: shield-check }
+                  - { label: Значок с галочкой, value: badge-check }
+                  - { label: Часы, value: clock }
+                  - { label: Купюра, value: banknote }
+                  - { label: Процент, value: percent }
+                  - { label: Банковская карта, value: credit-card }
+                  - { label: Рука с монетами, value: hand-coins }
+                  - { label: Рукопожатие в сердце, value: heart-handshake }
+                  - { label: Звезда, value: star }
+                  - { label: Медаль, value: award }
+                  - { label: Сияние, value: sparkles }
+                  - { label: Улыбка, value: smile }
+                  - { label: Стетоскоп, value: stethoscope }
+                  - { label: Галочка в круге, value: circle-check }
+          - name: promoLabel
+            label: Метка у цены со скидкой
+            widget: string
+            hint: И в прайс-листе, и в таблицах цен на страницах услуг.
+          - { name: foot, label: Текст под таблицами, widget: text }
+          - { name: book, label: Кнопка записи под таблицами, widget: string }
+          - name: breadcrumb
+            label: Название в хлебных крошках
+            widget: string
+            hint: Строка «Главная › Прайс-лист» здесь и на страницах услуг.
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: не на странице, а в выдаче Яндекса и Google и в
+              превью ссылки в мессенджерах. Заголовок — до ~60 знаков,
+              описание — до ~160: длиннее поисковик обрежет.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string }
+              - { name: description, label: Описание страницы в поиске, widget: text }
+
+      - name: service-page
+        label: Страница услуги — общие тексты
+        file: src/data/pages/service-page.json
+        fields:
+          - name: category
+            label: Надпись над заголовком без раздела
+            widget: string
+            hint: >-
+              Где на сайте: на страницах всех услуг. Обычно над заголовком стоит
+              раздел прайса; эта надпись — если раздел не выбран. Название,
+              цены, этапы и вопросы каждой услуги — в разделе «Страницы услуг».
+          - { name: book, label: Кнопка записи под заголовком, widget: string }
+          - name: facts
+            label: Подписи фактов под заголовком
+            widget: object
+            collapsed: true
+            fields:
+              - { name: price, label: Цена, widget: string }
+              - { name: duration, label: Сроки, widget: string }
+              - { name: warranty, label: Гарантия, widget: string }
+          - { name: includes, label: 'Заголовок «Что входит в цену»', widget: string }
+          - { name: indications, label: 'Заголовок «Когда подходит»', widget: string }
+          - name: steps
+            label: Этапы работы
+            widget: object
+            collapsed: true
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+          - name: prices
+            label: Таблица цен
+            widget: object
+            collapsed: true
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - { name: lead, label: Текст под заголовком, widget: text }
+              - { name: all, label: Кнопка в раздел прайса, widget: string }
+          - name: why
+            label: Почему у нас дешевле
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: блок рядом с фото работы.'
+            fields:
+              - { name: title, label: Заголовок, widget: string }
+              - { name: text, label: Текст, widget: text }
+              - { name: book, label: Кнопка записи, widget: string }
+          - name: faq
+            label: Вопросы
+            widget: object
+            collapsed: true
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - name: title
+                label: Заголовок блока
+                widget: string
+                hint: >-
+                  {услуга} сайт заменит на название услуги строчными буквами.
+                  Метку в фигурных скобках не переводите и не удаляйте: метка с
+                  опечаткой попадёт на все страницы услуг как есть.
+              - { name: lead, label: Текст под заголовком, widget: text }
+          - name: related
+            label: Другие услуги направления
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Заголовок блока, widget: string }
+              - { name: all, label: Кнопка в прайс-лист, widget: string }
+          - name: preview
+            label: 'Служебное: услуга для предпросмотра'
+            widget: relation
+            collection: service-pages
+            value_field: '{{slug}}'
+            search_fields: [title]
+            display_fields: [title]
+            hint: >-
+              На сайт не влияет. На странице этой услуги справа показывается
+              предпросмотр — выбирайте услугу, где заполнены все блоки.
+
+      - name: gallery
+        label: Галерея работ
+        file: src/data/pages/gallery.json
+        fields:
+          - name: eyebrow
+            label: Надпись над заголовком
+            widget: string
+            hint: >-
+              Где на сайте: страница «Галерея работ». Пока это заглушка «раздел
+              готовится» и закрыта от поисковиков.
+          - { name: heading, label: Заголовок страницы, widget: string }
+          - { name: lead, label: Текст под заголовком, widget: text }
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: не на странице, а в выдаче Яндекса и Google и в
+              превью ссылки в мессенджерах. Заголовок — до ~60 знаков,
+              описание — до ~160: длиннее поисковик обрежет.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string }
+              - { name: description, label: Описание страницы в поиске, widget: text }
+
+      - name: privacy
+        label: Политика конфиденциальности
+        file: src/data/pages/privacy.json
+        fields:
+          - name: eyebrow
+            label: Надпись над заголовком
+            widget: string
+            hint: >-
+              Где на сайте: страница «Политика конфиденциальности», на неё
+              ведёт ссылка из формы записи. Название, адрес, телефон и почту
+              клиники страница вписывает сама.
+          - { name: heading, label: Заголовок страницы, widget: string }
+          - { name: lead, label: Текст под заголовком, widget: text }
+          - name: operator
+            label: Начало первого абзаца
+            widget: text
+            hint: Дальше сайт дописывает название и адрес клиники.
+          - name: paragraphs
+            label: Абзацы
+            label_singular: абзац
+            widget: list
+            field: { name: paragraph, label: Абзац, widget: text }
+          - name: contact
+            label: Последний абзац до телефона
+            widget: text
+            hint: Дальше идёт телефон клиники.
+          - { name: contactOr, label: Слова между телефоном и почтой, widget: string }
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: не на странице, а в выдаче Яндекса и Google и в
+              превью ссылки в мессенджерах. Заголовок — до ~60 знаков,
+              описание — до ~160: длиннее поисковик обрежет.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string }
+              - { name: description, label: Описание страницы в поиске, widget: text }
+
+      - name: not-found
+        label: Страница 404
+        file: src/data/pages/not-found.json
+        fields:
+          - name: eyebrow
+            label: Надпись над заголовком
+            widget: string
+            hint: >-
+              Где на сайте: страница, которую видит человек, открывший
+              несуществующий адрес. В поиск не попадает.
+          - { name: heading, label: Заголовок страницы, widget: string }
+          - { name: lead, label: Текст под заголовком, widget: text }
+          - name: seo
+            label: Заголовок вкладки
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Заголовок вкладки браузера, widget: string }
+              - { name: description, label: Описание, widget: text }
 
   - divider: true
 
@@ -856,12 +1377,12 @@ collections:
         label: Заголовок для поиска
         widget: string
         required: false
-        hint: Если пусто, собирается сам.
+        hint: Если пусто, собирается сам. До ~60 знаков — длиннее поисковик обрежет.
       - name: seoDescription
         label: Описание для поиска
         widget: text
         required: false
-        hint: Если пусто, собирается само.
+        hint: Если пусто, собирается само. До ~160 знаков — длиннее поисковик обрежет.
       - name: order
         label: Порядок на странице
         widget: number
@@ -964,12 +1485,12 @@ collections:
         label: Заголовок для поиска
         widget: string
         required: false
-        hint: Если пусто, собирается сам из ФИО, специальности и стажа.
+        hint: Если пусто, собирается сам из ФИО, специальности и стажа. До ~60 знаков.
       - name: seoDescription
         label: Описание для поиска
         widget: text
         required: false
-        hint: Если пусто, собирается само.
+        hint: Если пусто, собирается само. До ~160 знаков — длиннее поисковик обрежет.
       - name: order
         label: Порядок на странице
         widget: number
@@ -980,6 +1501,441 @@ collections:
           вставить запись между соседними.
 
   - divider: true
+
+  # ── Шапка, подвал и контакты ─────────────────────────────────────────
+  # То, что стоит на всех страницах: контакты клиники (один источник для
+  # шапки, подвала, «Контактов», нижней панели, формы и микроразметки),
+  # меню, общие блоки и форма записи.
+  - name: site
+    label: Шапка, подвал и контакты
+    icon: web
+    description: >-
+      Общее для всех страниц: телефон, адрес, режим работы, ссылки на
+      мессенджеры и карты, меню шапки и подвала, нижняя панель на телефоне,
+      форма записи. Меняется сразу на всём сайте.
+    files:
+      - name: clinic
+        label: Контакты и реквизиты клиники
+        file: src/data/clinic.json
+        fields:
+          - name: name
+            label: Название клиники
+            widget: string
+            hint: >-
+              Где на сайте: карточка с адресом, подвал, окно лицензии,
+              политика конфиденциальности и описание клиники для поисковиков.
+          - name: legalName
+            label: Название организации для Яндекса
+            widget: string
+            hint: Уходит в выгрузки для Яндекс Услуг, на страницах не видно.
+          - name: description
+            label: Описание клиники для поисковиков
+            widget: text
+            hint: Видят только поисковики (разметка организации на главной).
+          - name: phone
+            label: Телефон
+            widget: string
+            pattern:
+              ['^\+?[\d\s()-]{10,20}$', 'Номер целиком, с кодом: +7 925 577-76-77 или +375 29 123-45-67']
+            hint: >-
+              Как его читают люди: +7 925 577-76-77. Ссылка «позвонить» и номер
+              для поисковиков собираются из него сами. Стоит в шапке, меню,
+              подвале, карточке с адресом, форме записи и на кнопках звонка.
+          - { name: email, label: Почта, widget: string }
+          - name: address
+            label: Адрес
+            widget: object
+            collapsed: true
+            fields:
+              - name: street
+                label: Улица, дом, этаж
+                widget: string
+                hint: Полный адрес в карточке, меню, подвале и на «Контактах».
+              - name: streetShort
+                label: Короткий адрес
+                widget: string
+                hint: В шапке сайта и в подписи под картой.
+              - { name: locality, label: Город, widget: string }
+              - { name: region, label: Регион, widget: string }
+              - name: postalCode
+                label: Почтовый индекс
+                widget: string
+                required: false
+                hint: Пусто — никуда не выводится. Вписывать только настоящий.
+              - name: country
+                label: 'Служебное: код страны'
+                widget: string
+                hint: Для поисковиков, латиницей — RU.
+          - name: metro
+            label: Метро одной строкой
+            widget: string
+            hint: В подписи под картой, например «м. Полежаевская».
+          - name: metroStations
+            label: Станции метро
+            label_singular: станция
+            widget: list
+            collapsed: true
+            summary: '{{fields.name}}'
+            hint: Знак метро и станции с кружками цвета линий — в меню, подвале, карточке с адресом.
+            fields:
+              - { name: name, label: Станция, widget: string }
+              - { name: line, label: Линия, widget: string, hint: Подсказка при наведении на кружок. }
+              - { name: color, label: Цвет линии, widget: color, allowInput: true }
+          - name: metroWalk
+            label: Сколько идти от метро
+            widget: string
+            hint: Идёт после станций, например «5 минут пешком».
+          - name: scheduleShort
+            label: Режим работы коротко
+            widget: string
+            hint: В шапке и в окне «Заявка отправлена».
+          - name: scheduleLong
+            label: Режим работы полностью
+            widget: string
+            hint: В меню, подвале, карточке с адресом и на страницах «Контакты» и врачей.
+          - name: openingHours
+            label: Часы работы для поисковиков
+            label_singular: часы
+            widget: list
+            collapsed: true
+            summary: '{{fields.opens}}–{{fields.closes}}'
+            hint: >-
+              На странице не видно — по ним Яндекс и Google показывают «открыто
+              сейчас». Меняете режим работы выше — поправьте и здесь.
+            fields:
+              - name: days
+                label: Дни
+                widget: select
+                multiple: true
+                options:
+                  - { label: Понедельник, value: Mo }
+                  - { label: Вторник, value: Tu }
+                  - { label: Среда, value: We }
+                  - { label: Четверг, value: Th }
+                  - { label: Пятница, value: Fr }
+                  - { label: Суббота, value: Sa }
+                  - { label: Воскресенье, value: Su }
+              - { name: opens, label: Открытие, widget: string, pattern: ['^\d{2}:\d{2}$', 'Время как 10:00'] }
+              - { name: closes, label: Закрытие, widget: string, pattern: ['^\d{2}:\d{2}$', 'Время как 22:00'] }
+          - name: paymentAccepted
+            label: Способы оплаты для поисковиков
+            widget: string
+            hint: На странице не видно, уходит в разметку организации.
+          - name: links
+            label: Ссылки на мессенджеры, карты и справочники
+            widget: object
+            collapsed: true
+            hint: >-
+              Пустая ссылка убирает свою кнопку со всего сайта. Ссылки на
+              справочники уходят поисковикам — вписывать только настоящие
+              адреса карточек клиники.
+            fields:
+              - name: max
+                label: Max
+                widget: string
+                required: false
+                hint: Кнопки в шапке, меню, подвале, нижней панели, форме записи.
+              - { name: vk, label: ВКонтакте, widget: string, required: false }
+              - name: telegram
+                label: Telegram
+                widget: string
+                required: false
+                hint: Своего Telegram у клиники нет — поле пустое, кнопки нет.
+              # Instagram снят с сайта намеренно (Meta признана в РФ
+              # экстремистской, реклама там запрещена): поле скрыто, значение
+              # в файле сохраняется. См. src/data/site.ts.
+              - { name: instagram, widget: hidden }
+              - name: yandexOrg
+                label: Карточка клиники на Яндекс Картах
+                widget: string
+                hint: Кнопки «Как добраться», «Смотреть отзывы» и ссылки под картой.
+              - name: yandexPin
+                label: Точка на Яндекс Картах (короткая ссылка)
+                widget: string
+                hint: Адрес в шапке и кнопка «Построить маршрут».
+              - name: yandexMapWidget
+                label: 'Служебное: адрес виджета карты'
+                widget: string
+                hint: Карта перед подвалом и на «Контактах». Выдаёт конструктор карт Яндекса.
+              - name: yandexReviewsWidget
+                label: 'Служебное: адрес виджета отзывов'
+                widget: string
+                hint: Лента отзывов на главной. Выдаёт Яндекс Бизнес.
+              - { name: twoGis, label: Карточка в 2ГИС, widget: string, required: false }
+              - { name: googleMaps, label: Карточка в Google Картах, widget: string, required: false }
+              - { name: prodoctorov, label: Карточка на ПроДокторов, widget: string, required: false }
+              - { name: zoon, label: Карточка на Zoon, widget: string, required: false }
+          - name: routeImage
+            label: Схема проезда картинкой
+            widget: image
+            required: false
+            hint: Открывается кнопкой в карточке с адресом. Пусто — кнопки нет.
+          - name: license
+            label: Лицензия
+            widget: object
+            collapsed: true
+            hint: >-
+              В подвале и в окне лицензии. Пустые номер, скан и файл никуда не
+              выводятся — вписывать только данные с настоящей лицензии.
+            fields:
+              - { name: title, label: Название документа, widget: string }
+              - { name: number, label: Номер и дата, widget: string, required: false }
+              - { name: scan, label: Скан, widget: image, required: false }
+              - { name: pdf, label: Файл PDF, widget: file, required: false }
+          - name: legal
+            label: Реквизиты
+            widget: object
+            collapsed: true
+            hint: В подвале. Пустое поле не выводится.
+            fields:
+              - { name: inn, label: ИНН, widget: string, required: false }
+              - { name: ogrn, label: ОГРН, widget: string, required: false }
+          - name: geo
+            label: 'Служебное: координаты входа'
+            widget: object
+            collapsed: true
+            hint: Для поисковиков. Меняются, только если клиника переехала.
+            fields:
+              - { name: lat, label: Широта, widget: number, value_type: float, step: 0.000001 }
+              - { name: lng, label: Долгота, widget: number, value_type: float, step: 0.000001 }
+
+      - name: menu
+        label: Меню, подвал и нижняя панель
+        file: src/data/menu.json
+        fields:
+          - name: services
+            label: Меню «Услуги»
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: первый пункт меню в шапке и в меню на телефоне.
+              Разделы внутри — из «Главная страница» → «4. Услуги — разделы и
+              цены».
+            fields:
+              - { name: label, label: Название пункта, widget: string }
+              - { name: all, label: Ссылка на весь прайс, widget: string }
+          - name: main
+            label: Пункты меню
+            label_singular: пункт
+            widget: list
+            collapsed: true
+            summary: '{{fields.label}}'
+            hint: 'Где на сайте: шапка и меню на телефоне, после «Услуг».'
+            fields:
+              - { name: label, label: Подпись, widget: string }
+              - name: href
+                label: Страница
+                widget: select
+                options:
+                  - { label: Главная, value: / }
+                  - { label: Прайс-лист, value: /pricelist }
+                  - { label: О клинике, value: /about }
+                  - { label: Врачи, value: /doctors }
+                  - { label: Галерея работ, value: /gallery }
+                  - { label: Контакты, value: /contacts }
+                  - { label: Политика конфиденциальности, value: /privacy }
+                  - { label: 'Главная › Акции', value: '/#promo' }
+                  - { label: 'Главная › Услуги', value: '/#services' }
+                  - { label: 'Главная › Врачи', value: '/#doctors' }
+                  - { label: 'Главная › Почему мы', value: '/#why' }
+                  - { label: 'Главная › О клинике', value: '/#about' }
+                  - { label: 'Главная › Вопросы', value: '/#faq' }
+                  - { label: 'Главная › Отзывы', value: '/#reviews' }
+                  - { label: 'Главная › Контакты', value: '/#contacts' }
+          - name: burger
+            label: Меню на телефоне
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: выезжающее меню (кнопка с тремя полосками). Телефон,
+              адрес и почта в нём — из контактов клиники.
+            fields:
+              - { name: route, label: Ссылка «Как добраться», widget: string }
+              - { name: book, label: Кнопка записи, widget: string }
+          - name: footer
+            label: Подвал
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: тёмный низ всех страниц. Телефон, адрес, режим работы,
+              лицензия и реквизиты — из контактов клиники.
+            fields:
+              - { name: text, label: Текст под логотипом, widget: text }
+              - { name: pagesTitle, label: Заголовок первой колонки, widget: string }
+              - name: pages
+                label: Ссылки первой колонки
+                label_singular: ссылка
+                widget: list
+                collapsed: true
+                summary: '{{fields.label}}'
+                fields:
+                  - { name: label, label: Подпись, widget: string }
+                  - name: href
+                    label: Страница
+                    widget: select
+                    options:
+                      - { label: Главная, value: / }
+                      - { label: Прайс-лист, value: /pricelist }
+                      - { label: О клинике, value: /about }
+                      - { label: Врачи, value: /doctors }
+                      - { label: Галерея работ, value: /gallery }
+                      - { label: Контакты, value: /contacts }
+                      - { label: Политика конфиденциальности, value: /privacy }
+                      - { label: 'Главная › Акции', value: '/#promo' }
+                      - { label: 'Главная › Услуги', value: '/#services' }
+                      - { label: 'Главная › Врачи', value: '/#doctors' }
+                      - { label: 'Главная › Почему мы', value: '/#why' }
+                      - { label: 'Главная › О клинике', value: '/#about' }
+                      - { label: 'Главная › Вопросы', value: '/#faq' }
+                      - { label: 'Главная › Отзывы', value: '/#reviews' }
+                      - { label: 'Главная › Контакты', value: '/#contacts' }
+              - { name: infoTitle, label: Заголовок второй колонки, widget: string }
+              - name: info
+                label: Ссылки второй колонки
+                label_singular: ссылка
+                widget: list
+                collapsed: true
+                summary: '{{fields.label}}'
+                fields:
+                  - { name: label, label: Подпись, widget: string }
+                  - name: href
+                    label: Страница
+                    widget: select
+                    options:
+                      - { label: Главная, value: / }
+                      - { label: Прайс-лист, value: /pricelist }
+                      - { label: О клинике, value: /about }
+                      - { label: Врачи, value: /doctors }
+                      - { label: Галерея работ, value: /gallery }
+                      - { label: Контакты, value: /contacts }
+                      - { label: Политика конфиденциальности, value: /privacy }
+                      - { label: 'Главная › Акции', value: '/#promo' }
+                      - { label: 'Главная › Услуги', value: '/#services' }
+                      - { label: 'Главная › Врачи', value: '/#doctors' }
+                      - { label: 'Главная › Почему мы', value: '/#why' }
+                      - { label: 'Главная › О клинике', value: '/#about' }
+                      - { label: 'Главная › Вопросы', value: '/#faq' }
+                      - { label: 'Главная › Отзывы', value: '/#reviews' }
+                      - { label: 'Главная › Контакты', value: '/#contacts' }
+              - { name: contactsTitle, label: Заголовок колонки контактов, widget: string }
+          - name: sticky
+            label: Нижняя панель на телефоне
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: полоса с кнопками внизу экрана телефона, появляется
+              после первого экрана. Кнопка Max пропадает, если ссылки на Max
+              нет в контактах.
+            fields:
+              - { name: call, label: Кнопка звонка, widget: string }
+              - { name: book, label: Кнопка записи, widget: string }
+              - { name: max, label: Кнопка Max, widget: string }
+          - name: crumbsHome
+            label: Первая хлебная крошка
+            widget: string
+            hint: Строка «Главная › …» над заголовком внутренних страниц.
+
+      - name: blocks
+        label: Общие блоки
+        file: src/data/blocks.json
+        fields:
+          - name: place
+            label: Карточка с адресом
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: карточка перед подвалом и на «Контактах». Адрес,
+              режим, почта и телефон в ней — из контактов клиники.
+            fields:
+              - { name: route, label: Кнопка «Как добраться», widget: string }
+              - { name: routeImage, label: Кнопка схемы проезда, widget: string }
+              - name: mapLink
+                label: Ссылка под картой
+                widget: string
+                hint: Перед ней сайт пишет короткий адрес и метро.
+          - name: license
+            label: Окно лицензии
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: окно снизу, открывается плашкой «Лицензия» и кнопкой
+              на «Контактах». Название документа, скан и файл — в контактах
+              клиники, группа «Лицензия».
+            fields:
+              - { name: title, label: Заголовок окна, widget: string }
+              - name: issued
+                label: Слова после названия документа
+                widget: string
+                hint: Дальше сайт дописывает название и адрес клиники.
+              - { name: note, label: Текст после адреса, widget: text }
+              - { name: scanLabel, label: Надпись вместо скана, widget: string, hint: Видна, пока скан не загружен. }
+              - { name: open, label: Кнопка открытия файла, widget: string, hint: Видна, если загружен PDF. }
+              - { name: close, label: Кнопка закрытия, widget: string }
+          - name: stub
+            label: Кнопки страниц-заглушек
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: под текстом страниц «О клинике», «Галерея работ»,
+              «Политика конфиденциальности» и 404. Первая кнопка — телефон
+              клиники.
+            fields:
+              - { name: book, label: Кнопка записи, widget: string }
+              - { name: home, label: Кнопка «На главную», widget: string }
+
+      - name: form
+        label: Форма записи
+        file: src/data/form.json
+        fields:
+          - name: title
+            label: Заголовок окна
+            widget: string
+            hint: >-
+              Где на сайте: окно, которое открывают все кнопки «Записаться».
+              В предпросмотре справа оно открыто сразу. Сообщения об ошибках
+              видны только после публикации — когда форму отправляют.
+          - { name: lead, label: Текст под заголовком, widget: text }
+          - name: fields
+            label: Поля формы
+            widget: object
+            collapsed: true
+            fields:
+              - { name: name, label: Подпись поля имени, widget: string }
+              - { name: phone, label: Подпись поля телефона, widget: string }
+              - { name: phonePlaceholder, label: Пример номера в пустом поле, widget: string }
+              - { name: phoneHint, label: Подсказка под телефоном, widget: string }
+              - { name: comment, label: Подпись поля комментария, widget: string }
+              - { name: consent, label: Текст согласия, widget: string, hint: Дальше идёт ссылка на политику. }
+              - { name: consentLink, label: Ссылка на политику, widget: string }
+          - { name: submit, label: Кнопка отправки, widget: string }
+          - { name: sending, label: Кнопка во время отправки, widget: string }
+          - name: fallback
+            label: Текст перед телефоном под кнопкой
+            widget: string
+            hint: Дальше идёт телефон клиники.
+          - name: done
+            label: Заявка отправлена
+            widget: object
+            collapsed: true
+            hint: Что человек видит после отправки.
+            fields:
+              - { name: title, label: Заголовок, widget: string }
+              - { name: text, label: Текст, widget: string, hint: Дальше сайт дописывает режим работы коротко. }
+              - { name: call, label: Кнопка звонка, widget: string }
+              - { name: max, label: Кнопка Max, widget: string }
+          - name: errors
+            label: Сообщения об ошибках
+            widget: object
+            collapsed: true
+            hint: Видны, только если что-то пошло не так.
+            fields:
+              - { name: name, label: Не указано имя, widget: string }
+              - { name: phone, label: Неполный телефон, widget: string }
+              - { name: consent, label: Нет согласия, widget: string }
+              - { name: offline, label: Нет интернета, widget: string }
+              - { name: noEndpoint, label: Форма не подключена, widget: string }
+              - { name: timeout, label: Сервер не ответил, widget: string }
+              - { name: generic, label: Другая ошибка, widget: string }
 
   # ── Цвета сайта ──────────────────────────────────────────────────────
   # Правится только фирменная часть палитры. Остальные оттенки (белый фон,

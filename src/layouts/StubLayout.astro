@@ -12,7 +12,9 @@ import Button from '../components/core/Button.astro';
 import Icon from '../components/core/Icon.astro';
 import Reveal from '../components/core/Reveal.astro';
 import { clinic } from '../data/site';
+import { blocks } from '../data/ui';
 import { pageHref } from '../lib/asset';
+import { cmsSite } from '../lib/cms-ref';
 
 interface Props {
   title: string;
@@ -22,13 +24,15 @@ interface Props {
   eyebrow: string;
   lead: string;
   noindex?: boolean;
+  /** Запись страницы в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
+  cms?: string;
 }
 
-const { title, description, path, heading, eyebrow, lead, noindex = false } = Astro.props;
+const { title, description, path, heading, eyebrow, lead, noindex = false, cms } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description} path={path} noindex={noindex}>
-  <section class="dc-stub">
+  <section class="dc-stub" data-cms={cms}>
     <div class="dc-stub__inner">
       <Reveal>
         {/* Другого заголовка на заглушке нет — этот и есть h1 страницы */}
@@ -43,12 +47,16 @@ const { title, description, path, heading, eyebrow, lead, noindex = false } = As
 
       <Reveal delay={180}>
         <div class="dc-stub__actions">
-          <Button variant="primary" size="lg" href={clinic.phoneHref}>
+          <Button variant="primary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
             <Icon slot="icon" name="phone" size={20} />
             {clinic.phone}
           </Button>
-          <Button variant="secondary" size="lg" data-open="dc-book">Записаться на приём</Button>
-          <Button variant="ghost" size="lg" href={pageHref('')}>На главную</Button>
+          <Button variant="secondary" size="lg" data-open="dc-book" data-cms={cmsSite('blocks', 'stub.book')}>
+            {blocks.stub.book}
+          </Button>
+          <Button variant="ghost" size="lg" href={pageHref('')} data-cms={cmsSite('blocks', 'stub.home')}>
+            {blocks.stub.home}
+          </Button>
         </div>
       </Reveal>
     </div>

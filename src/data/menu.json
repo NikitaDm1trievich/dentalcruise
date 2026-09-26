@@ -1,0 +1,80 @@
+{
+  "services": {
+    "label": "Услуги",
+    "all": "Весь прайс-лист"
+  },
+  "main": [
+    {
+      "label": "О клинике",
+      "href": "/about"
+    },
+    {
+      "label": "Врачи",
+      "href": "/doctors"
+    },
+    {
+      "label": "Галерея работ",
+      "href": "/gallery"
+    },
+    {
+      "label": "Контакты",
+      "href": "/contacts"
+    }
+  ],
+  "burger": {
+    "route": "Как добраться?",
+    "book": "Записаться на приём"
+  },
+  "footer": {
+    "text": "Центр стоматологии с собственной зуботехнической лабораторией.",
+    "pagesTitle": "Страницы",
+    "pages": [
+      {
+        "label": "Главная",
+        "href": "/"
+      },
+      {
+        "label": "Прайс-лист",
+        "href": "/pricelist"
+      },
+      {
+        "label": "О клинике",
+        "href": "/about"
+      },
+      {
+        "label": "Врачи",
+        "href": "/doctors"
+      },
+      {
+        "label": "Галерея работ",
+        "href": "/gallery"
+      },
+      {
+        "label": "Контакты",
+        "href": "/contacts"
+      }
+    ],
+    "infoTitle": "Информация",
+    "info": [
+      {
+        "label": "Отзывы",
+        "href": "/#reviews"
+      },
+      {
+        "label": "Контакты",
+        "href": "/#contacts"
+      },
+      {
+        "label": "Политика конфиденциальности",
+        "href": "/privacy"
+      }
+    ],
+    "contactsTitle": "Контакты"
+  },
+  "sticky": {
+    "call": "Позвонить",
+    "book": "Записаться",
+    "max": "Max"
+  },
+  "crumbsHome": "Главная"
+}

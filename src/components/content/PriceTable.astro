@@ -3,6 +3,9 @@
  * Группа позиций прайса: подзаголовок и строки «название — цена».
  * Строка со старой ценой показывает её зачёркнутой рядом с новой.
  */
+import { pricesPage } from '../../data/pages';
+import { cmsPage } from '../../lib/cms-ref';
+
 interface Props {
   title?: string;
   items: {
@@ -35,7 +38,9 @@ const { title, items } = Astro.props;
             {item.note && <span class="dc-price__note">{item.note}</span>}
           </span>
           <span class="dc-price__values">
-            {(item.promo || item.was) && <span class="dc-price__promo">Акция</span>}
+            {(item.promo || item.was) && (
+              <span class="dc-price__promo" data-cms={cmsPage('prices', 'promoLabel')}>{pricesPage.promoLabel}</span>
+            )}
             {item.was && <s class="dc-price__was">{item.was}</s>}
             <b class="dc-price__value">{item.price}</b>
           </span>
