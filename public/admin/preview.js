@@ -744,6 +744,99 @@
     },
   });
 
+  /* ── Редактор обновился, пока вкладка открыта ────────────────────────
+     Вкладка знает поля из config.yml на момент открытия. Если потом в
+     конфиг добавили поле, старая вкладка при сохранении молча выбросит его
+     из записи. Сборка кладёт версию редактора в <meta name="dc-admin-version">
+     и в version.txt рядом (astro.config.mjs); здесь раз в пару минут и при
+     возврате на вкладку сверяем их и, если версия сменилась, показываем
+     плашку. Локально (npm run dev) версии нет — проверка выключена. */
+
+  var UPDATE_CHECK_MS = 2 * 60 * 1000;
+  var VERSION = /^[0-9a-f]{12}$/;
+
+  function showUpdateBanner() {
+    if (document.getElementById('dc-admin-update')) return;
+    var bar = document.createElement('div');
+    bar.id = 'dc-admin-update';
+    bar.setAttribute('role', 'alert');
+    bar.style.cssText =
+      // Справа внизу — над предпросмотром, а не над полями формы.
+      'position:fixed;right:16px;bottom:16px;z-index:2147483647;max-width:min(440px,calc(100vw - 32px));' +
+      'box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:14px 16px;' +
+      'border-radius:12px;background:#073B4B;color:#fff;box-shadow:0 8px 24px rgba(7,59,75,.35);' +
+      'font:500 14px/1.4 system-ui,sans-serif';
+
+    var text = document.createElement('p');
+    text.style.cssText = 'margin:0;flex:1 1 260px';
+    var title = document.createElement('strong');
+    title.textContent = 'Редактор обновился. ';
+    text.appendChild(title);
+    text.appendChild(
+      document.createTextNode(
+        'Сохраните текущую запись и перезагрузите страницу, иначе новые поля могут пропасть при сохранении.',
+      ),
+    );
+
+    function action(label, primary, onClick) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = label;
+      button.style.cssText =
+        'padding:8px 14px;border-radius:8px;font:600 14px/1 system-ui,sans-serif;cursor:pointer;' +
+        (primary ? 'border:1px solid #fff;background:#fff;color:#073B4B' : 'border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff');
+      button.addEventListener('click', onClick);
+      return button;
+    }
+
+    var reload = action('Перезагрузить', true, function () {
+      window.location.reload();
+    });
+    // Скрыть до следующей проверки: закрыть окно с правкой плашка не должна.
+    var later = action('Позже', false, function () {
+      bar.remove();
+    });
+    var actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:8px;margin-left:auto';
+    actions.appendChild(reload);
+    actions.appendChild(later);
+
+    bar.appendChild(text);
+    bar.appendChild(actions);
+    document.body.appendChild(bar);
+  }
+
+  function watchForUpdates() {
+    var meta = document.querySelector('meta[name="dc-admin-version"]');
+    var loaded = meta ? meta.getAttribute('content') : '';
+    if (!VERSION.test(loaded || '')) return;
+    var checking = false;
+
+    function check() {
+      if (checking || document.hidden) return;
+      checking = true;
+      window
+        .fetch('version.txt', { cache: 'no-store' })
+        .then(function (response) {
+          return response.ok ? response.text() : '';
+        })
+        .then(function (text) {
+          var published = text.trim();
+          // Нет сети или файла — не повод пугать владельца.
+          if (VERSION.test(published) && published !== loaded) showUpdateBanner();
+        })
+        .catch(function () {})
+        .then(function () {
+          checking = false;
+        });
+    }
+
+    window.setInterval(check, UPDATE_CHECK_MS);
+    document.addEventListener('visibilitychange', check);
+  }
+
+  watchForUpdates();
+
   /* Имена файлов из config.yml (для коллекций из одного файла) и имена
      коллекций-папок. Все файлы «Главной» показывают главную; нужную
      страницу для остальных шаблон выбирает по самой записи (pageFor).

@@ -1,17 +1,31 @@
 ---
 /**
- * Шторка с лицензией — снизу вверх. Открывается из полосы доверия.
+ * Шторка с лицензией — снизу вверх. Открывается из полосы доверия, кнопкой
+ * на «Контактах» и строкой лицензии в подвале.
  * Перенесено из собственного компонента LicenseDrawer.dc.html.
+ *
+ * Сканы бланка — карусель по образцу PhotoGallery (стрелки, свайп,
+ * кроссфейд), но под документ: скан не обрезается, у каждого свой alt,
+ * вместо точек — счётчик «1 / 3» с подписью, без автопрокрутки, а клик по
+ * скану открывает файл целиком в новой вкладке — рассмотреть печать и
+ * мелкий текст. Пока шторка закрыта, сканы не грузятся (см. стили).
  */
 import Icon from '../core/Icon.astro';
 import Button from '../core/Button.astro';
 import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+import LicenseLine from './LicenseLine.astro';
 import { clinic } from '../../data/site';
 import { blocks } from '../../data/ui';
 import { withBase } from '../../lib/asset';
 import { cmsSite } from '../../lib/cms-ref';
 
 const copy = blocks.license;
+const { issuer, formerNumber, pdf, registryUrl } = clinic.license;
+const scans = clinic.licenseScans;
+const many = scans.length > 1;
+/* Имена файлов из редактора бывают с кириллицей и пробелом («титул
+   лицензия.png»): в адрес — в закодированном виде. */
+const fileUrl = (path: string) => encodeURI(withBase(path));
 ---
 
 <div class="dc-drawer" id="dc-license" data-state="closed" aria-hidden="true" inert>
@@ -33,35 +47,111 @@ const copy = blocks.license;
         </span>
         <h2 id="dc-license-title">{copy.title}</h2>
       </div>
-      <p>
-        {clinic.license.title} {copy.issued} «{clinic.name}», {clinic.address.locality},
-        {clinic.address.streetShort}. {copy.note}
-      </p>
+      <p data-cms={cmsSite('clinic', 'license')}><LicenseLine /></p>
+      {
+        (issuer || formerNumber) && (
+          <dl class="dc-drawer__facts">
+            {issuer && (
+              <div>
+                <dt>{copy.issuer}</dt>
+                <dd data-cms={cmsSite('clinic', 'license.issuer')}>{issuer}</dd>
+              </div>
+            )}
+            {formerNumber && (
+              <div>
+                <dt>{copy.formerNumber}</dt>
+                <dd data-cms={cmsSite('clinic', 'license.formerNumber')}>{formerNumber}</dd>
+              </div>
+            )}
+          </dl>
+        )
+      }
+      {scans.length > 0 && <p class="dc-drawer__note">{copy.note}</p>}
     </div>
 
-    <PhotoPlaceholder
-      label={copy.scanLabel}
-      src={clinic.license.scan || undefined}
-      alt={clinic.license.title}
-      ratio="3 / 4"
-    />
+    {
+      scans.length === 0 ? (
+        <PhotoPlaceholder label={copy.scanLabel} ratio="3 / 4" />
+      ) : (
+        <div class="dc-scans" role="group" aria-roledescription="карусель" aria-label={copy.title} data-scans>
+          <div class="dc-scans__stage">
+            <div class="dc-scans__frame">
+              {scans.map((scan, i) => (
+                <a
+                  class="dc-scans__slide"
+                  href={fileUrl(scan.image)}
+                  target="_blank"
+                  rel="noopener"
+                  draggable="false"
+                  aria-label={`${scan.title} — открыть в полном размере в новой вкладке`}
+                  data-slide={i}
+                  data-active={i === 0 ? 'true' : 'false'}
+                  inert={i !== 0}
+                  data-cms={cmsSite('clinic', scan.field)}
+                >
+                  <img
+                    src={fileUrl(scan.image)}
+                    alt={scan.title}
+                    loading="lazy"
+                    decoding="async"
+                    draggable="false"
+                    class="dc-scans__img"
+                  />
+                </a>
+              ))}
+            </div>
+
+            {many && (
+              <>
+                <button
+                  type="button"
+                  class="dc-scans__nav dc-scans__nav--prev"
+                  aria-label="Предыдущий скан"
+                  data-scans-prev
+                >
+                  <Icon name="arrow-left" size={20} />
+                </button>
+                <button
+                  type="button"
+                  class="dc-scans__nav dc-scans__nav--next"
+                  aria-label="Следующий скан"
+                  data-scans-next
+                >
+                  <Icon name="arrow-right" size={20} />
+                </button>
+                <span class="dc-scans__count" data-scans-count>{`1 / ${scans.length}`}</span>
+              </>
+            )}
+          </div>
+
+          <p
+            class="dc-scans__caption"
+            aria-live="polite"
+            data-scans-caption
+            data-cms={cmsSite('clinic', 'license.scans')}
+          >
+            {scans[0].title}
+          </p>
+        </div>
+      )
+    }
 
     <div class="dc-drawer__actions">
       {
-        clinic.license.pdf && (
-          <Button
-            variant="primary"
-            size="lg"
-            fullWidth
-            href={withBase(clinic.license.pdf)}
-            target="_blank"
-            rel="noopener"
-          >
+        pdf && (
+          <Button variant="primary" size="lg" fullWidth href={fileUrl(pdf)} target="_blank" rel="noopener">
             {copy.open}
           </Button>
         )
       }
-      <Button variant="secondary" size="lg" fullWidth data-close>{copy.close}</Button>
+      {
+        registryUrl && (
+          <Button variant="secondary" size="lg" fullWidth href={registryUrl} target="_blank" rel="noopener">
+            {copy.registry}
+          </Button>
+        )
+      }
+      <Button variant="ghost" size="lg" fullWidth data-close>{copy.close}</Button>
     </div>
   </section>
 </div>
@@ -158,4 +248,196 @@ const copy = blocks.license;
     color: var(--text-body);
     font-size: var(--type-body);
   }
+  .dc-drawer__facts {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-drawer__facts dt {
+    display: inline;
+    font-weight: var(--fw-semibold);
+  }
+  .dc-drawer__facts dd {
+    display: inline;
+    margin: 0;
+  }
+  .dc-drawer__head .dc-drawer__note {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+
+  /* ── Карусель сканов ── */
+  .dc-scans {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .dc-scans__frame {
+    position: relative;
+    /* Скан целиком и кнопки под ним — по возможности на одном экране */
+    height: min(50svh, 560px);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface-quiet);
+    touch-action: pan-y;
+  }
+  .dc-scans__slide {
+    position: absolute;
+    inset: 0;
+    display: block;
+    border-radius: inherit;
+    cursor: zoom-in;
+    opacity: 0;
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+  .dc-scans__slide[data-active='true'] {
+    opacity: 1;
+  }
+  .dc-scans__slide:focus-visible {
+    outline-offset: calc(var(--border-width-strong) * -2);
+  }
+  .dc-scans__img {
+    width: 100%;
+    height: 100%;
+    /* Документ не обрезаем: видна вся страница бланка */
+    object-fit: contain;
+    padding: var(--space-3);
+    box-sizing: border-box;
+    user-select: none;
+  }
+  /* Закрытая шторка стоит за краем экрана, но так близко, что ленивая
+     загрузка всё равно скачала бы сканы (около мегабайта) на каждой
+     странице. Без display их не грузят, пока шторку не откроют. При
+     закрытии сканы остаются на месте до конца анимации ухода. */
+  .dc-drawer[data-state='closed'] .dc-scans__img {
+    display: none;
+    transition: display 0s 420ms allow-discrete;
+  }
+
+  .dc-scans__stage {
+    position: relative;
+  }
+  /* Стрелки и счётчик — как у PhotoGallery: поверх кадра по краям, где у
+     скана поля, только всегда видны — шторку открывают, чтобы листать. */
+  .dc-scans__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: var(--border-width) solid var(--line-hairline);
+    border-radius: var(--radius-pill);
+    background: var(--glass-light);
+    backdrop-filter: var(--blur-glass);
+    color: var(--text-strong);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+  .dc-scans__nav--prev {
+    left: var(--space-2);
+  }
+  .dc-scans__nav--next {
+    right: var(--space-2);
+  }
+  .dc-scans__nav:hover {
+    background: var(--dc-white);
+  }
+  .dc-scans__count {
+    position: absolute;
+    left: 50%;
+    bottom: var(--space-3);
+    transform: translateX(-50%);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--surface-dark);
+    color: var(--text-on-dark);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+  }
+  .dc-drawer__sheet .dc-scans__caption {
+    margin: 0;
+    text-align: center;
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-scans]').forEach((carousel) => {
+    const slides = Array.from(carousel.querySelectorAll<HTMLAnchorElement>('.dc-scans__slide'));
+    if (slides.length < 2) return;
+    const count = carousel.querySelector<HTMLElement>('[data-scans-count]');
+    const caption = carousel.querySelector<HTMLElement>('[data-scans-caption]');
+    const frame = carousel.querySelector<HTMLElement>('.dc-scans__frame');
+    let current = 0;
+
+    const show = (next: number) => {
+      const index = (next + slides.length) % slides.length;
+      slides.forEach((slide, i) => {
+        slide.dataset.active = String(i === index);
+        // Скрытый скан не попадает ни под Tab, ни в экранный диктор
+        slide.inert = i !== index;
+      });
+      if (count) count.textContent = `${index + 1} / ${slides.length}`;
+      if (caption) caption.textContent = slides[index].querySelector('img')?.alt ?? '';
+      current = index;
+    };
+
+    carousel.querySelector('[data-scans-prev]')?.addEventListener('click', () => show(current - 1));
+    carousel.querySelector('[data-scans-next]')?.addEventListener('click', () => show(current + 1));
+
+    // Стрелки клавиатуры, пока фокус внутри карусели (на скане или кнопках)
+    carousel.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      const focusedSlide = slides.includes(document.activeElement as HTMLAnchorElement);
+      show(current + (event.key === 'ArrowRight' ? 1 : -1));
+      if (focusedSlide) slides[current].focus();
+    });
+
+    // Свайп — как у PhotoGallery. Скан — ссылка: после перелистывания
+    // жестом клик не должен открывать файл.
+    let dragging = false;
+    let horizontal = false;
+    let swiped = false;
+    let startX = 0;
+    let startY = 0;
+    frame?.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      horizontal = false;
+      swiped = false;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+    frame?.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (!horizontal && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) horizontal = true;
+      if (horizontal) e.preventDefault();
+    });
+    frame?.addEventListener('pointerup', (e) => {
+      if (!dragging) return;
+      dragging = false;
+      const dx = e.clientX - startX;
+      if (horizontal && Math.abs(dx) > 40) {
+        swiped = true;
+        show(current + (dx < 0 ? 1 : -1));
+      }
+    });
+    frame?.addEventListener('pointercancel', () => {
+      dragging = false;
+    });
+    frame?.addEventListener('click', (e) => {
+      if (!swiped) return;
+      swiped = false;
+      e.preventDefault();
+    });
+  });
+</script>

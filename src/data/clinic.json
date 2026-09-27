@@ -9,7 +9,7 @@
     "streetShort": "4-я Магистральная, 5с1",
     "locality": "Москва",
     "region": "Москва",
-    "postalCode": "",
+    "postalCode": "123007",
     "country": "RU"
   },
   "metro": "м. Полежаевская",
@@ -60,13 +60,33 @@
   "routeImage": "/images/map/route-to-clinic.png",
   "license": {
     "title": "Лицензия на осуществление медицинской деятельности",
-    "number": "",
-    "scan": "",
-    "pdf": ""
+    "number": "Л041-01137-77/00335542",
+    "formerNumber": "ЛО-77-01-018995",
+    "date": "30.10.2019",
+    "issuer": "Федеральная служба по надзору в сфере здравоохранения (Росздравнадзор)",
+    "registryUrl": "https://roszdravnadzor.gov.ru/services/licenses",
+    "pdf": "/docs/vypiska-iz-reestra-licenziy.pdf",
+    "pdfPreview": "/docs/vypiska-iz-reestra-licenziy.png",
+    "scans": [
+      {
+        "title": "Лицензия ЛО-77-01-018995 от 30.10.2019, титульный лист",
+        "image": "/images/титул лицензия.png"
+      },
+      {
+        "title": "Лицензия ЛО-77-01-018995, оборот: место нахождения и срок действия",
+        "image": "/images/licence.png"
+      },
+      {
+        "title": "Приложение № 1 к лицензии: виды работ",
+        "image": "/images/разрешение.png"
+      }
+    ]
   },
   "legal": {
-    "inn": "",
-    "ogrn": ""
+    "orgName": "ООО «Дентал Круиз»",
+    "fullName": "Общество с ограниченной ответственностью «Дентал Круиз»",
+    "inn": "7714436885",
+    "ogrn": "1197746003575"
   },
   "geo": {
     "lat": 55.774426,

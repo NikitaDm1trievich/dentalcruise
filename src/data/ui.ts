@@ -11,7 +11,16 @@ import formRaw from './form.json';
 
 export const blocks: {
   place: { route: string; routeImage: string; mapLink: string };
-  license: { title: string; issued: string; note: string; scanLabel: string; open: string; close: string };
+  license: {
+    title: string;
+    issuer: string;
+    formerNumber: string;
+    note: string;
+    scanLabel: string;
+    open: string;
+    registry: string;
+    close: string;
+  };
   stub: { book: string; home: string };
 } = blocksRaw;
 

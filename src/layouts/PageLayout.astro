@@ -33,6 +33,12 @@ interface Props {
   /** Адрес лида в редакторе, если он не в записи шапки (адрес клиники на «Контактах») */
   leadCms?: string;
   /**
+   * Адрес надписи над заголовком. Нужен, когда она совпадает по тексту с
+   * другим полем записи (крошка «Контакты»): по тексту предпросмотр их не
+   * различит и откроет не то поле.
+   */
+  eyebrowCms?: string;
+  /**
    * Лид — текст из редактора с метками (`{позиций}`): значения меток. По ним
    * предпросмотр редактора собирает лид так же, как сборка (lib/cms-preview).
    */
@@ -53,6 +59,7 @@ const {
   faq,
   cms,
   leadCms,
+  eyebrowCms,
   leadVars,
 } = Astro.props;
 ---
@@ -87,7 +94,7 @@ const {
 
       <Reveal>
         <div class="dc-page__head">
-          {eyebrow && <span class="dc-page__eyebrow">{eyebrow}</span>}
+          {eyebrow && <span class="dc-page__eyebrow" data-cms={eyebrowCms}>{eyebrow}</span>}
           <h1 class="dc-page__title">{heading}</h1>
           {lead && <p class="dc-page__lead" data-cms={leadCms} data-cms-vars={leadVars && JSON.stringify(leadVars)}>{lead}</p>}
           <slot name="head-extra" />

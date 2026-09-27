@@ -32,9 +32,10 @@ const { yandexPin, yandexOrg, vk, max, instagram } = clinic.links;
   eyebrow={page.eyebrow}
   heading={page.heading}
   lead={`${clinic.address.locality}, ${clinic.address.street}. ${clinic.scheduleLong}.`}
-  breadcrumbs={[{ label: page.breadcrumb }]}
+  breadcrumbs={[{ label: page.breadcrumb, cms: cmsPage('contacts', 'breadcrumb') }]}
   hideContactsCta
   cms={cmsPage('contacts')}
+  eyebrowCms={cmsPage('contacts', 'eyebrow')}
   leadCms={cmsSite('clinic')}
 >
   <p slot="head-extra" class="dc-lead-metro">

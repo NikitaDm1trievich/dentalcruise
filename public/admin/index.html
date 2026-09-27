@@ -7,6 +7,12 @@
     <meta name="robots" content="noindex, nofollow" />
     <title>Дентал Круиз — редактор сайта</title>
     <link rel="icon" href="../favicon.svg" />
+    <!-- Конфиг редактора и версия редактора. Сборка дописывает к адресу
+         конфига ?v=<отпечаток>, а в content — версию (config.yml +
+         preview.js), по которой preview.js замечает, что редактор обновился
+         при открытой вкладке (astro.config.mjs). Строки не менять. -->
+    <link href="config.yml" type="text/yaml" rel="cms-config-url" />
+    <meta name="dc-admin-version" content="dev" />
   </head>
   <body>
     <!--

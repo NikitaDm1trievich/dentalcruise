@@ -12,20 +12,44 @@ import { readFile, writeFile } from 'node:fs/promises';
  * старым preview.js не находит шаблоны по новым именам файлов и вместо
  * страницы сайта показывает голый список полей. Поэтому после сборки
  * дописываем к адресу отпечаток содержимого — новая версия файла = новый
- * адрес, кэш браузера её не подменит.
+ * адрес, кэш браузера её не подменит. То же для config.yml.
+ *
+ * Вкладка редактора, открытая до обновления config.yml, живёт со старым
+ * списком полей и при сохранении молча выбрасывает из записи поля, которых
+ * не знает (так пропала «Крупная надпись под услугами» у врачей). Поэтому
+ * сборка кладёт общую версию редактора (отпечаток config.yml + preview.js)
+ * в index.html и в admin/version.txt. preview.js сверяет их и, если
+ * редактор обновился, просит сохранить запись и перезагрузить страницу.
  */
+const fingerprint = (...parts) => {
+  const hash = createHash('sha256');
+  for (const part of parts) hash.update(part);
+  return hash.digest('hex').slice(0, 12);
+};
+
+/** Заменить ровно одно вхождение: разметку поменяли — сборка должна упасть, а не молча пропустить. */
+const replaceOnce = (html, from, to) => {
+  if (!html.includes(from)) throw new Error(`admin/index.html: не найдено ${from}`);
+  return html.replace(from, to);
+};
+
 const adminCacheBust = {
   name: 'dc-admin-cache-bust',
   hooks: {
     'astro:build:done': async ({ dir, logger }) => {
       const page = new URL('admin/index.html', dir);
       const script = await readFile(new URL('admin/preview.js', dir));
-      const version = createHash('sha256').update(script).digest('hex').slice(0, 12);
-      const html = await readFile(page, 'utf8');
-      const next = html.replace('src="./preview.js"', `src="./preview.js?v=${version}"`);
-      if (next === html) throw new Error('admin/index.html: не найдено подключение ./preview.js');
-      await writeFile(page, next);
-      logger.info(`preview.js?v=${version}`);
+      const config = await readFile(new URL('admin/config.yml', dir));
+      const scriptVersion = fingerprint(script);
+      const configVersion = fingerprint(config);
+      const adminVersion = fingerprint(config, script);
+      let html = await readFile(page, 'utf8');
+      html = replaceOnce(html, 'src="./preview.js"', `src="./preview.js?v=${scriptVersion}"`);
+      html = replaceOnce(html, 'href="config.yml"', `href="config.yml?v=${configVersion}"`);
+      html = replaceOnce(html, 'name="dc-admin-version" content="dev"', `name="dc-admin-version" content="${adminVersion}"`);
+      await writeFile(page, html);
+      await writeFile(new URL('admin/version.txt', dir), `${adminVersion}\n`);
+      logger.info(`preview.js?v=${scriptVersion}, config.yml?v=${configVersion}, версия редактора ${adminVersion}`);
     },
   },
 };

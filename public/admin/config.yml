@@ -1683,21 +1683,104 @@ collections:
             widget: object
             collapsed: true
             hint: >-
-              В подвале и в окне лицензии. Пустые номер, скан и файл никуда не
-              выводятся — вписывать только данные с настоящей лицензии.
+              В подвале (миниатюра выписки и строка с номером), в окне лицензии
+              и в разметке для поисковиков. Данные — из выписки из реестра
+              лицензий Росздравнадзора. Пустое поле никуда не выводится —
+              вписывать только данные настоящей лицензии.
             fields:
-              - { name: title, label: Название документа, widget: string }
-              - { name: number, label: Номер и дата, widget: string, required: false }
-              - { name: scan, label: Скан, widget: image, required: false }
-              - { name: pdf, label: Файл PDF, widget: file, required: false }
+              - name: title
+                label: Название документа
+                widget: string
+                hint: 'Начало строки в подвале: «Лицензия на осуществление медицинской деятельности № … от …».'
+              - name: number
+                label: Регистрационный номер
+                widget: string
+                required: false
+                hint: Номер в реестре лицензий, как в выписке — Л041-01137-77/00335542.
+              - name: formerNumber
+                label: Прежний номер бланка
+                widget: string
+                required: false
+                hint: Номер на бумажном бланке лицензии. Виден в окне лицензии.
+              - name: date
+                label: Дата предоставления
+                widget: string
+                required: false
+                pattern: ['^\d{2}\.\d{2}\.\d{4}$', 'Дата как 30.10.2019']
+                hint: Как в выписке, например 30.10.2019.
+              - name: issuer
+                label: Лицензирующий орган
+                widget: string
+                required: false
+                hint: Виден в окне лицензии и уходит поисковикам.
+              - name: registryUrl
+                label: Ссылка на реестр лицензий
+                widget: string
+                required: false
+                hint: 'Ссылка «Проверить в реестре Росздравнадзора» в подвале и в окне лицензии.'
+              # Документы лежат отдельно от фото сайта, в public/docs.
+              - name: pdf
+                label: Выписка из реестра (PDF)
+                widget: file
+                required: false
+                media_folder: /public/docs
+                public_folder: /docs
+                hint: Открывается миниатюрой в подвале и кнопкой в окне лицензии.
+              - name: pdfPreview
+                label: Миниатюра выписки для подвала
+                widget: image
+                required: false
+                media_folder: /public/docs
+                public_folder: /docs
+                hint: >-
+                  Картинка первой страницы выписки, вертикальная (3 к 4). Новую
+                  выписку загрузили — замените и миниатюру.
+              - name: scans
+                label: Сканы лицензии
+                label_singular: скан
+                widget: list
+                collapsed: true
+                required: false
+                summary: '{{fields.title}}'
+                hint: >-
+                  Листаются в окне лицензии по порядку списка. Нажатием скан
+                  открывается целиком в новой вкладке.
+                fields:
+                  - name: title
+                    label: Подпись
+                    widget: string
+                    hint: >-
+                      Видна под сканом и читается незрячим вместо картинки:
+                      что это за страница, например «Приложение № 1 к лицензии».
+                  - { name: image, label: Скан, widget: image }
           - name: legal
-            label: Реквизиты
+            label: Реквизиты юрлица
             widget: object
             collapsed: true
-            hint: В подвале. Пустое поле не выводится.
+            hint: >-
+              Мелкой строкой внизу подвала и в разметке для поисковиков. Из
+              выписки из реестра лицензий. Пустое поле не выводится.
             fields:
-              - { name: inn, label: ИНН, widget: string, required: false }
-              - { name: ogrn, label: ОГРН, widget: string, required: false }
+              - name: orgName
+                label: Короткое название юрлица
+                widget: string
+                required: false
+                hint: 'Как в выписке: ООО «Дентал Круиз». Стоит в строке лицензии и в реквизитах.'
+              - name: fullName
+                label: Полное название юрлица
+                widget: string
+                required: false
+                hint: На странице не видно — уходит поисковикам.
+              - name: inn
+                label: ИНН
+                widget: string
+                required: false
+                pattern: ['^\d{10}(\d{2})?$', 'ИНН — 10 цифр у организации']
+              - name: ogrn
+                label: ОГРН
+                widget: string
+                required: false
+                pattern: ['^\d{13}(\d{2})?$', 'ОГРН — 13 цифр у организации']
           - name: geo
             label: 'Служебное: координаты входа'
             widget: object
@@ -1866,18 +1949,24 @@ collections:
             widget: object
             collapsed: true
             hint: >-
-              Где на сайте: окно снизу, открывается плашкой «Лицензия» и кнопкой
-              на «Контактах». Название документа, скан и файл — в контактах
-              клиники, группа «Лицензия».
+              Где на сайте: окно снизу, открывается плашкой «Лицензия», кнопкой
+              на «Контактах» и строкой лицензии в подвале. Номер, дата, орган,
+              сканы и выписка — в контактах клиники, группа «Лицензия».
             fields:
               - { name: title, label: Заголовок окна, widget: string }
-              - name: issued
-                label: Слова после названия документа
+              - name: issuer
+                label: Подпись перед лицензирующим органом
                 widget: string
-                hint: Дальше сайт дописывает название и адрес клиники.
-              - { name: note, label: Текст после адреса, widget: text }
-              - { name: scanLabel, label: Надпись вместо скана, widget: string, hint: Видна, пока скан не загружен. }
-              - { name: open, label: Кнопка открытия файла, widget: string, hint: Видна, если загружен PDF. }
+              - name: formerNumber
+                label: Подпись перед прежним номером бланка
+                widget: string
+              - { name: note, label: Текст над сканами, widget: text }
+              - { name: scanLabel, label: Надпись вместо скана, widget: string, hint: 'Видна, пока нет ни одного скана.' }
+              - { name: open, label: Кнопка выписки из реестра, widget: string, hint: 'Видна, если загружен PDF. Она же — подпись миниатюры в подвале.' }
+              - name: registry
+                label: Ссылка на реестр
+                widget: string
+                hint: 'В окне лицензии и в подвале. Видна, если заполнена ссылка на реестр лицензий.'
               - { name: close, label: Кнопка закрытия, widget: string }
           - name: stub
             label: Кнопки страниц-заглушек

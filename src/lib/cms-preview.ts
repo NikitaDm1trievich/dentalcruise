@@ -157,12 +157,16 @@ function bindScoped(text: string, path: string, entry: string | null): Binding[]
   if (byId) scopes.push(byId);
 
   // Блоки бывают вложены друг в друга: один текстовый узел — одна привязка.
+  // Узел, размеченный как другое поле (крошка «Контакты» рядом с надписью
+  // «Контакты» над заголовком) или поле другой записи, чужой — не трогаем.
   const seen = new Set<Text>();
   const found: Binding[] = [];
   for (const scope of scopes) {
     for (const binding of bind(text, scope)) {
       if (seen.has(binding.node)) continue;
       seen.add(binding.node);
+      const owner = readRef(binding.node.parentElement?.closest('[data-cms]') ?? null);
+      if (owner && (owner.entry !== entry || !within(path, owner.path))) continue;
       found.push(binding);
     }
   }
@@ -207,6 +211,19 @@ function renderTemplate(element: Element, template: string) {
       return strong;
     }),
   );
+}
+
+/**
+ * Адрес картинки как в записи редактора: файлы с кириллицей и пробелом в
+ * имени («титул лицензия.png») вёрстка отдаёт в закодированном виде.
+ */
+function imagePath(image: Element): string {
+  const src = image.getAttribute('src') ?? '';
+  try {
+    return decodeURI(src);
+  } catch {
+    return src;
+  }
 }
 
 function isColor(value: string): boolean {
@@ -487,7 +504,7 @@ export function initCmsPreview() {
 
     for (let element: Element | null = start; element; element = element.parentElement) {
       if (element instanceof HTMLImageElement) {
-        const src = element.getAttribute('src') ?? '';
+        const src = imagePath(element);
         const hit = candidates.find(([, value]) => value.startsWith('/') && src.endsWith(value));
         if (hit) return { element, path: hit[0] };
       }
@@ -612,7 +629,7 @@ export function initCmsPreview() {
     let element: Element | null = bindings.get(path)?.[0]?.node.parentElement ?? null;
     if (!element && value) {
       element = value.startsWith('/')
-        ? ([...document.images].find((image) => (image.getAttribute('src') ?? '').endsWith(value)) ?? null)
+        ? ([...document.images].find((image) => imagePath(image).endsWith(value)) ?? null)
         : (bindScoped(value, path, current)[0]?.node.parentElement ?? null);
     }
     if (element) return { element, level: 'text', entry: current, path };

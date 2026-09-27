@@ -4,7 +4,7 @@
  *
  * Схема — Dentist (подтип MedicalBusiness/LocalBusiness) с реальными
  * российскими данными: адрес в Москве, телефон +7, часы пн–сб.
- * Пустые поля (индекс, ИНН/ОГРН, номер лицензии) в разметку не попадают —
+ * Пустые поля (индекс, ИНН/ОГРН, лицензия) в разметку не попадают —
  * лучше не отдавать поле, чем отдать выдуманное.
  *
  * Организация описана один раз, здесь, и получает постоянный `@id`.
@@ -123,6 +123,27 @@ const business: Record<string, unknown> = {
      за разметку; реальный рейтинг они берут из карточки на Картах. */
 };
 if (sameAs.length > 0) business.sameAs = sameAs;
+
+/* Юрлицо и лицензия — из выписки из реестра лицензий (clinic.json).
+   Медицинской организации это важный сигнал доверия; пустое поле не
+   отдаём. ОГРН в schema.org своего свойства не имеет — идёт как identifier. */
+const { legal, license } = clinic;
+if (legal.fullName) business.legalName = legal.fullName;
+if (legal.inn) business.taxID = legal.inn;
+if (legal.ogrn) business.identifier = { '@type': 'PropertyValue', propertyID: 'ОГРН', value: legal.ogrn };
+if (license.number) {
+  const credential: Record<string, unknown> = {
+    '@type': 'EducationalOccupationalCredential',
+    credentialCategory: 'license',
+    name: `${license.title} № ${license.number}`,
+  };
+  // «30.10.2019» → дата ISO; другой записи не доверяем и не отдаём
+  const date = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(license.date ?? '');
+  if (date) credential.dateCreated = `${date[3]}-${date[2]}-${date[1]}`;
+  if (license.issuer) credential.recognizedBy = { '@type': 'GovernmentOrganization', name: license.issuer };
+  if (license.registryUrl) credential.url = license.registryUrl;
+  business.hasCredential = credential;
+}
 
 /* Сайт как отдельная сущность рядом с организацией: по `WebSite` поисковик
    берёт название сайта для сниппета и связывает его с владельцем через

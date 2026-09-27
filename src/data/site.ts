@@ -19,8 +19,13 @@
  *     сайта сняли, в редакторе поле скрыто. Профиль клиники:
  *     instagram.com/dentalcruise, если решение изменится;
  *   • отдельного Telegram у клиники нет — кнопка не выводится, пока поле пустое;
- *   • почтовый индекс, номер лицензии, ИНН и ОГРН клиника ещё не прислала:
- *     пустые поля в разметку и в подвал не попадают.
+ *   • лицензия, реквизиты юрлица и почтовый индекс — из выписки из реестра
+ *     лицензий Росздравнадзора (public/docs/vypiska-iz-reestra-licenziy.pdf,
+ *     по состоянию на 06.12.2022). Пустое поле в разметку и в подвал не
+ *     попадает — выдуманных значений здесь быть не должно;
+ *   • сканы лицензии — списком (license.scans): бланк ЛО-77-01-018995 и
+ *     приложение с видами работ. Прежнее одиночное поле scan читается как
+ *     первый скан, если в старом файле оно ещё осталось.
  *
  * Рейтинг и число отзывов живут в src/data/home.json (раздел «Отзывы»
  * редактора), а в микроразметку не отдаются вовсе: самооценка организации в
@@ -79,11 +84,52 @@ type Clinic = {
   /** Картинка «Схема проезда» — путь от корня сайта, как в JSON-контенте */
   routeImage: Optional;
   geo: { lat: number; lng: number };
-  license: { title: string; number: Optional; scan: Optional; pdf: Optional };
-  legal: { inn: Optional; ogrn: Optional };
+  license: {
+    title: string;
+    /** Регистрационный номер в реестре: Л041-01137-77/00335542 */
+    number: Optional;
+    /** Номер прежнего бумажного бланка: ЛО-77-01-018995 */
+    formerNumber?: Optional;
+    /** Дата предоставления, как в выписке: 30.10.2019 */
+    date?: Optional;
+    issuer?: Optional;
+    /** Реестр лицензий, где номер можно проверить */
+    registryUrl?: Optional;
+    /** Выписка из реестра и её миниатюра для подвала */
+    pdf: Optional;
+    pdfPreview?: Optional;
+    /** Сканы бланка по порядку: подпись (она же alt) и файл */
+    scans?: { title: Optional; image: Optional }[] | null;
+    /** Прежнее одиночное поле скана — до перехода на список */
+    scan?: Optional;
+  };
+  legal: {
+    /** Короткое название юрлица: ООО «Дентал Круиз» */
+    orgName?: Optional;
+    /** Полное название юрлица — для разметки поисковиков */
+    fullName?: Optional;
+    inn: Optional;
+    ogrn: Optional;
+  };
 };
 
 const data: Clinic = raw;
+
+/**
+ * Сканы лицензии без пустых строк: редактор пишет незаполненный элемент
+ * списка как { title: "", image: null }. Старое поле scan — первым сканом.
+ * field — путь поля в редакторе для выбора блока в предпросмотре: номер
+ * элемента в файле, а не на странице (пустые элементы пропущены).
+ */
+function licenseScans(license: Clinic['license']): { title: string; image: string; field: string }[] {
+  const scans = (license.scans ?? []).flatMap((scan, index) =>
+    scan?.image ? [{ title: scan.title || license.title, image: scan.image, field: `license.scans.${index}` }] : [],
+  );
+  if (license.scan && !scans.some((scan) => scan.image === license.scan)) {
+    scans.unshift({ title: license.title, image: license.scan, field: 'license.scans' });
+  }
+  return scans;
+}
 
 /**
  * Номер в E.164 для ссылки tel: и микроразметки. Владелец пишет телефон
@@ -119,6 +165,7 @@ export const clinic = {
   /** E.164 — для JSON-LD и микроразметки */
   phoneE164,
   phoneHref: `tel:${phoneE164}`,
+  licenseScans: licenseScans(data.license),
 };
 
 /** Меню шапки, бургер-меню и подвала. Ссылки на страницы — через pageHref. */

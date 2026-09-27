@@ -5,12 +5,22 @@
  */
 import BrandIcon from '../core/BrandIcon.astro';
 import MetroStations from '../core/MetroStations.astro';
+import LicenseLine from '../content/LicenseLine.astro';
 import { clinic, menu } from '../../data/site';
+import { blocks } from '../../data/ui';
 import { pageHref, withBase } from '../../lib/asset';
 import { cmsSite } from '../../lib/cms-ref';
 
 const year = new Date().getFullYear();
 const { footer } = menu;
+const { license, legal } = clinic;
+
+/* Реквизиты юрлица мелкой строкой. Пустое поле не выводится. */
+const requisites = [
+  { text: legal.orgName, cms: 'legal.orgName' },
+  { text: legal.inn && `ИНН ${legal.inn}`, cms: 'legal.inn' },
+  { text: legal.ogrn && `ОГРН ${legal.ogrn}`, cms: 'legal.ogrn' },
+].filter((item): item is { text: string; cms: string } => !!item.text);
 
 const socials = [
   { label: 'ВКонтакте', mark: 'vk' as const, href: clinic.links.vk, cms: 'links.vk' },
@@ -80,13 +90,58 @@ const socials = [
     </div>
   </div>
 
-  <div class="dc-footer__legal" data-cms={cmsSite('clinic', 'license')}>
+  {/* Лицензия — как принято у клиник: миниатюра выписки из реестра со
+      ссылкой на PDF и строка с номером. Строка открывает ту же шторку со
+      сканами, что и плашка «Лицензия» в полосе доверия. */}
+  <div class="dc-footer__license" data-cms={cmsSite('clinic', 'license')}>
+    {
+      license.pdf && license.pdfPreview && (
+        <a
+          class="dc-footer__doc"
+          href={encodeURI(withBase(license.pdf))}
+          target="_blank"
+          rel="noopener"
+          data-cms={cmsSite('clinic', 'license.pdfPreview')}
+        >
+          <img
+            src={encodeURI(withBase(license.pdfPreview))}
+            alt={`${blocks.license.open}: открыть в новой вкладке`}
+            width="60"
+            height="80"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+      )
+    }
+    <div class="dc-footer__license-text">
+      <button type="button" class="dc-footer__license-open" data-open="dc-license"><LicenseLine /></button>
+      {
+        license.registryUrl && (
+          <a
+            href={license.registryUrl}
+            target="_blank"
+            rel="noopener"
+            data-cms={cmsSite('clinic', 'license.registryUrl')}
+          >
+            {blocks.license.registry}
+          </a>
+        )
+      }
+    </div>
+  </div>
+
+  <div class="dc-footer__legal">
     <span data-cms={cmsSite('clinic', 'name')}>© {year} {clinic.name}</span>
-    <span>
-      {clinic.license.title}{clinic.license.number && ` № ${clinic.license.number}`}
-    </span>
-    {clinic.legal.ogrn && <span data-cms={cmsSite('clinic', 'legal.ogrn')}>ОГРН {clinic.legal.ogrn}</span>}
-    {clinic.legal.inn && <span data-cms={cmsSite('clinic', 'legal.inn')}>ИНН {clinic.legal.inn}</span>}
+    {
+      requisites.length > 0 && (
+        <span class="dc-footer__requisites" data-cms={cmsSite('clinic', 'legal')}>
+          {requisites.map((item) => (
+            <span data-cms={cmsSite('clinic', item.cms)}>{item.text}</span>
+          ))}
+        </span>
+      )
+    }
   </div>
 </footer>
 
@@ -174,16 +229,77 @@ const socials = [
     font-weight: var(--fw-bold);
   }
 
-  .dc-footer__legal {
+  .dc-footer__license {
     max-width: var(--container);
     margin: var(--space-12) auto 0;
     padding-top: var(--space-6);
-    border-top: 1px solid var(--line-on-dark);
+    border-top: var(--border-width) solid var(--line-on-dark);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    font-size: var(--type-small);
+  }
+  /* Миниатюра первой страницы выписки — бумажный лист на тёмном подвале */
+  .dc-footer__doc {
+    flex: none;
+    display: block;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--dc-white);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .dc-footer__doc:hover {
+    transform: translateY(-2px);
+  }
+  .dc-footer__doc img {
+    display: block;
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    object-position: top;
+  }
+  .dc-footer__license-text {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+    max-width: var(--measure);
+  }
+  .dc-footer__license-open {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    line-height: var(--lh-body);
+    text-align: left;
+    color: var(--text-on-dark);
+    cursor: pointer;
+  }
+  .dc-footer__license-open:hover {
+    color: var(--dc-turquoise);
+    text-decoration: underline;
+  }
+  .dc-footer__license-text a {
+    color: var(--text-on-dark-muted);
+    text-decoration: underline;
+  }
+  .dc-footer__license-text a:hover {
+    color: var(--dc-turquoise);
+  }
+
+  .dc-footer__legal {
+    max-width: var(--container);
+    margin: var(--space-6) auto 0;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-4);
+    gap: var(--space-2) var(--space-4);
     justify-content: space-between;
     color: var(--text-on-dark-muted);
     font-size: var(--type-small);
+  }
+  .dc-footer__requisites {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
   }
 </style>

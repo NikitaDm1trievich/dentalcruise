@@ -21,8 +21,26 @@ const FOCUSABLE =
 
 let open: Overlay | null = null;
 
+/** Куда можно поставить фокус: видимое и не выключенное через inert (скрытые слайды карусели). */
+function focusables(root: HTMLElement): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (el) => el.offsetParent !== null && !el.closest('[inert]'),
+  );
+}
+
+/**
+ * Без полосы прокрутки страница становится шире на её толщину, и всё —
+ * шапка, контент, кнопка «наверх» — прыгает вправо. Поэтому, пока
+ * прокрутка заперта, место полосы остаётся за ней (scrollbar-gutter).
+ * Только если полоса есть: на телефоне и с «плавающими» полосами места
+ * под неё нет, а на короткой странице без прокрутки пустая полоса справа
+ * сама сдвинула бы вёрстку влево.
+ */
 function lockScroll(locked: boolean) {
+  const root = document.documentElement;
+  if (locked && window.innerWidth > root.clientWidth) root.style.scrollbarGutter = 'stable';
   document.body.style.overflow = locked ? 'hidden' : '';
+  if (!locked) root.style.scrollbarGutter = '';
 }
 
 export function closeOverlay(): void {
@@ -63,7 +81,9 @@ export function openOverlay(id: string, opener: HTMLElement | null = null, { foc
   open = { root, opener };
   lockScroll(true);
 
-  if (focus) root.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+  // preventScroll: иначе окно с длинным содержимым (сканы лицензии)
+  // прокрутилось бы к первой ссылке мимо заголовка.
+  if (focus) focusables(root)[0]?.focus({ preventScroll: true });
 }
 
 export function initOverlays(): void {
@@ -106,9 +126,7 @@ export function initOverlays(): void {
 
     // Ловушка фокуса — Tab не уводит на страницу под оверлеем
     if (event.key === 'Tab') {
-      const items = Array.from(open.root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (el) => el.offsetParent !== null,
-      );
+      const items = focusables(open.root);
       if (items.length === 0) return;
       const first = items[0];
       const last = items[items.length - 1];
