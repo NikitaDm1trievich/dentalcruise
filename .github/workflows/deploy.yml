@@ -34,11 +34,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Полная история: проверке данных нужны прежние версии файлов
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
+
+      # Редактор, открытый до обновления админки, при сохранении стирает
+      # новые для него поля. Такой коммит останавливает публикацию: сайт
+      # остаётся прежним, в логе — какое поле, файл и коммит. Подробности —
+      # в scripts/check-cms-data.mjs.
+      - name: Проверка, что редактор не стёр поля
+        run: node scripts/check-cms-data.mjs "${{ github.event.before }}" "${{ github.sha }}"
 
       - run: npm ci
 
