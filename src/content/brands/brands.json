@@ -41,6 +41,16 @@
       "order": 40
     },
     {
+      "id": "zhermack",
+      "name": "Zhermack",
+      "logo": {
+        "src": "/images/brands/zhermack.png",
+        "width": 269,
+        "height": 37
+      },
+      "order": 45
+    },
+    {
       "id": "septodont",
       "name": "Septodont",
       "logo": {
