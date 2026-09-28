@@ -1,34 +1,164 @@
 {
   "items": [
     {
-      "id": "vladmiva",
-      "name": "ВладМиВа",
+      "id": "straumann",
+      "name": "Straumann",
+      "logo": {
+        "src": "/images/brands/straumann.svg",
+        "width": 460,
+        "height": 100
+      },
       "order": 10
     },
     {
-      "id": "stomadent",
-      "name": "Стомадент",
+      "id": "ivoclar",
+      "name": "Ivoclar Vivadent",
+      "logo": {
+        "src": "/images/brands/ivoclar.svg",
+        "width": 189,
+        "height": 100
+      },
       "order": 20
     },
     {
-      "id": "celit",
-      "name": "Целит",
+      "id": "dentsply-sirona",
+      "name": "Dentsply Sirona",
+      "logo": {
+        "src": "/images/brands/dentsply-sirona.svg",
+        "width": 356,
+        "height": 100
+      },
       "order": 30
     },
     {
-      "id": "raduga-r",
-      "name": "Радуга-Р",
+      "id": "3m-espe",
+      "name": "3M ESPE",
+      "logo": {
+        "src": "/images/brands/3m-espe.svg",
+        "width": 532,
+        "height": 100
+      },
       "order": 40
     },
     {
-      "id": "estet",
-      "name": "ЭСТЕТ",
+      "id": "septodont",
+      "name": "Septodont",
+      "logo": {
+        "src": "/images/brands/septodont.svg",
+        "width": 100,
+        "height": 100
+      },
       "order": 50
     },
     {
-      "id": "diarsi",
-      "name": "ДиаРси",
+      "id": "planmeca",
+      "name": "Planmeca",
+      "logo": {
+        "src": "/images/brands/planmeca.svg",
+        "width": 1120,
+        "height": 100
+      },
       "order": 60
+    },
+    {
+      "id": "wh",
+      "name": "W&H",
+      "logo": {
+        "src": "/images/brands/wh.svg",
+        "width": 212,
+        "height": 100
+      },
+      "order": 70
+    },
+    {
+      "id": "nsk",
+      "name": "NSK",
+      "logo": {
+        "src": "/images/brands/nsk.png",
+        "width": 436,
+        "height": 160
+      },
+      "order": 80
+    },
+    {
+      "id": "renfert",
+      "name": "Renfert",
+      "logo": {
+        "src": "/images/brands/renfert.svg",
+        "width": 158,
+        "height": 100
+      },
+      "order": 90
+    },
+    {
+      "id": "tokuyama",
+      "name": "Tokuyama Dental",
+      "logo": {
+        "src": "/images/brands/tokuyama.svg",
+        "width": 542,
+        "height": 100
+      },
+      "order": 100
+    },
+    {
+      "id": "dentium",
+      "name": "Dentium",
+      "logo": {
+        "src": "/images/brands/dentium.svg",
+        "width": 533,
+        "height": 100
+      },
+      "order": 110
+    },
+    {
+      "id": "neodent",
+      "name": "Neodent",
+      "logo": {
+        "src": "/images/brands/neodent.png",
+        "width": 535,
+        "height": 160
+      },
+      "order": 120
+    },
+    {
+      "id": "osstem",
+      "name": "Osstem Implant",
+      "logo": {
+        "src": "/images/brands/osstem.svg",
+        "width": 282,
+        "height": 100
+      },
+      "order": 130
+    },
+    {
+      "id": "alpha-bio",
+      "name": "Alpha-Bio Tec",
+      "logo": {
+        "src": "/images/brands/alpha-bio.png",
+        "width": 553,
+        "height": 160
+      },
+      "order": 140
+    },
+    {
+      "id": "sagemax",
+      "name": "Sagemax",
+      "logo": {
+        "src": "/images/brands/sagemax.png",
+        "width": 833,
+        "height": 160
+      },
+      "order": 150
+    },
+    {
+      "id": "luxen",
+      "name": "Luxen Zirconia",
+      "logo": {
+        "src": "/images/brands/luxen.png",
+        "width": 184,
+        "height": 40
+      },
+      "order": 160
     }
   ]
 }

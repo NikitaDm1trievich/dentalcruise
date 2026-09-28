@@ -21,6 +21,11 @@ interface Props {
 const { eyebrow = 'Материалы и поставщики', brands, speed = 38, cms } = Astro.props;
 // Дубль списка — чтобы лента замыкалась без стыка
 const row = [...brands, ...brands];
+
+/* Логотипы одной площади, а не одной высоты: иначе вытянутый в строку
+   знак выходит вдвое крупнее квадратного. Высота в px при площади ~3800. */
+const logoHeight = (logo: { width: number; height: number }) =>
+  Math.round(Math.min(46, Math.max(18, Math.sqrt(3800 / (logo.width / logo.height)))));
 ---
 
 <div class="dc-marquee">
@@ -45,6 +50,9 @@ const row = [...brands, ...brands];
                   alt={brand.name}
                   width={brand.logo.width}
                   height={brand.logo.height}
+                  style={`--logo-h: ${logoHeight(brand.logo)}px`}
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 brand.name
@@ -114,8 +122,14 @@ const row = [...brands, ...brands];
     opacity: 0.78;
   }
   .dc-marquee__item img {
-    height: 34px;
+    display: block;
+    height: var(--logo-h, 34px);
     width: auto;
+  }
+  @media (max-width: 640px) {
+    .dc-marquee__item img {
+      height: calc(var(--logo-h, 34px) * 0.8);
+    }
   }
 </style>
 
