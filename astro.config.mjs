@@ -4,6 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
+import { readdirSync, readFileSync } from 'node:fs';
 
 /**
  * Редактор сайта (public/admin/index.html) подключает preview.js — шаблон
@@ -64,6 +65,29 @@ const adminCacheBust = {
 const SITE = process.env.SITE ?? 'https://dentalcruise.ru';
 const BASE = process.env.BASE ?? '/';
 
+/**
+ * Есть ли в галерее хоть одна работа с обоими фото — то же условие, по
+ * которому src/pages/gallery.astro показывает работу. Пустая галерея —
+ * заглушка «идёт съёмка» с noindex, в карте сайта ей не место.
+ */
+const galleryHasCases = (() => {
+  const dir = new URL('./src/content/cases/', import.meta.url);
+  try {
+    return readdirSync(dir)
+      .filter((name) => name.endsWith('.json'))
+      .some((name) => {
+        try {
+          const data = JSON.parse(readFileSync(new URL(name, dir), 'utf8'));
+          return Boolean(data?.before && data?.after);
+        } catch {
+          return false;
+        }
+      });
+  } catch {
+    return false;
+  }
+})();
+
 export default defineConfig({
   site: SITE,
   base: BASE,
@@ -80,15 +104,14 @@ export default defineConfig({
     sitemap({
       // В карту сайта идут только страницы для людей. Служебное и машинное
       // (админка, фиды, ключ IndexNow) роботу там не нужно: фиды он берёт
-      // по прямой ссылке из Вебмастера, а не из sitemap. Заглушка «раздел
-      // готовится» (/gallery) закрыта от индексации — убрать её отсюда,
-      // когда страница наполнится и переедёт на PageLayout. /about уже на
-      // PageLayout и открыт для индексации.
+      // по прямой ссылке из Вебмастера, а не из sitemap. Галерея работ без
+      // единой работы закрыта от индексации (noindex) — и в карту не идёт;
+      // первая работа из редактора открывает её сама.
       filter: (page) =>
         !page.includes('/404') &&
         !page.includes('/admin') &&
         !page.includes('/feeds/') &&
-        !/\/gallery\/?$/.test(new URL(page).pathname),
+        (galleryHasCases || !/\/gallery\/?$/.test(new URL(page).pathname)),
       /**
        * Приоритет и частота обновления — подсказка обходчику, куда
        * заглядывать чаще. Прайс и врачи меняются в редакторе постоянно,

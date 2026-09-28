@@ -50,7 +50,21 @@ export const aboutPage: {
   foot: { text: string; doctors: string; book: string };
   seo: Seo;
 } = about;
-export const galleryPage: StubPage = gallery;
+export const galleryPage: {
+  eyebrow: string;
+  heading: string;
+  lead: string;
+  /** Текст вместо галереи, пока в «Галерее работ» нет ни одной работы */
+  empty: string;
+  book: string;
+  breadcrumb: string;
+  /** Подписи кнопок фильтра: «все» и по ключу типа работы из «Галереи работ» */
+  filter: { all: string; veneers: string; crowns: string; implants: string };
+  before: string;
+  after: string;
+  foot: { text: string; book: string };
+  seo: Seo;
+} = gallery;
 export const notFoundPage: StubPage = notFound;
 
 export const privacyPage: StubPage & {

@@ -4,8 +4,9 @@
 # редакторе = коммит в ветку main = пересборка сайта через GitHub Actions.
 #
 # Порядок в левом меню: сначала тексты страниц («Главная» со всеми своими
-# блоками, «Страницы сайта»), затем данные (прайс, услуги, врачи), в конце
-# общее для всех страниц («Шапка, подвал и контакты») и настройки. Номер в
+# блоками, «Страницы сайта»), затем данные (прайс, услуги, врачи, галерея
+# работ), в конце общее для всех страниц («Шапка, подвал и контакты») и
+# настройки. Номер в
 # подписях «Главной» совпадает с номером блока на странице сверху вниз.
 #
 # Новый файл или коллекцию нужно добавить и в preview.js: в список
@@ -1210,10 +1211,50 @@ collections:
             label: Надпись над заголовком
             widget: string
             hint: >-
-              Где на сайте: страница «Галерея работ». Пока это заглушка «раздел
-              готовится» и закрыта от поисковиков.
+              Где на сайте: верх страницы «Галерея работ». Сами работы и их
+              фото — в разделе «Галерея работ (до и после)» слева.
           - { name: heading, label: Заголовок страницы, widget: string }
-          - { name: lead, label: Текст под заголовком, widget: text }
+          - name: lead
+            label: Текст под заголовком
+            widget: text
+            hint: Виден, когда в галерее есть хотя бы одна работа.
+          - name: empty
+            label: Текст, пока работ нет
+            widget: text
+            hint: >-
+              Виден под заголовком вместо галереи, пока в разделе «Галерея
+              работ (до и после)» нет ни одной работы с обоими фото. Пока
+              работ нет, страница закрыта от поисковиков.
+          - name: book
+            label: Кнопка записи, пока работ нет
+            widget: string
+            hint: Стоит под текстом «пока работ нет» рядом с телефоном клиники.
+          - name: filter
+            label: Кнопки фильтра
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: кнопки над работами. Кнопка типа появляется, только
+              если в нём есть работы; при одном типе фильтра нет совсем.
+            fields:
+              - { name: all, label: Кнопка «все работы», widget: string }
+              - { name: veneers, label: Виниры, widget: string }
+              - { name: crowns, label: Коронки, widget: string }
+              - { name: implants, label: Имплантация, widget: string }
+          - { name: before, label: Подпись на фото «до», widget: string }
+          - { name: after, label: Подпись на фото «после», widget: string }
+          - name: foot
+            label: Низ страницы
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: призыв записаться под работами, перед подвалом сайта.'
+            fields:
+              - { name: text, label: Заголовок, widget: text }
+              - { name: book, label: Кнопка записи, widget: string }
+          - name: breadcrumb
+            label: Название в хлебных крошках
+            widget: string
+            hint: Строка «Главная › Галерея работ» над заголовком.
           - name: seo
             label: Для поисковиков
             widget: object
@@ -1570,6 +1611,67 @@ collections:
         widget: text
         required: false
         hint: Если пусто, собирается само. До ~160 знаков — длиннее поисковик обрежет.
+      - name: order
+        label: Порядок на странице
+        widget: number
+        value_type: int
+        default: 100
+        hint: >-
+          Чем меньше число, тем выше. Удобно шагом 10: 10, 20, 30 — так можно
+          вставить запись между соседними.
+
+  # ── Галерея работ (до и после) ───────────────────────────────────────
+  # По файлу на работу в src/content/cases, фото — в public/images/cases.
+  # Имя файла собирается из типа работы и времени создания латиницей
+  # (veneers-20261001-143015): название работы по-русски в имя файла не
+  # идёт, иначе файл получил бы кириллическое имя.
+  - name: cases
+    label: Галерея работ (до и после)
+    icon: photo_library
+    folder: src/content/cases
+    extension: json
+    format: json
+    create: true
+    slug: '{{fields.category}}-{{year}}{{month}}{{day}}-{{hour}}{{minute}}{{second}}'
+    identifier_field: title
+    summary: '{{title}}'
+    description: >-
+      Страница «Галерея работ»: пары фото до и после лечения с фильтром по
+      типу работы. Работа появляется на сайте, когда загружены оба фото.
+      Заголовок и тексты страницы — в «Страницы сайта» → «Галерея работ».
+    fields:
+      - name: title
+        label: Название работы
+        widget: string
+        hint: 'Крупно под фото, например «Виниры E-max, верхний ряд».'
+      - name: category
+        label: Тип работы
+        widget: select
+        options:
+          - { label: Виниры, value: veneers }
+          - { label: Коронки, value: crowns }
+          - { label: Имплантация, value: implants }
+        hint: По нему работает фильтр над работами.
+      - name: before
+        label: Фото «до»
+        widget: image
+        media_folder: /public/images/cases
+        public_folder: /images/cases
+        hint: >-
+          Горизонтальное или квадратное фото. «До» и «после» снимайте с
+          одного ракурса и одного размера: на сайте они стоят рядом в
+          одинаковых рамках 4 к 3, лишнее по краям обрезается.
+      - name: after
+        label: Фото «после»
+        widget: image
+        media_folder: /public/images/cases
+        public_folder: /images/cases
+        hint: Тот же ракурс и размер, что у фото «до».
+      - name: note
+        label: Комментарий
+        widget: text
+        required: false
+        hint: 'Необязательно. Строка под названием, например «6 виниров, две недели от слепка до установки».'
       - name: order
         label: Порядок на странице
         widget: number
@@ -2262,35 +2364,3 @@ collections:
               один раз при настройке: строка из 8–128 латинских букв и цифр,
               сайт сам выложит файл с этим ключом. Если уже заполнен, не
               меняйте.
-
-  # ── Работы до/после ──────────────────────────────────────────────────
-  # Скрыто из меню, пока /gallery — заглушка: правки здесь ни на что на
-  # сайте не влияют. Вернуть в меню (убрать hide), когда галерея заработает.
-  - name: cases
-    label: Работы до и после
-    icon: photo_library
-    hide: true
-    folder: src/content/cases
-    extension: json
-    format: json
-    create: true
-    identifier_field: title
-    summary: '{{title}}'
-    fields:
-      - { name: title, label: Название работы, widget: string }
-      - { name: before, label: Фото «до», widget: image }
-      - { name: after, label: Фото «после», widget: image }
-      - { name: note, label: Комментарий, widget: text, required: false }
-      - name: order
-        label: Порядок на странице
-        widget: number
-        value_type: int
-        default: 100
-        hint: >-
-          Чем меньше число, тем выше. Удобно шагом 10: 10, 20, 30 — так можно
-          вставить запись между соседними.
-      - name: category
-        label: 'Служебное: тип работ'
-        widget: string
-        pattern: ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
-        hint: crowns, implants или veneers — от этого зависит фильтр в галерее.

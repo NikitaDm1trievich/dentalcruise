@@ -1,19 +1,359 @@
 ---
-import StubLayout from '../layouts/StubLayout.astro';
+/**
+ * Галерея работ «до/после» с фильтром по типу работы.
+ *
+ * Работы — коллекция cases (src/content/cases, по файлу на работу), их
+ * добавляет владелец в редакторе, раздел «Галерея работ (до и после)».
+ * Тексты страницы — «Страницы сайта» → «Галерея работ».
+ *
+ * Пока нет ни одной работы с обоими фото, страница честно говорит, что
+ * идёт съёмка, и закрыта от поисковиков; в карту сайта её не пускает
+ * astro.config.mjs по тому же условию. Первая работа открывает страницу.
+ */
+import { getCollection } from 'astro:content';
+
+import PageLayout from '../layouts/PageLayout.astro';
+import Reveal from '../components/core/Reveal.astro';
+import Button from '../components/core/Button.astro';
+import Badge from '../components/core/Badge.astro';
+import Icon from '../components/core/Icon.astro';
+import PhotoPlaceholder from '../components/media/PhotoPlaceholder.astro';
+import { clinic } from '../data/site';
 import { galleryPage as page } from '../data/pages';
-import { cmsPage } from '../lib/cms-ref';
+import { cmsPage, cmsSite } from '../lib/cms-ref';
+import { clampText } from '../lib/seo';
+
+type Ordered = { data: { order: number } };
+const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
+
+/** Работа без одного из снимков — не пара «до/после», на сайт не выходит */
+const cases = (await getCollection('cases'))
+  .filter((item) => item.data.before && item.data.after)
+  .sort(byOrder);
+
+/**
+ * Кнопки фильтра — типы работ из выпадающего списка редактора, в его
+ * порядке, и только те, в которых есть работы. Работа с незнакомым типом
+ * видна в «Все работы», своей кнопки у неё нет.
+ */
+const types = (['veneers', 'crowns', 'implants'] as const).filter((type) =>
+  cases.some((item) => item.data.category === type),
+);
+const hasCases = cases.length > 0;
 ---
 
-{/* Заглушка «раздел готовится» — в индексе ей делать нечего. Открыть для
-    индексации (убрать noindex) и вернуть в sitemap (astro.config.mjs),
-    когда раздел наполнится. Тексты — в редакторе, «Страницы сайта». */}
-<StubLayout
+{/* Тексты — в редакторе, «Страницы сайта» → «Галерея работ». Сами работы и
+    фото — в разделе «Галерея работ (до и после)». */}
+<PageLayout
   title={page.seo.title}
-  description={page.seo.description}
+  description={clampText(page.seo.description)}
   path="/gallery"
-  noindex
+  noindex={!hasCases}
   eyebrow={page.eyebrow}
   heading={page.heading}
-  lead={page.lead}
+  lead={hasCases ? page.lead : page.empty}
+  leadCms={hasCases ? undefined : cmsPage('gallery', 'empty')}
+  breadcrumbs={[{ label: page.breadcrumb, cms: cmsPage('gallery', 'breadcrumb') }]}
   cms={cmsPage('gallery')}
-/>
+>
+  {
+    !hasCases && (
+      <div slot="head-extra" class="dc-actions">
+        <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('gallery', 'book')}>
+          <Icon slot="icon" name="calendar" size={20} />
+          {page.book}
+        </Button>
+        <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+          <Icon slot="icon" name="phone" size={20} />
+          {clinic.phone}
+        </Button>
+      </div>
+    )
+  }
+
+  {
+    hasCases && (
+      <section class="dc-section dc-bg-white">
+        <div class="dc-container">
+          {/* Без скрипта фильтр не работает — панель остаётся скрытой, а
+              видны все работы. Скрипт снимает hidden. */}
+          {types.length > 1 && (
+            <div class="dc-filter" data-case-filter hidden>
+              <button
+                type="button"
+                class="dc-filter__chip"
+                data-filter="all"
+                aria-pressed="true"
+                data-cms={cmsPage('gallery', 'filter.all')}
+              >
+                {page.filter.all}
+              </button>
+              {types.map((type) => (
+                <button
+                  type="button"
+                  class="dc-filter__chip"
+                  data-filter={type}
+                  aria-pressed="false"
+                  data-cms={cmsPage('gallery', `filter.${type}`)}
+                >
+                  {page.filter[type]}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <ul class="dc-cases" role="list">
+            {cases.map((item, i) => (
+              <Reveal as="li" delay={(i % 2) * 70}>
+                <article class="dc-case" data-case={item.data.category} data-cms={`cases/${item.id}`}>
+                  <div class="dc-case__pair">
+                    <figure class="dc-case__shot">
+                      <PhotoPlaceholder
+                        src={item.data.before}
+                        alt={`${item.data.title}: ${page.before.toLowerCase()}`}
+                        ratio="4 / 3"
+                        radius="var(--radius-md)"
+                      />
+                      <figcaption class="dc-case__tag" data-cms={cmsPage('gallery', 'before')}>
+                        <Badge tone="quiet">{page.before}</Badge>
+                      </figcaption>
+                    </figure>
+                    <figure class="dc-case__shot">
+                      <PhotoPlaceholder
+                        src={item.data.after}
+                        alt={`${item.data.title}: ${page.after.toLowerCase()}`}
+                        ratio="4 / 3"
+                        radius="var(--radius-md)"
+                      />
+                      <figcaption class="dc-case__tag" data-cms={cmsPage('gallery', 'after')}>
+                        <Badge tone="accent">{page.after}</Badge>
+                      </figcaption>
+                    </figure>
+                  </div>
+                  <div class="dc-case__body">
+                    <h2 class="dc-case__title">{item.data.title}</h2>
+                    {item.data.note && <p class="dc-case__note">{item.data.note}</p>}
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section class="dc-section--tight dc-bg-warm" data-cms={cmsPage('gallery', 'foot')}>
+        <div class="dc-container">
+          <Reveal>
+            <div class="dc-foot">
+              <p>{page.foot.text}</p>
+              <div class="dc-actions">
+                <Button variant="primary" size="lg" data-open="dc-book">
+                  <Icon slot="icon" name="calendar" size={20} />
+                  {page.foot.book}
+                </Button>
+                <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+                  <Icon slot="icon" name="phone" size={20} />
+                  {clinic.phone}
+                </Button>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+</PageLayout>
+
+<style>
+  .dc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  /* Чипы фильтра — те же, что на странице прайса (src/pages/pricelist.astro),
+     только без липкой панели: работ немного, страница короткая. */
+  .dc-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .dc-filter[hidden] {
+    display: none;
+  }
+  .dc-filter__chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 9px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line-hairline);
+    background: var(--surface-card);
+    color: var(--text-body);
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+    cursor: pointer;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .dc-filter__chip:hover {
+    border-color: var(--line-strong);
+  }
+  .dc-filter__chip[aria-pressed='true'] {
+    background: var(--cta-bg);
+    border-color: var(--cta-bg);
+    color: var(--cta-fg);
+  }
+
+  /* Одна колонка на телефоне, две — от планшета: в карточке уже два фото
+     рядом, в три колонки снимки стали бы слишком мелкими. */
+  .dc-cases {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+    align-items: start;
+  }
+  /* li рисует Reveal — у него своя область видимости стилей */
+  .dc-cases > :global(li[hidden]) {
+    display: none;
+  }
+
+  .dc-case {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  /* «До» и «После» всегда рядом, и на телефоне: сравнивают их взглядом. */
+  .dc-case__pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+  .dc-case__shot {
+    position: relative;
+    margin: 0;
+    min-width: 0;
+  }
+  .dc-case__tag {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+  }
+  .dc-case__body {
+    display: grid;
+    gap: var(--space-2);
+    padding-inline: var(--space-1);
+  }
+  .dc-case__title {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: var(--fw-black);
+    line-height: var(--lh-tight);
+    color: var(--text-strong);
+    text-wrap: balance;
+    margin: 0;
+  }
+  .dc-case__note {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+    max-width: min(var(--measure), 100%);
+  }
+
+  /* Появление работы при переключении фильтра — как у разделов прайса */
+  @keyframes dc-filter-enter {
+    from {
+      opacity: 0;
+      transform: translateY(var(--reveal-shift, 26px));
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  :global(.dc-filter-enter) {
+    animation: dc-filter-enter 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.dc-filter-enter) {
+      animation: none;
+    }
+  }
+
+  .dc-foot {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+  }
+  .dc-foot p {
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: var(--fw-black);
+    line-height: var(--lh-heading);
+    color: var(--text-strong);
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .dc-bg-white {
+    background: var(--dc-white);
+  }
+  .dc-bg-warm {
+    background: var(--surface-warm);
+  }
+</style>
+
+<script>
+  const panel = document.querySelector<HTMLElement>('[data-case-filter]');
+  if (panel) {
+    const chips = Array.from(panel.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-case]'));
+    panel.hidden = false;
+
+    const apply = (value: string, animateShown = false) => {
+      for (const chip of chips) {
+        chip.setAttribute('aria-pressed', String(chip.dataset.filter === value));
+      }
+      for (const card of cards) {
+        // Прячем обёртку появления (li) целиком, иначе в сетке остаётся дыра
+        const wrapper = card.closest<HTMLElement>('.dc-reveal') ?? card;
+        const shouldShow = value === 'all' || card.dataset.case === value;
+        const wasHidden = wrapper.hidden;
+        wrapper.hidden = !shouldShow;
+        if (animateShown && shouldShow && wasHidden) {
+          wrapper.classList.remove('dc-filter-enter');
+          // eslint-disable-next-line no-unused-expressions
+          wrapper.offsetWidth;
+          wrapper.classList.add('dc-filter-enter');
+        }
+      }
+    };
+
+    for (const chip of chips) {
+      chip.addEventListener('click', () => {
+        const value = chip.dataset.filter ?? 'all';
+        apply(value, true);
+        // Адрес отражает выбор: ссылкой на «Виниры» можно поделиться
+        history.replaceState(null, '', value === 'all' ? window.location.pathname + window.location.search : `#${value}`);
+      });
+    }
+
+    const applyHash = () => {
+      const value = window.location.hash.replace('#', '');
+      if (chips.some((chip) => chip.dataset.filter === value)) apply(value);
+    };
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+  }
+</script>

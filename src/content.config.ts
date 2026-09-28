@@ -87,13 +87,19 @@ const services = defineCollection({
   }),
 });
 
+/**
+ * Работы «до/после» для страницы «Галерея работ» (/gallery). Файлы
+ * создаёт редактор. Фото могут прийти пустыми (работу сохранили до
+ * загрузки снимков) — такая работа на сайт не выходит, сборка не падает.
+ */
 const cases = defineCollection({
   loader: glob({ pattern: '**/*.json', base: './src/content/cases' }),
   schema: z.object({
     title: z.string(),
-    category: z.string(),
-    before: z.string(),
-    after: z.string(),
+    /** Тип работы: veneers / crowns / implants — по нему фильтр галереи */
+    category: textOr(''),
+    before: text(),
+    after: text(),
     note: text(),
     ...orderable,
   }),
