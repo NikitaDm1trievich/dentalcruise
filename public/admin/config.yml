@@ -775,11 +775,82 @@ collections:
             label: Надпись над заголовком
             widget: string
             hint: >-
-              Где на сайте: страница «О клинике». Пока это заглушка «раздел
-              готовится» и закрыта от поисковиков. Кнопки внизу — в «Шапка,
-              подвал и контакты» → «Общие блоки».
+              Где на сайте: верх страницы «О клинике». Кнопки записи и
+              звонка под заголовком, окно лицензии и фото клиники — из
+              общих разделов, здесь не повторяются.
           - { name: heading, label: Заголовок страницы, widget: string }
           - { name: lead, label: Текст под заголовком, widget: text }
+          - { name: book, label: Кнопка записи под заголовком, widget: string }
+          - name: history
+            label: История клиники
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: первый блок страницы, текст рядом с фото клиники.'
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - name: paragraphs
+                label: Абзацы
+                label_singular: абзац
+                widget: list
+                field: { name: paragraph, label: Абзац, widget: text }
+              - name: license
+                label: Кнопка «Открыть лицензию»
+                widget: string
+                hint: Открывает то же окно с лицензией, что и на «Контактах».
+              - name: galleryLabel
+                label: Подпись заглушки, пока фото нет
+                widget: string
+                hint: Сами фото клиники — в public/images/clinic (папка проекта).
+          - name: lab
+            label: Своя лаборатория
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: второй блок страницы, про зуботехническую лабораторию.'
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - name: paragraphs
+                label: Абзацы
+                label_singular: абзац
+                widget: list
+                field: { name: paragraph, label: Абзац, widget: text }
+          - name: location
+            label: Расположение
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: блок про метро и дорогу до клиники. Станции метро
+              и «5 минут пешком» — в «Шапка, подвал и контакты» → «Контакты и
+              реквизиты клиники».
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - { name: text, label: Текст, widget: text }
+              - { name: route, label: Кнопка маршрута, widget: string, hint: Открывает точку клиники на Яндекс Картах. }
+          - name: philosophy
+            label: Философия работы
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: предпоследний блок страницы, перед призывом записаться.'
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - { name: text, label: Текст, widget: text }
+              - { name: signature, label: Подпись, widget: string }
+          - name: foot
+            label: Низ страницы
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: призыв записаться в самом низу, перед подвалом сайта.'
+            fields:
+              - { name: text, label: Заголовок, widget: text }
+              - { name: doctors, label: Кнопка «Все врачи», widget: string }
+              - { name: book, label: Кнопка записи, widget: string }
+          - name: breadcrumb
+            label: Название в хлебных крошках
+            widget: string
+            hint: Строка «Главная › О клинике» над заголовком.
           - name: seo
             label: Для поисковиков
             widget: object

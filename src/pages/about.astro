@@ -1,19 +1,207 @@
 ---
-import StubLayout from '../layouts/StubLayout.astro';
+/**
+ * О клинике: история, своя зуботехническая лаборатория, расположение и
+ * философия работы. Те же секции и компоненты, что на «Контактах» и
+ * странице врача — фото интерьеров и окно лицензии общие с остальным
+ * сайтом. Тексты — в редакторе, «Страницы сайта» → «О клинике».
+ */
+import PageLayout from '../layouts/PageLayout.astro';
+import Reveal from '../components/core/Reveal.astro';
+import Button from '../components/core/Button.astro';
+import Icon from '../components/core/Icon.astro';
+import SectionHeading from '../components/core/SectionHeading.astro';
+import PhotoGallery from '../components/media/PhotoGallery.astro';
+import MetroStations from '../components/core/MetroStations.astro';
+import { clinic } from '../data/site';
 import { aboutPage as page } from '../data/pages';
-import { cmsPage } from '../lib/cms-ref';
+import { pageHref } from '../lib/asset';
+import { cmsPage, cmsSite } from '../lib/cms-ref';
+import { clampText } from '../lib/seo';
+
+const doctorsHref = pageHref('doctors');
+
+/**
+ * Интерьеры клиники — тот же список, что в тизере «О клинике» на главной
+ * (src/pages/index.astro): файлы из public/images/clinic собираются на
+ * сборке, а не нумеруются от 1, иначе удалённый в редакторе снимок
+ * оставался бы битой картинкой.
+ */
+const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,jpeg,png,webp,avif}'))
+  .sort()
+  .map((file) => file.replace(/^\/public/, ''));
 ---
 
-{/* Заглушка «раздел готовится» — в индексе ей делать нечего. Открыть для
-    индексации (убрать noindex) и вернуть в sitemap (astro.config.mjs),
-    когда раздел наполнится. Тексты — в редакторе, «Страницы сайта». */}
-<StubLayout
+{/* Тексты — в редакторе, «Страницы сайта» → «О клинике». Адрес, телефон,
+    режим работы и метро — в «Шапка, подвал и контакты». Окно лицензии и
+    его сканы — там же, группа «Общие блоки» и «Контакты и реквизиты». */}
+<PageLayout
   title={page.seo.title}
-  description={page.seo.description}
+  description={clampText(page.seo.description)}
   path="/about"
-  noindex
   eyebrow={page.eyebrow}
   heading={page.heading}
   lead={page.lead}
+  breadcrumbs={[{ label: page.breadcrumb, cms: cmsPage('about', 'breadcrumb') }]}
   cms={cmsPage('about')}
-/>
+>
+  <div slot="head-extra" class="dc-actions">
+    <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('about', 'book')}>
+      <Icon slot="icon" name="calendar" size={20} />
+      {page.book}
+    </Button>
+    <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+      <Icon slot="icon" name="phone" size={20} />
+      {clinic.phone}
+    </Button>
+  </div>
+
+  <section class="dc-section dc-bg-white" data-cms={cmsPage('about', 'history')}>
+    <div class="dc-container dc-two-col">
+      <Reveal>
+        <div class="dc-about-text">
+          <SectionHeading eyebrow={page.history.eyebrow} title={page.history.title} />
+          {page.history.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+          <Button variant="ghost" data-open="dc-license" data-cms={cmsPage('about', 'history.license')}>
+            <Icon slot="icon" name="shield-check" size={18} />
+            {page.history.license}
+          </Button>
+        </div>
+      </Reveal>
+      <Reveal delay={120}>
+        <PhotoGallery
+          photos={clinicPhotos}
+          alt="Клиника «Дентал Круиз» изнутри"
+          label={page.history.galleryLabel}
+          ratio="4 / 3"
+          interval={4000}
+          cmsLock="photos"
+        />
+      </Reveal>
+    </div>
+  </section>
+
+  <section class="dc-section dc-bg-warm" data-cms={cmsPage('about', 'lab')}>
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading eyebrow={page.lab.eyebrow} title={page.lab.title} />
+      </Reveal>
+      <Reveal delay={90}>
+        <div class="dc-about-prose">
+          {page.lab.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  <section class="dc-section dc-bg-aqua" data-cms={cmsPage('about', 'location')}>
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading eyebrow={page.location.eyebrow} title={page.location.title} lead={page.location.text} />
+      </Reveal>
+      <Reveal delay={90}>
+        <div class="dc-actions">
+          <span class="dc-location-metro">
+            <MetroStations note={clinic.metroWalk} />
+          </span>
+          <Button variant="secondary" href={clinic.links.yandexPin} data-cms={cmsPage('about', 'location.route')}>
+            <Icon slot="icon" name="navigation" size={18} />
+            {page.location.route}
+          </Button>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  <section class="dc-section dc-bg-white" data-cms={cmsPage('about', 'philosophy')}>
+    <div class="dc-container">
+      <Reveal>
+        <SectionHeading eyebrow={page.philosophy.eyebrow} title={page.philosophy.title} />
+        <div class="dc-about-prose">
+          <p>{page.philosophy.text}</p>
+          <p class="dc-signature">{page.philosophy.signature}</p>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  <section class="dc-section--tight dc-bg-warm" data-cms={cmsPage('about', 'foot')}>
+    <div class="dc-container">
+      <Reveal>
+        <div class="dc-foot">
+          <p>{page.foot.text}</p>
+          <div class="dc-actions">
+            <Button variant="primary" size="lg" href={doctorsHref}>{page.foot.doctors}</Button>
+            <Button variant="ghost" size="lg" data-open="dc-book">{page.foot.book}</Button>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .dc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .dc-two-col {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    align-items: start;
+  }
+
+  .dc-about-text {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+    min-width: 0;
+  }
+  .dc-about-text p {
+    color: var(--text-body);
+    max-width: min(var(--measure), 100%);
+  }
+
+  .dc-about-prose {
+    display: grid;
+    gap: var(--space-4);
+    max-width: min(var(--measure), 100%);
+  }
+  .dc-about-prose p {
+    color: var(--text-body);
+  }
+  .dc-signature {
+    font-style: italic;
+    color: var(--text-muted);
+  }
+
+  .dc-location-metro {
+    color: var(--text-body);
+  }
+
+  .dc-foot {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+  }
+  .dc-foot p {
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: var(--fw-black);
+    line-height: var(--lh-heading);
+    color: var(--text-strong);
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .dc-bg-white {
+    background: var(--dc-white);
+  }
+  .dc-bg-warm {
+    background: var(--surface-warm);
+  }
+  .dc-bg-aqua {
+    background: var(--grad-aqua);
+  }
+</style>

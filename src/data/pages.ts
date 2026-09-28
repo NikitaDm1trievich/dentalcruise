@@ -30,7 +30,26 @@ type Optional<T> = T | null;
 /** Страница-заглушка «раздел готовится» и 404 (StubLayout) */
 type StubPage = { eyebrow: string; heading: string; lead: string; seo: Seo };
 
-export const aboutPage: StubPage = about;
+export const aboutPage: {
+  eyebrow: string;
+  heading: string;
+  lead: string;
+  book: string;
+  breadcrumb: string;
+  history: {
+    eyebrow: string;
+    title: string;
+    paragraphs: string[];
+    /** Кнопка окна лицензии рядом с абзацем про лицензированные услуги */
+    license: string;
+    galleryLabel: string;
+  };
+  lab: { eyebrow: string; title: string; paragraphs: string[] };
+  location: { eyebrow: string; title: string; text: string; route: string };
+  philosophy: { eyebrow: string; title: string; text: string; signature: string };
+  foot: { text: string; doctors: string; book: string };
+  seo: Seo;
+} = about;
 export const galleryPage: StubPage = gallery;
 export const notFoundPage: StubPage = notFound;
 
