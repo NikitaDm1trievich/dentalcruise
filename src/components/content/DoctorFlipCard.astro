@@ -163,6 +163,12 @@ const facts = [`${doctorPage.experience} ${experience}`, note, extra].filter(Boo
     position: relative;
     overflow: hidden;
   }
+  /* Окно под фото на карточке шире портрета 3:4, и по центру кадра в него
+     попадали подбородок и грудь, а лицо уходило за верхний край. Держимся
+     верха снимка: голова на портретах всегда в верхней трети. */
+  .dc-doc__photo :global(.dc-photo__img) {
+    object-position: 50% 12%;
+  }
   .dc-doc__body {
     display: grid;
     gap: var(--space-2);

@@ -318,6 +318,10 @@ if (years) {
     .dc-doc-page__top :global(.dc-photo) {
       aspect-ratio: 1 / 1;
     }
+    /* Квадрат режет портрет сверху и снизу — лицо держим в кадре */
+    .dc-doc-page__top :global(.dc-photo__img) {
+      object-position: 50% 15%;
+    }
   }
   @media (min-width: 900px) {
     .dc-doc-page__top {
