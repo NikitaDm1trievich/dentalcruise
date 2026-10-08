@@ -40,9 +40,9 @@
 | `/special/tsirkonievaya-koronka-na-implante-vintovaya-fiksatsiya/` | `/uslugi/cirkonievaya-koronka-na-implante-vintovaya-fiksaciya/` | |
 | `/koronka-na-zub/` | `/pricelist/#protezirovanie` | |
 | `/koronka-na-zub/tsirkonievaya-koronka/` | `/uslugi/cirkonievaya-koronka/` | |
-| `/koronka-na-zub/metallokeramichesckie_koronki/` | `/uslugi/metallokeramicheskie-koronki-metallokeramika-karkas-3d-slp/` | |
+| `/koronka-na-zub/metallokeramichesckie_koronki/` | `/uslugi/cirkonievaya-koronka/` | металлокерамики с октября 2026 нет в прайсе — ближайшая коронка |
 | `/koronka-na-zub/koronka-e-max/` | `/uslugi/keramicheskie-koronki-i-vkladki-e-max-koronka-vkladka-e-max/` | |
-| `/viniry/` | `/pricelist/#restoration` | |
+| `/viniry/` | `/pricelist/#protezirovanie` | виниры с октября 2026 в «Несъёмном протезировании» |
 | `/viniry/viniry-e-max/` | `/uslugi/vinir-emax/` | |
 | `/nesemnoe-protezirovanie/` | `/pricelist/#protezirovanie` | |
 | `/nesemnoe-protezirovanie/all-on-4/` | `/uslugi/protezy-na-implantah-vse-na-4-implantah-osstem-nemedlennaya-nagruzka/` | |
@@ -53,7 +53,7 @@
 | `/implantatsiya/odnoetapnaya-implantatsiya/` | `/uslugi/implantaciya-pod-klyuch/` | |
 | `/implantatsiya/sinus-lifting/` | `/uslugi/kostnaya-plastika-otkrytyy-sinus-lifting/` | |
 | `/estetika-i-gigiena/otbelivanie-zubov/` | `/uslugi/otbelivanie-otbelivanie-zubov-belle/` | |
-| `/stomatologiya-terapevticheskaya/` | `/pricelist/#terapiya` | |
+| `/stomatologiya-terapevticheskaya/` | `/pricelist/#karies` | |
 | `/stomatologiya-terapevticheskaya/lechenie-kariesa/` | `/uslugi/lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-srednego-kariesa/` | |
 | `/stomatologiya-khirurgicheskaya/` | `/pricelist/#hirurgiya` | |
 
@@ -72,10 +72,10 @@
 | `/nesemnoe-protezirovanie/implanty-zubov/` | `/uslugi/implantaciya-pod-klyuch/` |
 | `/nesemnoe-protezirovanie/keramicheskaya-vkladka-e-max/` | `/uslugi/keramicheskie-koronki-i-vkladki-e-max-koronka-vkladka-e-max/` |
 | `/nesemnoe-protezirovanie/koronka-na-zub/` | `/pricelist/#protezirovanie` |
-| `/nesemnoe-protezirovanie/viniry-na-zuby/` | `/pricelist/#restoration` |
-| `/bezmetallovaya-keramika/koronka-na-implantate-e-max/` | `/uslugi/koronka-e-max-na-implante-vintovaya-fiksaciya/` |
-| `/metallokeramika/metallokeramicheskaya-koronka-cocr/` | `/uslugi/metallokeramicheskie-koronki-metallokeramika-karkas-3d-slp/` |
-| `/metallokeramika/metallokeramicheskaya-koronka-cocr-na-implantate/` | `/uslugi/metallokeramicheskaya-koronka-na-implante-vintovaya-fiksaciya/` |
+| `/nesemnoe-protezirovanie/viniry-na-zuby/` | `/pricelist/#protezirovanie` |
+| `/bezmetallovaya-keramika/koronka-na-implantate-e-max/` | `/uslugi/koronka-e-max-na-implante-cementnaya-fiksaciya/` |
+| `/metallokeramika/metallokeramicheskaya-koronka-cocr/` | `/uslugi/cirkonievaya-koronka/` |
+| `/metallokeramika/metallokeramicheskaya-koronka-cocr-na-implantate/` | `/uslugi/cirkonievaya-koronka-na-implante-vintovaya-fiksaciya/` |
 | `/koronka-na-zub/vremennaya-koronka/` | `/uslugi/vremennaya-koronka-plastmassovaya/` |
 | `/tselnotsirkonievaya-koronka/` | `/uslugi/cirkonievaya-koronka/` |
 | `/vinir-e-max/` | `/uslugi/vinir-emax/` |
@@ -96,9 +96,32 @@
 | `/ortodontiya/elaynery-/` | 410, либо `/pricelist/` если услуга появится |
 | `/ortodontiya/ispravlenie-prikusa-bez-breketov/` | 410 |
 | `/ortodontiya/ustanovka-breket-sistem/` | 410 |
-| `/parodontologiya/lechenie-gingivita/` | 410, либо `/pricelist/#terapiya` |
-| `/parodontologiya/lechenie-parodontita/` | 410, либо `/pricelist/#terapiya` |
-| `/parodontologiya/lechenie-parodontoza/` | 410, либо `/pricelist/#terapiya` |
+| `/parodontologiya/lechenie-gingivita/` | 410, либо `/pricelist/#karies` |
+| `/parodontologiya/lechenie-parodontita/` | 410, либо `/pricelist/#karies` |
+| `/parodontologiya/lechenie-parodontoza/` | 410, либо `/pricelist/#karies` |
+
+## Страницы услуг, убранные с сайта в октябре 2026
+
+В прайсе октября 2026 этих услуг нет, страницы удалены. Если поисковик
+успел их проиндексировать, после переезда нужен редирект на ближайшую
+услугу. Старые якоря `#restoration` и `#terapiya` страница прайса
+переводит на новые разделы сама.
+
+| Удалённый адрес | Новый URL |
+|---|---|
+| `/uslugi/metallokeramicheskie-koronki-metallokeramika-karkas-3d-slp/` | `/uslugi/cirkonievaya-koronka/` |
+| `/uslugi/metallokeramicheskie-koronki-metallokeramika-na-karkase-iz-dragmetalla/` | `/uslugi/cirkonievaya-koronka/` |
+| `/uslugi/metallokeramicheskaya-koronka-na-implante-cementnaya-fiksaciya/` | `/uslugi/cirkonievaya-koronka-na-implante-cementnaya-fiksaciya/` |
+| `/uslugi/metallokeramicheskaya-koronka-na-implante-vintovaya-fiksaciya/` | `/uslugi/cirkonievaya-koronka-na-implante-vintovaya-fiksaciya/` |
+| `/uslugi/implantaciya-pod-klyuch-osstem-metallokeramicheskaya-koronka/` | `/uslugi/implantaciya-pod-klyuch-osstem-cirkonievaya-koronka/` |
+| `/uslugi/implantaciya-pod-klyuch-astra-tech-metallokeramicheskaya-koronka/` | `/uslugi/implantaciya-pod-klyuch-astra-tech-cirkonievaya-koronka/` |
+| `/uslugi/koronka-e-max-na-implante-vintovaya-fiksaciya/` | `/uslugi/koronka-e-max-na-implante-cementnaya-fiksaciya/` |
+| `/uslugi/kultevaya-vkladka-kombinirovannaya-kobalt-hrom-i-e-max/` | `/uslugi/kultevaya-vkladka-kobalt-hrom/` |
+| `/uslugi/byugelnyy-protez-bredent/` | `/uslugi/byugelnyy-protez-zamkovyy-zamki-bredent/` |
+| `/uslugi/kostnaya-plastika-plastika-myagkih-tkaney-sst/` | `/pricelist/#implantacia` |
+| `/uslugi/professionalnaya-gigiena-3-ya-kategoriya/` | `/uslugi/professionalnaya-gigiena-2-ya-kategoriya/` |
+| `/uslugi/protezy-na-implantah-vse-na-4-implantah-osstem-otsrochennaya-nagruzka/` | `/uslugi/protezy-na-implantah-vse-na-4-implantah-osstem-nemedlennaya-nagruzka/` |
+| `/uslugi/protezy-na-implantah-vse-na-6-implantah-osstem-otsrochennaya-nagruzka/` | `/uslugi/protezy-na-implantah-vse-na-6-implantah-osstem-nemedlennaya-nagruzka/` |
 
 ## Пример для Caddy
 
