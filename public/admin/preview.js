@@ -52,6 +52,7 @@
   var HOME_ANCHORS = {
     promos: 'promo',
     catalog: 'services',
+    problems: 'services',
     brands: 'brands',
     comparison: 'why',
     chart: 'why',
@@ -848,6 +849,7 @@
     'texts',
     'promos',
     'catalog',
+    'problems',
     'brands',
     'comparison',
     'chart',

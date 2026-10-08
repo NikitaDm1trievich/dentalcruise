@@ -27,6 +27,10 @@ export const blocks: {
 export type FormCopy = {
   title: string;
   lead: string;
+  /** Строка под заголовком, когда запись открыта из подбора по проблеме: «Вы выбрали: Болит зуб» */
+  picked: string;
+  /** Начало текста, который подставляется в поле комментария: «Беспокоит: Болит зуб» */
+  pickedComment: string;
   fields: {
     name: string;
     phone: string;

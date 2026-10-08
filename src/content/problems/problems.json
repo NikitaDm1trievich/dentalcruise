@@ -1,0 +1,266 @@
+{
+  "items": [
+    {
+      "title": "Болит зуб",
+      "short": "Болит зуб",
+      "description": "Ноет, стреляет, реагирует на холодное и горячее. Боль снимем в день обращения, дальнейшее лечение спланируем без спешки.",
+      "icon": "zap",
+      "items": [
+        {
+          "title": "Помощь при острой боли",
+          "price": "6 000 ₽",
+          "page": "lechenie-kanalov-endodontiya-pomosch-pri-ostroy-boli"
+        },
+        {
+          "title": "Лечение пульпита, 1 канал",
+          "price": "8 000 ₽",
+          "page": "lechenie-kanalov-endodontiya-pulpit-odnokanalnyy-zub"
+        },
+        {
+          "title": "Прицельный снимок",
+          "price": "400 ₽",
+          "page": ""
+        }
+      ],
+      "doctors": [
+        "terapevt",
+        "shamanova"
+      ],
+      "section": "endodontiya",
+      "order": 10,
+      "id": "pain"
+    },
+    {
+      "title": "Тёмное пятно или дырка в зубе",
+      "short": "Пятно, дырка",
+      "description": "Скорее всего, кариес. Чем раньше он вылечен, тем меньше работы и ниже цена.",
+      "icon": "circle-dot",
+      "items": [
+        {
+          "title": "Лечение начального кариеса",
+          "price": "5 000 ₽",
+          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-nachalnogo-kariesa"
+        },
+        {
+          "title": "Лечение среднего кариеса",
+          "price": "6 000 ₽",
+          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-srednego-kariesa"
+        },
+        {
+          "title": "Лечение глубокого кариеса",
+          "price": "8 000 ₽",
+          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-glubokogo-kariesa"
+        }
+      ],
+      "doctors": [
+        "shamanova",
+        "terapevt"
+      ],
+      "section": "karies",
+      "order": 20,
+      "id": "caries"
+    },
+    {
+      "title": "Скололся или разрушен зуб",
+      "short": "Скол зуба",
+      "description": "Восстановим пломбой со штифтом, вкладкой или коронкой. Что подойдёт, зависит от того, сколько зуба осталось.",
+      "icon": "puzzle",
+      "items": [
+        {
+          "title": "Восстановление стекловолоконным штифтом",
+          "price": "8 000 ₽",
+          "page": "vosstanovlenie-zuba-steklovolokonnym-shtiftom"
+        },
+        {
+          "title": "Культевая вкладка CoCr",
+          "price": "8 000 ₽",
+          "page": "kultevaya-vkladka-kobalt-hrom"
+        },
+        {
+          "title": "Циркониевая коронка, акция",
+          "price": "19 900 ₽",
+          "page": "cirkonievaya-koronka"
+        }
+      ],
+      "doctors": [
+        "shamanova",
+        "ortoped"
+      ],
+      "section": "protezirovanie",
+      "order": 30,
+      "id": "broken"
+    },
+    {
+      "title": "Нет одного или нескольких зубов",
+      "short": "Нет зуба",
+      "description": "Имплант с коронкой под ключ или протез без имплантации. Коронку сделает лаборатория клиники.",
+      "icon": "circle-dashed",
+      "items": [
+        {
+          "title": "Имплантация Osstem + циркониевая коронка",
+          "price": "49 900 ₽",
+          "page": "implantaciya-pod-klyuch-osstem-cirkonievaya-koronka"
+        },
+        {
+          "title": "Адгезивный протез, 1 зуб",
+          "price": "13 000 ₽",
+          "page": ""
+        },
+        {
+          "title": "Съёмный протез до 3 зубов",
+          "price": "25 000 ₽",
+          "page": "neylonovyy-protez-ili-acry-free-do-3-zubov"
+        }
+      ],
+      "doctors": [
+        "terapevt",
+        "ortoped"
+      ],
+      "section": "implantacia",
+      "order": 40,
+      "id": "missing"
+    },
+    {
+      "title": "Нет всех зубов или не держится протез",
+      "short": "Нет всех зубов",
+      "description": "Несъёмный протез на 4 или 6 имплантах либо новый съёмный. Старый протез можно перебазировать.",
+      "icon": "layers",
+      "items": [
+        {
+          "title": "Все на 4-х имплантах Osstem",
+          "price": "180 000 ₽",
+          "page": "protezy-na-implantah-vse-na-4-implantah-osstem-nemedlennaya-nagruzka"
+        },
+        {
+          "title": "Съёмный акриловый протез",
+          "price": "50 000 ₽",
+          "page": "semnye-protezy-akrilovyy-protez"
+        },
+        {
+          "title": "Перебазировка съёмного протеза",
+          "price": "10 000 ₽",
+          "page": "remont-protezov-i-kappy-perebazirovka-semnogo-proteza"
+        }
+      ],
+      "doctors": [
+        "ortoped",
+        "terapevt"
+      ],
+      "section": "semnoe-protezirovanie",
+      "order": 50,
+      "id": "all"
+    },
+    {
+      "title": "Хочу ровную и белую улыбку",
+      "short": "Красивая улыбка",
+      "description": "Отбеливание или виниры. До начала работы покажем будущую улыбку в цифровом проекте.",
+      "icon": "smile",
+      "items": [
+        {
+          "title": "Цифровой проект улыбки",
+          "price": "Входит в работу",
+          "page": ""
+        },
+        {
+          "title": "Отбеливание зубов Belle",
+          "price": "9 000 ₽",
+          "page": "otbelivanie-otbelivanie-zubov-belle"
+        },
+        {
+          "title": "Винир цельноциркониевый",
+          "price": "25 000 ₽",
+          "page": "viniry-vinir-celnocirkonievyy"
+        }
+      ],
+      "doctors": [
+        "ortoped",
+        "shamanova"
+      ],
+      "section": "protezirovanie",
+      "order": 60,
+      "id": "smile"
+    },
+    {
+      "title": "Налёт, камень, кровят дёсны",
+      "short": "Налёт, дёсны",
+      "description": "Профессиональная гигиена обеих челюстей. Категорию чистки врач определит на осмотре.",
+      "icon": "droplets",
+      "items": [
+        {
+          "title": "Гигиена «Ультразвук»",
+          "price": "5 500 ₽",
+          "page": "professionalnaya-gigiena-ultrazvuk"
+        },
+        {
+          "title": "Гигиена 1-й категории, AirFlow",
+          "price": "6 500 ₽",
+          "page": "professionalnaya-gigiena-1-ya-kategoriya"
+        },
+        {
+          "title": "Гигиена при налёте курильщика",
+          "price": "7 500 ₽",
+          "page": "professionalnaya-gigiena-2-ya-kategoriya"
+        }
+      ],
+      "doctors": [
+        "shamanova"
+      ],
+      "section": "gigiena",
+      "order": 70,
+      "id": "plaque"
+    },
+    {
+      "title": "Беспокоит зуб мудрости",
+      "short": "Зуб мудрости",
+      "description": "По снимку решим, что делать: лечить, убрать капюшон над зубом или удалить.",
+      "icon": "scissors",
+      "items": [
+        {
+          "title": "Панорамный снимок",
+          "price": "1 500 ₽",
+          "page": ""
+        },
+        {
+          "title": "Удаление капюшона над зубом",
+          "price": "5 000 ₽",
+          "page": ""
+        },
+        {
+          "title": "Удаление зуба мудрости",
+          "price": "от 8 500 ₽",
+          "page": ""
+        }
+      ],
+      "doctors": [
+        "terapevt"
+      ],
+      "section": "hirurgiya",
+      "order": 80,
+      "id": "wisdom"
+    },
+    {
+      "title": "Скрежещу зубами по ночам",
+      "short": "Скрежет зубами",
+      "description": "Бруксизм стирает эмаль и разрушает пломбы и коронки. Ночная каппа берёт нагрузку на себя.",
+      "icon": "moon",
+      "items": [
+        {
+          "title": "Осмотр и консультация",
+          "price": "Бесплатно",
+          "page": ""
+        },
+        {
+          "title": "Каппа при бруксизме",
+          "price": "9 000 ₽",
+          "page": "remont-protezov-i-kappy-kappa-pri-bruksizme"
+        }
+      ],
+      "doctors": [
+        "ortoped"
+      ],
+      "section": "kappy",
+      "order": 90,
+      "id": "night"
+    }
+  ]
+}

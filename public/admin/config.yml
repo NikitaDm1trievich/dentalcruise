@@ -154,9 +154,10 @@ collections:
             widget: object
             collapsed: true
             hint: >-
-              Где на сайте: каталог направлений с ценами. Здесь заголовок и
-              текст над карточками. Карточки направлений и цены в них — в
-              пункте «4. Услуги — разделы и цены».
+              Где на сайте: подбор по проблеме и под ним направления с ценами.
+              Здесь заголовки и подписи. Жалобы — в пункте «4. Услуги — подбор
+              по проблеме», направления и цены в них — в «4. Услуги — разделы и
+              цены».
             fields:
               - { name: eyebrow, label: Надпись над заголовком, widget: string }
               - { name: title, label: Заголовок блока, widget: string }
@@ -165,6 +166,24 @@ collections:
                 label: Ссылка внизу карточки
                 widget: string
                 hint: Одна на все карточки — и здесь, и на страницах врачей. Ведёт в раздел прайса.
+              - name: problems
+                label: Подбор по проблеме — подписи
+                widget: object
+                collapsed: true
+                hint: >-
+                  Сами жалобы, цены и врачи — в пункте «4. Услуги — подбор по
+                  проблеме» этого же раздела.
+                fields:
+                  - { name: question, label: Вопрос над плитками, widget: string }
+                  - { name: free, label: Плашка рядом с вопросом, widget: string }
+                  - { name: tip, label: Подсказка под плитками на телефоне, widget: string }
+                  - { name: doctors, label: Заголовок над врачами, widget: string }
+                  - { name: book, label: Кнопка записи, widget: string, hint: Открывает форму записи с выбранной жалобой. }
+                  - { name: fine, label: Мелкий текст под кнопкой, widget: text }
+                  - { name: more, label: 'Ссылка в прайс, начало', widget: string, hint: 'Дальше сайт допишет раздел: «Все цены: Хирургия».' }
+                  - { name: close, label: Кнопка закрытия на телефоне, widget: string, hint: Её не видно — подпись для экранного диктора. }
+              - { name: directions, label: Заголовок над направлениями, widget: string }
+              - { name: all, label: Кнопка «весь прайс» под направлениями, widget: string }
 
           - name: brands
             label: 5. Поставщики
@@ -499,6 +518,117 @@ collections:
                   Совпадает с «Служебное: адрес раздела» у нужного файла в
                   «Прайс-листе». Латиницей, один раз при создании. У
                   существующих записей не менять — сломаются ссылки.
+
+      - name: problems
+        label: 4. Услуги — подбор по проблеме
+        file: src/content/problems/problems.json
+        fields:
+          - name: items
+            label: Жалобы
+            label_singular: жалоба
+            widget: list
+            summary: '{{fields.title}}'
+            hint: >-
+              Плитки «Что беспокоит?» над направлениями. Нажатие на плитку
+              показывает ответ: что делаем, цены, кто из врачей примет, запись.
+              Вопрос над плитками и подписи — в «Тексты блоков», группа «4.
+              Услуги». Цены сверяйте с «Прайс-листом»: здесь они пишутся
+              вручную, как в карточках направлений.
+            fields:
+              - name: title
+                label: Жалоба полностью
+                widget: string
+                hint: Словами пациента, например «Скололся или разрушен зуб». Заголовок ответа и строка в списке на компьютере.
+              - name: short
+                label: Коротко — для плитки на телефоне
+                widget: string
+                hint: Две строки по 12–14 знаков, например «Скол зуба». Длиннее не поместится в плитку.
+              - name: description
+                label: Текст в ответе
+                widget: text
+                hint: Одно-два предложения. Без обещаний результата — что делаем и от чего зависит выбор.
+              - name: icon
+                label: Иконка
+                widget: select
+                options:
+                  - { label: Молния, value: zap }
+                  - { label: Точка в круге, value: circle-dot }
+                  - { label: Пазл, value: puzzle }
+                  - { label: Пунктирный круг, value: circle-dashed }
+                  - { label: Слои, value: layers }
+                  - { label: Улыбка, value: smile }
+                  - { label: Капли, value: droplets }
+                  - { label: Ножницы, value: scissors }
+                  - { label: Луна, value: moon }
+                  - { label: Сияние, value: sparkles }
+                  - { label: Щит, value: shield }
+                  - { label: Коронка (корона), value: crown }
+                  - { label: Якорь, value: anchor }
+                  - { label: Солнце, value: sun }
+                  - { label: Стетоскоп, value: stethoscope }
+                  - { label: Кардиограмма, value: activity }
+                  - { label: Снимок с лупой, value: scan-search }
+                  - { label: Сердце, value: heart }
+                  - { label: Часы, value: clock }
+                  - { label: Термометр, value: thermometer }
+              - name: items
+                label: Позиции с ценами
+                label_singular: позиция
+                widget: list
+                summary: '{{fields.title}} — {{fields.price}}'
+                hint: Две-три позиции из прайса. Самая дешёвая цена появится на плитке как «от N ₽».
+                fields:
+                  - { name: title, label: Название, widget: string }
+                  - { name: price, label: Цена, widget: string, hint: 'Как в прайсе: 8 000 ₽, от 8 500 ₽, Бесплатно.' }
+                  - name: page
+                    label: Куда ведёт строка
+                    widget: relation
+                    collection: service-pages
+                    value_field: '{{slug}}'
+                    search_fields: [title]
+                    display_fields: [title]
+                    required: false
+                    hint: Страница услуги. Пусто — строка без ссылки.
+              - name: doctors
+                label: Кто примет
+                widget: relation
+                collection: doctors
+                value_field: '{{slug}}'
+                search_fields: [name]
+                display_fields: [name]
+                multiple: true
+                required: false
+                hint: Фото, имя и специальность сайт возьмёт из карточки врача.
+              - name: section
+                label: Раздел прайса для ссылки «Все цены»
+                widget: select
+                required: false
+                options:
+                  - { label: Диагностика, value: diagnostika }
+                  - { label: Гигиена и отбеливание, value: gigiena }
+                  - { label: Лечение кариеса, value: karies }
+                  - { label: Лечение каналов, value: endodontiya }
+                  - { label: Несъёмное протезирование, value: protezirovanie }
+                  - { label: Съёмное протезирование, value: semnoe-protezirovanie }
+                  - { label: Имплантация, value: implantacia }
+                  - { label: Хирургия, value: hirurgiya }
+                  - { label: Каппы, value: kappy }
+              - name: order
+                label: Порядок на странице
+                widget: number
+                value_type: int
+                default: 100
+                hint: >-
+                  Чем меньше число, тем выше. Удобно шагом 10: 10, 20, 30 — так
+                  можно вставить запись между соседними.
+              - name: id
+                label: 'Служебное: ID'
+                widget: string
+                pattern:
+                  ['^[a-z0-9-]+$', 'Только латинские буквы в нижнем регистре, цифры и дефис']
+                hint: >-
+                  Латиницей, один раз при создании. У существующих записей не
+                  менять — сломаются ссылки.
 
       - name: brands
         label: 5. Поставщики — логотипы
@@ -2216,6 +2346,18 @@ collections:
               В предпросмотре справа оно открыто сразу. Сообщения об ошибках
               видны только после публикации — когда форму отправляют.
           - { name: lead, label: Текст под заголовком, widget: text }
+          - name: picked
+            label: 'Подпись выбранной жалобы'
+            widget: string
+            hint: >-
+              Видна, когда форму открыли из подбора по проблеме на главной:
+              «Вы выбрали: Болит зуб». Жалобу сайт допишет сам.
+          - name: pickedComment
+            label: 'Начало текста в поле комментария'
+            widget: string
+            hint: >-
+              Тогда же поле комментария заполняется само: «Беспокоит: Болит
+              зуб». Человек может его поправить или стереть.
           - name: fields
             label: Поля формы
             widget: object

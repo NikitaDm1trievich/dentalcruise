@@ -1,0 +1,751 @@
+---
+/**
+ * Подбор услуг по проблеме: «Что беспокоит?» → жалоба → что делаем,
+ * сколько стоит, кто из врачей примет, запись.
+ *
+ * Одни и те же данные — три раскладки:
+ *   телефон  — плитки 3×3, ответ открывается шторкой снизу (оверлей сайта,
+ *              lib/overlays: закрывается крестиком, подложкой и Escape);
+ *   планшет  — плитки 3×3, ответ под ними;
+ *   компьютер — жалобы списком слева, ответ справа.
+ *
+ * Шторка — тот же оверлей, что меню и форма записи. Поэтому «Записаться»
+ * внутри неё не открывает второй слой поверх: оверлеи закрывают открытый
+ * перед тем, как открыть следующий, а фокус после формы вернётся на
+ * плитку, с которой начали.
+ *
+ * Все ответы лежат в разметке: поисковик видит цены и ссылки на страницы
+ * услуг, а без JS ответы просто идут друг за другом.
+ */
+import Icon from '../core/Icon.astro';
+import IconButton from '../core/IconButton.astro';
+import Button from '../core/Button.astro';
+import { cmsList, cmsText } from '../../lib/cms-ref';
+
+interface Problem {
+  id: string;
+  title: string;
+  short: string;
+  description: string;
+  icon: string;
+  from?: string;
+  items: { title: string; price: string; href?: string }[];
+  doctors: { name: string; speciality: string; photo?: string; href: string }[];
+  section?: { title: string; href: string };
+  cms?: string;
+}
+
+interface Props {
+  problems: Problem[];
+  copy: {
+    question: string;
+    free: string;
+    tip: string;
+    doctors: string;
+    book: string;
+    fine: string;
+    more: string;
+    close: string;
+  };
+}
+
+const { problems, copy } = Astro.props;
+
+/** «Шмидт Роберт Александрович» → «Шмидт Р. А.»: полное ФИО в чип не помещается */
+const shortName = (name: string) => {
+  const [last, ...rest] = name.split(/\s+/);
+  return [last, ...rest.map((part) => `${part[0]}.`)].join(' ');
+};
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .slice(0, 2)
+    .reverse()
+    .map((part) => part[0])
+    .join('');
+---
+
+<div class="dc-pk" data-problem-picker data-cms={cmsList('problems')}>
+  <div class="dc-pk__top">
+    <h3 class="dc-pk__q" id="dc-pk-q" data-cms={cmsText('services.problems.question')}>{copy.question}</h3>
+    <span class="dc-pk__free" data-cms={cmsText('services.problems.free')}>
+      <Icon name="badge-check" size={18} strokeWidth={2} />
+      {copy.free}
+    </span>
+  </div>
+
+  <div class="dc-pk__layout">
+    <div class="dc-pk__tabs" role="tablist" aria-labelledby="dc-pk-q">
+      {
+        problems.map((problem, i) => (
+          <button
+            type="button"
+            role="tab"
+            class="dc-pk-tab"
+            id={`dc-pk-tab-${problem.id}`}
+            aria-controls={`dc-pk-panel-${problem.id}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+            data-cms={problem.cms}
+          >
+            <span class="dc-pk-tab__ico">
+              <Icon name={problem.icon} size={22} strokeWidth={1.75} />
+            </span>
+            <span class="dc-pk-tab__txt">
+              <span class="dc-pk-tab__short">{problem.short}</span>
+              <span class="dc-pk-tab__full">{problem.title}</span>
+              {problem.from && <span class="dc-pk-tab__from">{problem.from}</span>}
+            </span>
+          </button>
+        ))
+      }
+    </div>
+
+    <!-- На телефоне — шторка-оверлей (id для lib/overlays), шире — блок в потоке -->
+    <div class="dc-pk__sheet" id="dc-problem" data-state="closed" data-problem-sheet>
+      <div class="dc-pk__scrim" data-close></div>
+      <div class="dc-pk__dialog" aria-labelledby="dc-pk-q" data-problem-dialog>
+        <span class="dc-pk__grip" aria-hidden="true"></span>
+        <IconButton label={copy.close} variant="bare" size={44} class="dc-pk__x" data-close>
+          <Icon name="x" size={22} strokeWidth={2.2} />
+        </IconButton>
+
+        {
+          problems.map((problem, i) => (
+            <div
+              role="tabpanel"
+              class="dc-pk-panel"
+              id={`dc-pk-panel-${problem.id}`}
+              aria-labelledby={`dc-pk-tab-${problem.id}`}
+              hidden={i !== 0}
+              data-cms={problem.cms}
+            >
+              <div class="dc-pk-panel__main">
+                <h4 class="dc-pk-panel__title">{problem.title}</h4>
+                <p class="dc-pk-panel__desc">{problem.description}</p>
+                <ul class="dc-pk-rows" role="list">
+                  {problem.items.map((item) =>
+                    item.href ? (
+                      <li>
+                        <a href={item.href} class="dc-pk-row dc-pk-row--link">
+                          <span class="dc-pk-row__name">{item.title}</span>
+                          <span class="dc-pk-row__price">{item.price}</span>
+                        </a>
+                      </li>
+                    ) : (
+                      <li class="dc-pk-row">
+                        <span class="dc-pk-row__name">{item.title}</span>
+                        <span class="dc-pk-row__price">{item.price}</span>
+                      </li>
+                    ),
+                  )}
+                </ul>
+                {problem.section && (
+                  <a href={problem.section.href} class="dc-pk-more">
+                    <span data-cms={cmsText('services.problems.more')}>{copy.more}</span> {problem.section.title}
+                    <Icon name="arrow-right" size={16} strokeWidth={2} />
+                  </a>
+                )}
+              </div>
+
+              <div class="dc-pk-panel__side">
+                {problem.doctors.length > 0 && (
+                  <>
+                    <span class="dc-pk-label" data-cms={cmsText('services.problems.doctors')}>
+                      {copy.doctors}
+                    </span>
+                    <ul class="dc-pk-docs" role="list">
+                      {problem.doctors.map((doctor) => (
+                        <li>
+                          <a href={doctor.href} class="dc-pk-doc">
+                            {doctor.photo ? (
+                              <img src={doctor.photo} alt="" width="40" height="40" loading="lazy" decoding="async" />
+                            ) : (
+                              <span class="dc-pk-doc__ini" aria-hidden="true">
+                                {initials(doctor.name)}
+                              </span>
+                            )}
+                            <span class="dc-pk-doc__txt">
+                              <b>{shortName(doctor.name)}</b>
+                              <small>{doctor.speciality}</small>
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                <Button
+                  variant="primary"
+                  size="md"
+                  class="dc-pk-book"
+                  data-open="dc-book"
+                  data-book-topic={problem.title}
+                  data-cms={cmsText('services.problems.book')}
+                >
+                  <Icon slot="icon" name="calendar" size={20} strokeWidth={2} />
+                  {copy.book}
+                </Button>
+                <p class="dc-pk-fine" data-cms={cmsText('services.problems.fine')}>{copy.fine}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <p class="dc-pk__tip" data-cms={cmsText('services.problems.tip')}>{copy.tip}</p>
+</div>
+
+<style>
+  /* ── Телефон: базовая раскладка ── */
+  .dc-pk {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .dc-pk__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+  }
+  .dc-pk__q {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 5vw, 1.875rem);
+    font-weight: var(--fw-black);
+    line-height: 1.1;
+    color: var(--text-strong);
+  }
+  .dc-pk__free {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-card);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+    font-size: 13px;
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+  }
+  .dc-pk__layout {
+    display: grid;
+    gap: 14px;
+  }
+  .dc-pk__tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .dc-pk-tab {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 6px;
+    min-height: 84px;
+    padding: 10px 4px;
+    border: 1px solid var(--line-hairline);
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+    box-shadow: var(--shadow-sm);
+    color: var(--text-strong);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: var(--fw-semibold);
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .dc-pk-tab:hover {
+    border-color: var(--line-strong);
+  }
+  .dc-pk-tab:focus-visible {
+    outline: 2px solid var(--text-accent);
+    outline-offset: 2px;
+  }
+  .dc-pk-tab__ico {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+    color: var(--text-accent);
+  }
+  .dc-pk-tab__txt {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+  .dc-pk-tab__full,
+  .dc-pk-tab__from {
+    display: none;
+  }
+  /* На телефоне плитка подсвечена, только пока открыт её ответ */
+  .dc-pk:has(.dc-pk__sheet[data-state='open']) .dc-pk-tab[aria-selected='true'] {
+    background: var(--cta-bg);
+    border-color: var(--cta-bg);
+    color: var(--cta-fg);
+    box-shadow: var(--shadow-md);
+  }
+  .dc-pk:has(.dc-pk__sheet[data-state='open']) .dc-pk-tab[aria-selected='true'] .dc-pk-tab__ico {
+    background: rgb(255 255 255 / 0.2);
+    box-shadow: none;
+    color: currentColor;
+  }
+  .dc-pk__tip {
+    margin: 0;
+    font-size: var(--type-small);
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  /* Шторка снизу */
+  .dc-pk__sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    align-items: end;
+    visibility: hidden;
+    transition: visibility 0s linear var(--dur-mid);
+  }
+  .dc-pk__sheet[data-state='open'] {
+    visibility: visible;
+    transition: none;
+  }
+  .dc-pk__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgb(2 32 41 / 0.5);
+    opacity: 0;
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+  .dc-pk__sheet[data-state='open'] .dc-pk__scrim {
+    opacity: 1;
+  }
+  .dc-pk__dialog {
+    position: relative;
+    max-height: 90dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-radius: 24px 24px 0 0;
+    background: var(--surface-card);
+    box-shadow: 0 -12px 40px rgb(4 48 65 / 0.18);
+    transform: translateY(100%);
+    transition: transform var(--dur-mid) var(--ease-out);
+  }
+  .dc-pk__sheet[data-state='open'] .dc-pk__dialog {
+    transform: none;
+  }
+  .dc-pk__grip {
+    display: block;
+    width: 40px;
+    height: 5px;
+    margin: var(--space-2) auto 0;
+    border-radius: 3px;
+    background: var(--line-strong);
+  }
+  .dc-pk__dialog :global(.dc-pk__x) {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    z-index: 1;
+    background: var(--surface-quiet);
+  }
+
+  /* Ответ */
+  .dc-pk-panel {
+    display: grid;
+    gap: var(--space-5);
+    padding: 6px var(--space-5) var(--space-5);
+  }
+  .dc-pk-panel__main,
+  .dc-pk-panel__side {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    min-width: 0;
+  }
+  .dc-pk-panel__title {
+    margin: 0;
+    padding-right: 48px;
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: var(--fw-black);
+    line-height: 1.15;
+    color: var(--text-strong);
+    text-wrap: balance;
+  }
+  .dc-pk-panel__desc {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--type-small);
+    max-width: 60ch;
+  }
+  .dc-pk-rows {
+    list-style: none;
+    margin: var(--space-1) 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line-hairline);
+  }
+  .dc-pk-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-hairline);
+    color: var(--text-body);
+    text-decoration: none;
+    font-size: var(--type-small);
+    line-height: 1.35;
+  }
+  .dc-pk-row__name {
+    overflow-wrap: anywhere;
+  }
+  .dc-pk-row--link .dc-pk-row__name {
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 3px;
+  }
+  .dc-pk-row--link:hover .dc-pk-row__name {
+    color: var(--text-accent);
+    text-decoration-color: var(--text-accent);
+  }
+  .dc-pk-row__price {
+    font-family: var(--font-display);
+    font-weight: var(--fw-black);
+    color: var(--text-accent);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .dc-pk-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-self: start;
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+    text-decoration: none;
+  }
+  .dc-pk-panel__side {
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-pk-label {
+    font-size: var(--type-eyebrow);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .dc-pk-docs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-pk-doc {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+  }
+  .dc-pk-doc img,
+  .dc-pk-doc__ini {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: 50% 15%;
+    background: var(--dc-turquoise-soft);
+  }
+  .dc-pk-doc__ini {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: var(--fw-black);
+    color: var(--text-accent);
+  }
+  .dc-pk-doc__txt {
+    display: grid;
+    min-width: 0;
+  }
+  .dc-pk-doc b {
+    font-size: var(--type-small);
+    color: var(--text-strong);
+  }
+  .dc-pk-doc small {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .dc-pk-doc:hover b {
+    color: var(--text-accent);
+  }
+  /* Кнопка всегда в границах боковой карточки: на всю её ширину */
+  .dc-pk-panel__side :global(.dc-pk-book) {
+    width: 100%;
+    min-width: 0;
+    margin-top: var(--space-1);
+    padding-inline: var(--space-4);
+    white-space: normal;
+    text-align: center;
+  }
+  .dc-pk-fine {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text-muted);
+  }
+
+  /* Без JS шторка не откроется: все ответы стоят в потоке друг за другом */
+  :global(.no-js) .dc-pk__sheet {
+    position: static;
+    visibility: visible;
+  }
+  :global(.no-js) .dc-pk__dialog {
+    transform: none;
+    max-height: none;
+    box-shadow: none;
+    border-radius: var(--radius-lg);
+  }
+  :global(.no-js) .dc-pk-panel[hidden] {
+    display: grid;
+  }
+  :global(.no-js) .dc-pk__scrim,
+  :global(.no-js) .dc-pk__grip,
+  :global(.no-js) .dc-pk__x,
+  :global(.no-js) .dc-pk__tip {
+    display: none;
+  }
+
+  /* ── Планшет: ответ под плитками, в потоке ── */
+  @media (min-width: 700px) {
+    .dc-pk__sheet {
+      position: static;
+      display: block;
+      visibility: visible;
+      transition: none;
+    }
+    .dc-pk__scrim,
+    .dc-pk__grip,
+    .dc-pk__dialog :global(.dc-pk__x),
+    .dc-pk__tip {
+      display: none;
+    }
+    .dc-pk__dialog {
+      max-height: none;
+      overflow: visible;
+      padding: 0;
+      border: 1px solid var(--line-hairline);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      transform: none;
+      transition: none;
+    }
+    .dc-pk-panel {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      padding: var(--space-6);
+      animation: dc-pk-in var(--dur-mid) var(--ease-out);
+    }
+    .dc-pk-panel__title {
+      padding-right: 0;
+    }
+    .dc-pk-tab {
+      grid-template-columns: auto minmax(0, 1fr);
+      justify-items: start;
+      align-items: center;
+      min-height: 68px;
+      padding: 10px 12px;
+      font-size: var(--type-small);
+      text-align: left;
+    }
+    .dc-pk-tab__ico {
+      width: 40px;
+      height: 40px;
+    }
+    .dc-pk-tab__from {
+      display: block;
+      font-size: 12px;
+      font-weight: var(--fw-bold);
+      color: var(--text-accent);
+    }
+    .dc-pk-tab[aria-selected='true'] {
+      background: var(--cta-bg);
+      border-color: var(--cta-bg);
+      color: var(--cta-fg);
+      box-shadow: var(--shadow-md);
+    }
+    .dc-pk-tab[aria-selected='true'] .dc-pk-tab__ico {
+      background: rgb(255 255 255 / 0.2);
+      box-shadow: none;
+      color: currentColor;
+    }
+    .dc-pk-tab[aria-selected='true'] .dc-pk-tab__from {
+      color: inherit;
+      opacity: 0.85;
+    }
+  }
+  @keyframes dc-pk-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* ── Компьютер: жалобы списком слева, ответ справа ── */
+  @media (min-width: 1040px) {
+    .dc-pk__layout {
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: var(--space-6);
+      align-items: start;
+    }
+    .dc-pk__tabs {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .dc-pk-tab {
+      min-height: 56px;
+      padding: 8px 12px;
+      box-shadow: none;
+    }
+    .dc-pk-tab__txt {
+      justify-self: stretch;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .dc-pk-tab__short {
+      display: none;
+    }
+    .dc-pk-tab__full {
+      display: block;
+      font-size: 15px;
+    }
+    .dc-pk-tab__from {
+      font-size: 13px;
+    }
+    .dc-pk-tab__ico {
+      width: 36px;
+      height: 36px;
+    }
+    .dc-pk__sheet {
+      position: sticky;
+      top: 96px;
+    }
+    .dc-pk-panel {
+      grid-template-columns: minmax(0, 1.3fr) minmax(270px, 1fr);
+      gap: var(--space-6);
+      padding: var(--space-8);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dc-pk-panel,
+    .dc-pk__dialog,
+    .dc-pk__scrim {
+      animation: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { closeOverlay, openOverlay } from '../../lib/overlays';
+
+  const root = document.querySelector<HTMLElement>('[data-problem-picker]');
+  const sheet = document.querySelector<HTMLElement>('[data-problem-sheet]');
+  const dialog = document.querySelector<HTMLElement>('[data-problem-dialog]');
+
+  if (root && sheet && dialog) {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const phone = window.matchMedia('(max-width: 699px)');
+    const desktop = window.matchMedia('(min-width: 1040px)');
+
+    /**
+     * На телефоне ответ — оверлей: закрыт — значит недоступен с клавиатуры
+     * (inert), как меню и форма. Шире — обычный блок страницы, всегда
+     * доступный. Переход через границу (поворот планшета) переключает режим.
+     */
+    const syncMode = () => {
+      if (phone.matches) {
+        dialog.setAttribute('role', 'dialog');
+        dialog.setAttribute('aria-modal', 'true');
+        if (sheet.dataset.state !== 'open') {
+          sheet.inert = true;
+          sheet.setAttribute('aria-hidden', 'true');
+        }
+      } else {
+        if (sheet.dataset.state === 'open') closeOverlay();
+        dialog.removeAttribute('role');
+        dialog.removeAttribute('aria-modal');
+        sheet.inert = false;
+        sheet.removeAttribute('aria-hidden');
+        sheet.dataset.state = 'closed';
+      }
+    };
+    syncMode();
+    phone.addEventListener('change', syncMode);
+
+    const select = (tab: HTMLButtonElement, focus = false) => {
+      for (const t of tabs) {
+        const on = t === tab;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        const panel = document.getElementById(t.getAttribute('aria-controls') ?? '');
+        if (panel) panel.hidden = !on;
+      }
+      if (focus) tab.focus();
+    };
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => {
+        select(tab);
+        if (phone.matches) {
+          dialog.scrollTop = 0;
+          openOverlay('dc-problem', tab);
+        }
+      });
+      // Стрелки ходят по сетке: на компьютере список в одну колонку, иначе три
+      tab.addEventListener('keydown', (event) => {
+        const columns = desktop.matches ? 1 : 3;
+        const step: Record<string, number> = {
+          ArrowRight: 1,
+          ArrowLeft: -1,
+          ArrowDown: columns,
+          ArrowUp: -columns,
+        };
+        let next: number | null = null;
+        if (event.key in step) next = (i + step[event.key] + tabs.length) % tabs.length;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = tabs.length - 1;
+        if (next === null) return;
+        event.preventDefault();
+        select(tabs[next], true);
+      });
+    });
+  }
+</script>

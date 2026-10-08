@@ -15,6 +15,7 @@ import PhotoGallery from '../components/media/PhotoGallery.astro';
 
 import PromoBoard from '../components/content/PromoBoard.astro';
 import ServiceCatalogCard from '../components/content/ServiceCatalogCard.astro';
+import ProblemPicker from '../components/content/ProblemPicker.astro';
 import BrandsMarquee from '../components/content/BrandsMarquee.astro';
 import OfferStrip from '../components/content/OfferStrip.astro';
 import ComparisonColumns from '../components/content/ComparisonColumns.astro';
@@ -28,7 +29,7 @@ import YandexEmbed from '../components/content/YandexEmbed.astro';
 import { clinic } from '../data/site';
 import copy from '../data/home.json';
 import { pageHref, withBase } from '../lib/asset';
-import { clampText } from '../lib/seo';
+import { clampText, priceValue } from '../lib/seo';
 import { servicePageIndex } from '../lib/services';
 import { cmsItem, cmsList, cmsText } from '../lib/cms-ref';
 
@@ -52,6 +53,55 @@ const trust = (await getCollection('trust')).sort(byOrder);
  * позиции без своей страницы по-прежнему ведут в раздел прайс-листа.
  */
 const pageFor = servicePageIndex(await getCollection('service-pages'));
+
+/**
+ * Подбор по проблеме. Врачи и раздел прайса в жалобе — ссылки по слагу:
+ * имя, специальность и фото подтягиваются из карточки врача, название
+ * раздела — из каталога, чтобы в ответе не устаревали копии.
+ */
+const allDoctors = await getCollection('doctors');
+const minPrice = (prices: string[]) => {
+  const amounts = prices.map(priceValue).filter((value) => value !== null);
+  return amounts.length > 0 ? `от ${Math.min(...amounts).toLocaleString('ru-RU')} ₽` : undefined;
+};
+const problemCards = (await getCollection('problems')).sort(byOrder).map((problem) => {
+  const section = categories.find((c) => c.data.slug === problem.data.section);
+  return {
+    id: problem.data.id,
+    title: problem.data.title,
+    short: problem.data.short,
+    description: problem.data.description,
+    icon: problem.data.icon,
+    from: minPrice(problem.data.items.map((item) => item.price)),
+    items: problem.data.items.map((item) => ({
+      title: item.title,
+      price: item.price,
+      href: item.page ? pageHref(`uslugi/${item.page}`) : undefined,
+    })),
+    doctors: problem.data.doctors.flatMap((slug) => {
+      const doctor = allDoctors.find((d) => d.id === slug);
+      if (!doctor) return [];
+      return [
+        {
+          name: doctor.data.name,
+          speciality: doctor.data.speciality,
+          photo: doctor.data.photo ? asset(doctor.data.photo) : undefined,
+          href: pageHref(`doctors/${doctor.id}`),
+        },
+      ];
+    }),
+    section: section ? { title: section.data.title, href: pageHref(`pricelist#${section.data.slug}`) } : undefined,
+    cms: cmsItem('problems', problem.data.id),
+  };
+});
+
+/** «от N ₽» у направления в списке на телефоне — по всему разделу прайса */
+const fromPrice = new Map(
+  (await getCollection('price-list')).map((price) => [
+    price.data.slug,
+    minPrice(price.data.groups.flatMap((group) => group.items.map((item) => item.price))),
+  ]),
+);
 
 /* cms — адрес блока в редакторе: в предпросмотре редактора по клику на
    блок открывается его поле (lib/cms-ref, lib/cms-preview). */
@@ -145,32 +195,66 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
         />
       </Reveal>
 
-      <div class="dc-catalog-grid">
-        {
-          categories.map((category, i) => (
-            <Reveal delay={i * 70}>
-              <ServiceCatalogCard
-                title={category.data.title}
-                description={category.data.description}
-                icon={category.data.icon}
-                items={category.data.items.map((item, j) => {
-                  /* Явный слаг из редактора важнее подбора по названию:
-                     в каталоге названия короче строк прайса («Проф.
-                     гигиена, ультразвук»), и совпадение находилось лишь
-                     у половины позиций. */
-                  const slug = item.page ?? pageFor(category.data.slug, item.title);
-                  return {
-                    ...item,
-                    href: slug ? pageHref(`uslugi/${slug}`) : undefined,
-                    cms: cmsItem('catalog', category.data.id, `items.${j}`),
-                  };
-                })}
-                href={pageHref(`pricelist#${category.data.slug}`)}
-                cms={cmsItem('catalog', category.data.id)}
-              />
-            </Reveal>
-          ))
-        }
+      <Reveal>
+        <ProblemPicker problems={problemCards} copy={copy.services.problems} />
+      </Reveal>
+
+      <div class="dc-dirs">
+        <h3 class="dc-dirs__title" data-cms={cmsText('services.directions')}>{copy.services.directions}</h3>
+
+        {/* Телефон и планшет: девять высоких карточек — несколько экранов
+            прокрутки, поэтому там направления идут компактным списком. */}
+        <ul class="dc-dirlist" role="list">
+          {
+            categories.map((category) => (
+              <li>
+                <a href={pageHref(`pricelist#${category.data.slug}`)} class="dc-dir" data-cms={cmsItem('catalog', category.data.id)}>
+                  <span class="dc-dir__ico">
+                    <Icon name={category.data.icon} size={20} strokeWidth={1.75} color="var(--text-accent)" />
+                  </span>
+                  <span class="dc-dir__name">{category.data.title}</span>
+                  {fromPrice.get(category.data.slug) && <span class="dc-dir__from">{fromPrice.get(category.data.slug)}</span>}
+                  <Icon name="chevron-right" size={18} strokeWidth={2} color="var(--text-muted)" />
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="dc-catalog-grid">
+          {
+            categories.map((category, i) => (
+              <Reveal delay={i * 70}>
+                <ServiceCatalogCard
+                  title={category.data.title}
+                  description={category.data.description}
+                  icon={category.data.icon}
+                  items={category.data.items.map((item, j) => {
+                    /* Явный слаг из редактора важнее подбора по названию:
+                       в каталоге названия короче строк прайса («Проф.
+                       гигиена, ультразвук»), и совпадение находилось лишь
+                       у половины позиций. */
+                    const slug = item.page ?? pageFor(category.data.slug, item.title);
+                    return {
+                      ...item,
+                      href: slug ? pageHref(`uslugi/${slug}`) : undefined,
+                      cms: cmsItem('catalog', category.data.id, `items.${j}`),
+                    };
+                  })}
+                  href={pageHref(`pricelist#${category.data.slug}`)}
+                  cms={cmsItem('catalog', category.data.id)}
+                />
+              </Reveal>
+            ))
+          }
+        </div>
+
+        <div class="dc-dirs__all">
+          <Button variant="secondary" size="lg" href={pageHref('pricelist')} data-cms={cmsText('services.all')}>
+            {copy.services.all}
+            <Icon slot="icon-right" name="arrow-right" size={20} />
+          </Button>
+        </div>
       </div>
     </div>
   </section>
@@ -431,28 +515,106 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     min-width: 0;
   }
 
-  .dc-catalog-grid {
+  /* Направления под подбором по проблеме */
+  .dc-dirs {
     display: grid;
-    gap: var(--space-6);
-    align-items: stretch;
-    /* Шесть направлений — ряды по три (3+3), а не auto-fit: на десктопе он
-       давал четыре колонки и второй ряд из двух карточек с дырой справа.
-       Планшет — две колонки, телефон — одна. */
-    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+  .dc-dirs__title {
+    margin: 0;
+    font-size: clamp(1.25rem, 4.4vw, 1.5rem);
+    line-height: 1.15;
+  }
+  .dc-dirlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-dirlist li + li {
+    border-top: 1px solid var(--line-hairline);
+  }
+  .dc-dir {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto 18px;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 60px;
+    padding: var(--space-2) var(--space-4);
+    color: var(--text-strong);
+    text-decoration: none;
+  }
+  .dc-dir:hover {
+    background: var(--surface-quiet);
+  }
+  .dc-dir__ico {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-dir__name {
+    font-weight: var(--fw-semibold);
+    line-height: 1.25;
+  }
+  .dc-dir__from {
+    font-size: 13px;
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+    white-space: nowrap;
+  }
+  .dc-dirs__all {
+    display: flex;
+  }
+  .dc-dirs__all :global(.dc-btn) {
+    width: 100%;
   }
   @media (min-width: 700px) {
-    .dc-catalog-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      /* Одинаковая высота рядов: ссылка «Смотреть все услуги» встаёт на одну
-         линию во всех карточках, а не только внутри своего ряда. В одну
-         колонку (телефон) выравнивать нечего — там это только растягивало
-         каждую карточку до самой высокой и добавляло пустоты. */
-      grid-auto-rows: 1fr;
+    .dc-dirlist {
+      grid-template-columns: 1fr 1fr;
+    }
+    .dc-dirlist li + li {
+      border-top: 0;
+    }
+    .dc-dirlist li {
+      border-bottom: 1px solid var(--line-hairline);
+    }
+    .dc-dirlist li:nth-child(odd) {
+      border-right: 1px solid var(--line-hairline);
+    }
+    .dc-dirs__all {
+      justify-content: center;
+    }
+    .dc-dirs__all :global(.dc-btn) {
+      width: auto;
     }
   }
+
+  /* Карточки направлений — только с компьютера: на узком экране девять
+     высоких карточек заняли бы несколько экранов прокрутки. Ряды по три
+     (3+3+3), одинаковая высота рядов держит ссылку «Смотреть все услуги»
+     на одной линии во всех карточках. */
+  .dc-catalog-grid {
+    display: none;
+  }
   @media (min-width: 1040px) {
+    .dc-dirlist {
+      display: none;
+    }
     .dc-catalog-grid {
+      display: grid;
+      gap: var(--space-6);
+      align-items: stretch;
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-auto-rows: 1fr;
     }
   }
 

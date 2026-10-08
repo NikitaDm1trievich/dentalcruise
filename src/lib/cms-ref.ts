@@ -16,6 +16,7 @@
  */
 import promos from '../content/promos/promos.json';
 import categories from '../content/service-categories/categories.json';
+import problems from '../content/problems/problems.json';
 import brands from '../content/brands/brands.json';
 import comparison from '../content/comparison/comparison.json';
 import trust from '../content/trust/trust.json';
@@ -25,6 +26,7 @@ import faq from '../content/faq/faq.json';
 const lists = {
   promos: { entry: 'home/promos', items: promos.items },
   catalog: { entry: 'home/catalog', items: categories.items },
+  problems: { entry: 'home/problems', items: problems.items },
   brands: { entry: 'home/brands', items: brands.items },
   comparison: { entry: 'home/comparison', items: comparison.items },
   trust: { entry: 'home/trust', items: trust.items },

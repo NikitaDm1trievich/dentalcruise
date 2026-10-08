@@ -287,6 +287,37 @@ const serviceCategories = defineCollection({
   }),
 });
 
+/**
+ * Подбор услуг по проблеме на главной: «Что беспокоит?» → жалоба →
+ * позиции с ценами, врачи, запись. Жалобы и позиции под ними клиника
+ * правит в редакторе («Главная» → «4. Услуги — подбор по проблеме»).
+ */
+const problems = defineCollection({
+  loader: file('./src/content/problems/problems.json', { parser: unwrap }),
+  schema: z.object({
+    id: z.string(),
+    /** Полное название жалобы — в ответе и в списке на компьютере */
+    title: z.string(),
+    /** Короткая подпись плитки на телефоне, в две строки по 13 знаков */
+    short: z.string(),
+    description: z.string(),
+    icon: z.string(),
+    items: z.array(
+      z.object({
+        title: z.string(),
+        price: z.string(),
+        /** Слаг страницы услуги; без него строка не ссылка */
+        page: text(),
+      }),
+    ),
+    /** Слаги врачей (имена файлов в doctors) — «Кто примет» */
+    doctors: list(z.string()),
+    /** Слаг раздела прайса — ссылка «Все цены: …» */
+    section: text(),
+    ...orderable,
+  }),
+});
+
 /** Полоса доверия перед подвалом. */
 const trust = defineCollection({
   loader: file('./src/content/trust/trust.json', { parser: unwrap }),
@@ -322,6 +353,7 @@ export const collections = {
   'price-list': priceList,
   'service-categories': serviceCategories,
   'service-pages': servicePages,
+  problems,
   trust,
   comparison,
 };
