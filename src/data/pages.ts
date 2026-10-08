@@ -143,10 +143,21 @@ export const servicePage: {
 
 export const pricesPage: {
   heading: string;
-  /** `{позиций}` заменяется числом позиций прайса со словом: «71 позиция» */
+  /**
+   * `{позиций}` заменяется числом позиций прайса со словом («80 позиций»),
+   * `{разделах}` — числом разделов («9 разделах»)
+   */
   lead: string;
-  filterAll: string;
   terms: { icon: string; title: string; text: string }[];
+  /** Подпись липкой кнопки выбора раздела на телефоне */
+  sectionLabel: string;
+  /** В `found` `{число}` заменяется числом найденных позиций */
+  search: { placeholder: string; found: string; empty: string };
+  columns: { service: string; includes: string; price: string };
+  /** Колонка «Что входит»: выключена — описаний позиций на странице нет */
+  showIncludes: boolean;
+  /** Кнопка, которая сворачивает «Что входит» у строки на телефоне */
+  includesHide: string;
   /** Метка у строк прайса со скидкой — и на страницах услуг */
   promoLabel: string;
   foot: string;

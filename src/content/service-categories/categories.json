@@ -1,149 +1,44 @@
 {
   "items": [
     {
-      "title": "Эстетическая реставрация",
-      "description": "Виниры меняют форму, размер и цвет передних зубов. Техник предложит вам идеальные варианты.",
-      "icon": "sparkles",
+      "title": "Диагностика",
+      "description": "Осмотр, снимки и план лечения с итоговой суммой — до начала работы.",
+      "icon": "scan-search",
       "items": [
         {
-          "title": "Винир E-max",
-          "price": "30 000 ₽",
-          "page": "vinir-emax"
+          "title": "Осмотр и консультация",
+          "price": "Бесплатно",
+          "page": ""
         },
         {
-          "title": "Винир цельноциркониевый",
-          "price": "25 000 ₽",
-          "page": "viniry-vinir-celnocirkonievyy"
+          "title": "Прицельный снимок",
+          "price": "400 ₽",
+          "page": ""
         },
         {
-          "title": "Винир E-max с керамической массой",
-          "price": "35 000 ₽",
-          "page": "viniry-vinir-keramicheskiy-e-max-s-naneseniem-keramicheskoy-massy"
+          "title": "Панорамный снимок",
+          "price": "1 500 ₽",
+          "page": ""
         }
       ],
       "order": 10,
-      "id": "restoration",
-      "slug": "restoration"
-    },
-    {
-      "title": "Протезирование",
-      "description": "Коронки восстанавливают разрушенные и отсутствующие зубы.",
-      "icon": "crown",
-      "items": [
-        {
-          "title": "Циркониевая коронка",
-          "price": "19 900 ₽",
-          "page": ""
-        },
-        {
-          "title": "Циркониевая коронка на импланте",
-          "price": "25 000 ₽",
-          "page": "cirkonievaya-koronka-na-implante-vintovaya-fiksaciya"
-        },
-        {
-          "title": "Коронка E.max",
-          "price": "25 000 ₽",
-          "page": "keramicheskie-koronki-i-vkladki-e-max-koronka-vkladka-e-max"
-        },
-        {
-          "title": "Съёмный протез Acry-Free",
-          "price": "40 000 ₽",
-          "page": ""
-        }
-      ],
-      "order": 20,
-      "id": "prosthetics",
-      "slug": "protezirovanie"
-    },
-    {
-      "title": "Имплантация",
-      "description": "Установка имплантов разных систем с коронкой, изготовленной в нашей лаборатории, под ключ.",
-      "icon": "anchor",
-      "items": [
-        {
-          "title": "Osstem + циркониевая коронка (акция)",
-          "price": "49 900 ₽",
-          "page": "implantaciya-pod-klyuch-osstem-cirkonievaya-koronka"
-        },
-        {
-          "title": "Astra Tech + циркониевая коронка",
-          "price": "100 000 ₽",
-          "page": ""
-        },
-        {
-          "title": "All-on-4 с немедленной нагрузкой",
-          "price": "от 250 000 ₽",
-          "page": "protezy-na-implantah-vse-na-4-implantah-osstem-nemedlennaya-nagruzka"
-        }
-      ],
-      "order": 30,
-      "id": "implants",
-      "slug": "implantacia"
-    },
-    {
-      "title": "Хирургия",
-      "description": "Удаление зубов любой сложности — с анестезией и контролем заживления.",
-      "icon": "scissors",
-      "items": [
-        {
-          "title": "Удаление постоянного зуба",
-          "price": "5 000 ₽",
-          "page": ""
-        },
-        {
-          "title": "Удаление зуба сложное",
-          "price": "от 6 000 ₽",
-          "page": ""
-        },
-        {
-          "title": "Удаление 8-го зуба",
-          "price": "От 8000 ₽",
-          "page": ""
-        }
-      ],
-      "order": 40,
-      "id": "surgery",
-      "slug": "hirurgiya"
-    },
-    {
-      "title": "Терапия",
-      "description": "Лечение кариеса и каналов — сохраняем собственный зуб, боремся за него.",
-      "icon": "stethoscope",
-      "items": [
-        {
-          "title": "Лечение поверхностного кариеса",
-          "price": "4 800 ₽",
-          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-nachalnogo-kariesa"
-        },
-        {
-          "title": "Лечение пульпита, 1 канал",
-          "price": "7 800 ₽",
-          "page": "lechenie-kanalov-endodontiya-pulpit-odnokanalnyy-zub"
-        },
-        {
-          "title": "Снятие острой боли",
-          "price": "4 000 ₽",
-          "page": "lechenie-kanalov-endodontiya-pomosch-pri-ostroy-boli"
-        }
-      ],
-      "order": 50,
-      "id": "therapy",
-      "slug": "terapiya"
+      "id": "diagnostics",
+      "slug": "diagnostika"
     },
     {
       "title": "Гигиена и отбеливание",
-      "description": "Профессиональная чистка и щадящее отбеливание.",
+      "description": "Профессиональная чистка и щадящее отбеливание холодным светом.",
       "icon": "sun",
       "items": [
         {
-          "title": "Проф. гигиена, 1-я категория",
-          "price": "6 000 ₽",
-          "page": "professionalnaya-gigiena-1-ya-kategoriya"
+          "title": "Гигиена «Ультразвук»",
+          "price": "5 500 ₽",
+          "page": "professionalnaya-gigiena-ultrazvuk"
         },
         {
-          "title": "Проф. гигиена, ультразвук",
-          "price": "5 000 ₽",
-          "page": "professionalnaya-gigiena-ultrazvuk"
+          "title": "Гигиена 1-й категории",
+          "price": "6 500 ₽",
+          "page": "professionalnaya-gigiena-1-ya-kategoriya"
         },
         {
           "title": "Отбеливание зубов Belle",
@@ -151,9 +46,184 @@
           "page": "otbelivanie-otbelivanie-zubov-belle"
         }
       ],
-      "order": 60,
+      "order": 20,
       "id": "hygiene",
       "slug": "gigiena"
+    },
+    {
+      "title": "Лечение кариеса",
+      "description": "Лечим кариес любой стадии и восстанавливаем зуб под коронку.",
+      "icon": "stethoscope",
+      "items": [
+        {
+          "title": "Начальный кариес",
+          "price": "5 000 ₽",
+          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-nachalnogo-kariesa"
+        },
+        {
+          "title": "Средний кариес",
+          "price": "6 000 ₽",
+          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-srednego-kariesa"
+        },
+        {
+          "title": "Глубокий кариес",
+          "price": "8 000 ₽",
+          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-glubokogo-kariesa"
+        }
+      ],
+      "order": 30,
+      "id": "caries",
+      "slug": "karies"
+    },
+    {
+      "title": "Лечение каналов",
+      "description": "Пульпит в одно посещение и помощь при острой боли.",
+      "icon": "activity",
+      "items": [
+        {
+          "title": "Помощь при острой боли",
+          "price": "6 000 ₽",
+          "page": "lechenie-kanalov-endodontiya-pomosch-pri-ostroy-boli"
+        },
+        {
+          "title": "Пульпит, 1 канал",
+          "price": "8 000 ₽",
+          "page": "lechenie-kanalov-endodontiya-pulpit-odnokanalnyy-zub"
+        },
+        {
+          "title": "Пульпит, 2 канала",
+          "price": "11 000 ₽",
+          "page": "lechenie-kanalov-endodontiya-pulpit-dvuhkanalnyy-zub"
+        }
+      ],
+      "order": 40,
+      "id": "endo",
+      "slug": "endodontiya"
+    },
+    {
+      "title": "Несъёмное протезирование",
+      "description": "Коронки, виниры и вкладки делает лаборатория клиники.",
+      "icon": "crown",
+      "items": [
+        {
+          "title": "Циркониевая коронка, акция",
+          "price": "19 900 ₽",
+          "page": "cirkonievaya-koronka"
+        },
+        {
+          "title": "Винир E-max",
+          "price": "27 000 ₽",
+          "page": "vinir-emax"
+        },
+        {
+          "title": "Коронка E.max",
+          "price": "27 000 ₽",
+          "page": "keramicheskie-koronki-i-vkladki-e-max-koronka-vkladka-e-max"
+        }
+      ],
+      "order": 50,
+      "id": "prosthetics",
+      "slug": "protezirovanie"
+    },
+    {
+      "title": "Съёмное протезирование",
+      "description": "Акриловые, нейлоновые, Acry-Free и бюгельные протезы, починка за 1–2 дня.",
+      "icon": "smile",
+      "items": [
+        {
+          "title": "Акриловый протез до 5 зубов",
+          "price": "20 000 ₽",
+          "page": "semnye-protezy-akrilovyy-protez-do-5-zubov"
+        },
+        {
+          "title": "Протез Acry-Free",
+          "price": "60 000 ₽",
+          "page": "semnye-protezy-semnyy-protez-acry-free"
+        },
+        {
+          "title": "Бюгельный кламмерный",
+          "price": "60 000 ₽",
+          "page": "byugelnyy-protez-klammernyy"
+        }
+      ],
+      "order": 60,
+      "id": "removable",
+      "slug": "semnoe-protezirovanie"
+    },
+    {
+      "title": "Имплантация",
+      "description": "Импланты Osstem, Neodent, Astra Tech и Straumann с коронкой под ключ.",
+      "icon": "anchor",
+      "items": [
+        {
+          "title": "Osstem + циркониевая коронка",
+          "price": "49 900 ₽",
+          "page": "implantaciya-pod-klyuch-osstem-cirkonievaya-koronka"
+        },
+        {
+          "title": "Neodent + циркониевая коронка",
+          "price": "69 900 ₽",
+          "page": ""
+        },
+        {
+          "title": "Все на 4-х имплантах Osstem",
+          "price": "180 000 ₽",
+          "page": "protezy-na-implantah-vse-na-4-implantah-osstem-nemedlennaya-nagruzka"
+        }
+      ],
+      "order": 70,
+      "id": "implants",
+      "slug": "implantacia"
+    },
+    {
+      "title": "Хирургия",
+      "description": "Удаление зубов любой сложности, в том числе зубов мудрости.",
+      "icon": "scissors",
+      "items": [
+        {
+          "title": "Удаление подвижного зуба",
+          "price": "4 500 ₽",
+          "page": "udalenie-zubov-udalenie-podvizhnogo-zuba"
+        },
+        {
+          "title": "Удаление постоянного зуба",
+          "price": "6 000 ₽",
+          "page": "udalenie-zubov-udalenie-postoyannogo-zuba"
+        },
+        {
+          "title": "Удаление зуба мудрости",
+          "price": "от 8 500 ₽",
+          "page": ""
+        }
+      ],
+      "order": 80,
+      "id": "surgery",
+      "slug": "hirurgiya"
+    },
+    {
+      "title": "Каппы",
+      "description": "Ретенционные, для отбеливания и ночные — при бруксизме.",
+      "icon": "shield",
+      "items": [
+        {
+          "title": "Ретенционная каппа",
+          "price": "8 000 ₽",
+          "page": "remont-protezov-i-kappy-retencionnaya-kappa"
+        },
+        {
+          "title": "Каппа для отбеливания",
+          "price": "8 000 ₽",
+          "page": "otbelivanie-kappa-dlya-otbelivaniya"
+        },
+        {
+          "title": "Каппа при бруксизме",
+          "price": "9 000 ₽",
+          "page": "remont-protezov-i-kappy-kappa-pri-bruksizme"
+        }
+      ],
+      "order": 90,
+      "id": "guards",
+      "slug": "kappy"
     }
   ]
 }

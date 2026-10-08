@@ -1,10 +1,17 @@
 ---
 /**
- * Полный прайс-лист: панель фильтра по направлениям и таблицы цен.
+ * Полный прайс-лист: все разделы одной страницей, таблицей «Услуга / Что
+ * входит / Цена».
  *
- * Источник данных — коллекция price-list (один файл на направление,
- * внутри группы позиций). Названия и порядок направлений берутся из
- * service-categories, чтобы фильтр, якоря и каталог на главной не
+ * Раньше кнопки разделов работали фильтром и прятали остальной прайс:
+ * пришёл с главной в «Хирургию» — и пролистать весь прайс уже нельзя.
+ * Теперь разделы только навигация: оглавление слева (на телефоне —
+ * липкая кнопка «Раздел»), текущий раздел подсвечивается при прокрутке,
+ * поиск находит позицию по названию и по составу услуги.
+ *
+ * Источник данных — коллекция price-list (один файл на раздел, внутри
+ * группы позиций). Названия и порядок разделов берутся из
+ * service-categories, чтобы меню, якоря и каталог на главной не
  * разъезжались между собой.
  */
 import { getCollection } from 'astro:content';
@@ -13,7 +20,6 @@ import PageLayout from '../layouts/PageLayout.astro';
 import Reveal from '../components/core/Reveal.astro';
 import Button from '../components/core/Button.astro';
 import Icon from '../components/core/Icon.astro';
-import PriceTable from '../components/content/PriceTable.astro';
 import OfferStrip from '../components/content/OfferStrip.astro';
 import { clinic } from '../data/site';
 import { pricesPage as page } from '../data/pages';
@@ -30,32 +36,42 @@ const categories = (await getCollection('service-categories')).sort(byOrder);
 const prices = await getCollection('price-list');
 const servicePages = await getCollection('service-pages');
 
-/** Позиция прайса → своя страница услуги: по направлению, названию и группе */
+/** Позиция прайса → своя страница услуги: по разделу, названию и группе */
 const pageFor = servicePageIndex(servicePages);
 
-/** Направления в порядке каталога; без цен в прайсе — не показываем */
+/** Поиск не различает регистр и «ё» */
+const searchable = (text: string) => text.toLowerCase().replaceAll('ё', 'е');
+
+/** Разделы в порядке каталога; без цен в прайсе — не показываем */
 const sections = categories
   .map((category) => {
     const price = prices.find((p) => p.data.slug === category.data.slug);
+    const groups = (price?.data.groups ?? []).map((group, gi) => ({
+      title: group.title,
+      items: group.items.map((item, ii) => {
+        const slug = pageFor(category.data.slug, item.title, group.title);
+        return {
+          ...item,
+          href: slug ? pageHref(`uslugi/${slug}`) : undefined,
+          query: searchable(`${item.title} ${item.desc ?? ''} ${group.title}`),
+          cms: price ? `price-list/${price.id}:groups.${gi}.items.${ii}` : undefined,
+        };
+      }),
+    }));
+    const count = groups.reduce((n, g) => n + g.items.length, 0);
+    const amounts = groups.flatMap((g) => g.items.map((i) => priceValue(i.price))).filter((v) => v !== null);
     return {
       id: category.data.id,
       slug: category.data.slug,
       title: category.data.title,
       icon: category.data.icon,
       price,
-      /** Каждая позиция — ссылка на свою карточку услуги, если она есть.
-          Группа нужна для одинаковых строк вроде «На импланте, цементная
-          фиксация»: у E.max и у временной коронки они ведут на разные страницы. */
-      groups: price?.data.groups.map((group) => ({
-        title: group.title,
-        items: group.items.map((item) => {
-          const slug = pageFor(category.data.slug, item.title, group.title);
-          return { ...item, href: slug ? pageHref(`uslugi/${slug}`) : undefined };
-        }),
-      })),
+      groups,
+      count,
+      from: amounts.length > 0 ? `от ${Math.min(...amounts).toLocaleString('ru-RU')} ₽` : undefined,
     };
   })
-  .filter((section) => section.price);
+  .filter((section) => section.price && section.count > 0);
 
 /**
  * Каталог цен для поисковика.
@@ -79,13 +95,14 @@ const catalogSchema = {
     '@type': 'OfferCatalog',
     name: section.title,
     url: `${absolute('pricelist', Astro.site)}#${section.slug}`,
-    itemListElement: (section.groups ?? [])
+    itemListElement: section.groups
       .flatMap((group) => group.items)
       .map((item) => ({ item, amount: priceValue(item.price) }))
       .filter(({ amount }) => amount !== null)
       .map(({ item, amount }) => ({
         '@type': 'Offer',
         name: item.title,
+        ...(item.desc ? { description: item.desc } : {}),
         priceCurrency: 'RUB',
         availability: 'https://schema.org/InStock',
         ...(item.href ? { url: absolute(item.href, Astro.site) } : {}),
@@ -102,16 +119,19 @@ const catalogSchema = {
   })),
 };
 
-const total = sections.reduce(
-  (sum, s) => sum + (s.price?.data.groups ?? []).reduce((n, g) => n + g.items.length, 0),
-  0,
-);
+const total = sections.reduce((sum, s) => sum + s.count, 0);
 /** Метки текста под заголовком — тот же набор уходит в предпросмотр редактора */
-const leadVars = { позиций: `${total} ${plural(total, ['позиция', 'позиции', 'позиций'])}` };
+const leadVars = {
+  позиций: `${total} ${plural(total, ['позиция', 'позиции', 'позиций'])}`,
+  разделах: `${sections.length} ${plural(sections.length, ['разделе', 'разделах', 'разделах'])}`,
+};
+
+const includes = page.showIncludes;
+const positions = (n: number) => `${n} ${plural(n, ['позиция', 'позиции', 'позиций'])}`;
 ---
 
 {/* Тексты страницы — в редакторе, «Страницы сайта» → «Прайс-лист — тексты
-    страницы». Разделы и цены — в «Прайс-листе», названия разделов — в
+    страницы». Позиции и цены — в «Прайс-листе», названия разделов — в
     «Главная страница» → «4. Услуги — разделы и цены». */}
 <PageLayout
   title={page.seo.title}
@@ -125,32 +145,33 @@ const leadVars = { позиций: `${total} ${plural(total, ['позиция', 
   schema={[catalogSchema]}
   cms={cmsPage('prices')}
 >
-  <!-- Панель фильтра: липнет под шапкой при прокрутке -->
-  <div class="dc-filter" data-price-filter>
-    <div class="dc-filter__inner">
-      <button
-        type="button"
-        class="dc-filter__chip"
-        data-filter="all"
-        aria-pressed="true"
-        data-cms={cmsPage('prices', 'filterAll')}
-      >
-        {page.filterAll}
-      </button>
-      {
-        sections.map((section) => (
-          <button
-            type="button"
-            class="dc-filter__chip"
-            data-filter={section.slug}
-            aria-pressed="false"
-            data-cms={cmsItem('catalog', section.id, 'title')}
-          >
-            {section.title}
-          </button>
-        ))
-      }
-    </div>
+  <!-- Телефон: липкая кнопка с текущим разделом и списком всех разделов -->
+  <div class="dc-plbar" data-price-bar>
+    <button
+      type="button"
+      class="dc-plbar__pick"
+      aria-expanded="false"
+      aria-controls="dc-pl-menu"
+      data-price-pick
+    >
+      <span class="dc-plbar__label" data-cms={cmsPage('prices', 'sectionLabel')}>{page.sectionLabel}</span>
+      <b class="dc-plbar__current" data-price-current>{sections[0]?.title}</b>
+      <Icon name="chevron-down" size={20} strokeWidth={2} />
+    </button>
+    <nav class="dc-plbar__menu" id="dc-pl-menu" aria-label="Разделы прайса" hidden data-price-menu>
+      <ul role="list">
+        {
+          sections.map((section) => (
+            <li>
+              <a href={`#${section.slug}`} data-price-link={section.slug}>
+                <span>{section.title}</span>
+                <small>{section.count}</small>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
   </div>
 
   <section class="dc-section dc-price-page">
@@ -161,169 +182,510 @@ const leadVars = { позиций: `${total} ${plural(total, ['позиция', 
         />
       </Reveal>
 
-      {
-        sections.map((section, i) => (
-          <Reveal delay={i * 60}>
-            <section
-              class="dc-price-block"
-              id={section.slug}
-              data-price-section={section.slug}
-              data-cms={`price-list/${section.price?.id}`}
-            >
-              <header class="dc-price-block__head">
-                <span class="dc-price-block__icon">
-                  <Icon name={section.icon} size={24} strokeWidth={1.75} color="var(--text-accent)" />
-                </span>
-                <h2 data-cms={cmsItem('catalog', section.id, 'title')}>{section.title}</h2>
-                {section.price?.data.note && <p>{section.price.data.note}</p>}
-              </header>
+      <div class="dc-pl">
+        <aside class="dc-pl__aside">
+          <label class="dc-pl-search">
+            <Icon name="search" size={20} strokeWidth={2} color="var(--text-muted)" />
+            <span class="dc-visually-hidden">{page.search.placeholder}</span>
+            <input
+              type="search"
+              placeholder={page.search.placeholder}
+              autocomplete="off"
+              enterkeyhint="search"
+              data-price-search
+              data-cms={cmsPage('prices', 'search.placeholder')}
+            />
+          </label>
+          <p class="dc-pl__found" role="status" data-price-found data-template={page.search.found}></p>
+          <nav class="dc-pl__toc" aria-label="Разделы прайса">
+            <ul role="list">
+              {
+                sections.map((section) => (
+                  <li>
+                    <a href={`#${section.slug}`} data-price-link={section.slug} data-cms={cmsItem('catalog', section.id, 'title')}>
+                      <span>{section.title}</span>
+                      <small>{section.count}</small>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+        </aside>
 
-              <div class="dc-price-block__groups">
-                {section.groups?.map((group) => (
-                  <PriceTable title={group.title} items={group.items} />
-                ))}
-              </div>
-            </section>
-          </Reveal>
-        ))
-      }
+        <div class="dc-pl__main">
+          {
+            sections.map((section) => (
+              <section
+                class="dc-pl-sec"
+                id={section.slug}
+                data-price-section={section.slug}
+                data-title={section.title}
+                data-cms={`price-list/${section.price?.id}`}
+              >
+                <header class="dc-pl-sec__head">
+                  <span class="dc-pl-sec__icon">
+                    <Icon name={section.icon} size={22} strokeWidth={1.75} color="var(--text-accent)" />
+                  </span>
+                  <h2 data-cms={cmsItem('catalog', section.id, 'title')}>{section.title}</h2>
+                  <p class="dc-pl-sec__meta">
+                    {positions(section.count)}
+                    {section.from && ` · ${section.from}`}
+                  </p>
+                  {section.price?.data.note && <p class="dc-pl-sec__note">{section.price.data.note}</p>}
+                </header>
 
-      <Reveal>
-        <div class="dc-price-page__foot" data-cms={cmsPage('prices', 'foot')}>
-          <p>{page.foot}</p>
-          <div class="dc-actions">
-            <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('prices', 'book')}>
-              <Icon slot="icon" name="calendar" size={20} />
-              {page.book}
-            </Button>
-            <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
-              <Icon slot="icon" name="phone" size={20} />
-              {clinic.phone}
-            </Button>
+                <table class:list={['dc-pl-t', includes && 'dc-pl-t--includes']}>
+                  <thead>
+                    <tr>
+                      <th scope="col" data-cms={cmsPage('prices', 'columns.service')}>{page.columns.service}</th>
+                      {includes && (
+                        <th scope="col" class="dc-pl-t__inc" data-cms={cmsPage('prices', 'columns.includes')}>
+                          {page.columns.includes}
+                        </th>
+                      )}
+                      <th scope="col" class="dc-pl-t__price" data-cms={cmsPage('prices', 'columns.price')}>
+                        {page.columns.price}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {section.groups.map((group, gi) => (
+                      <>
+                        {group.title && (
+                          <tr class="dc-pl-g" data-price-group>
+                            <th colspan={includes ? 3 : 2} scope="colgroup">
+                              {group.title}
+                            </th>
+                          </tr>
+                        )}
+                        {group.items.map((item, i) => {
+                          const descId = `${section.slug}-${gi}-${i}`;
+                          return (
+                            <tr class="dc-pl-r" data-price-row data-q={item.query} data-cms={item.cms}>
+                              <td class="dc-pl-r__name">
+                                {item.href ? (
+                                  <a href={item.href} class="dc-pl-r__link">
+                                    {item.title}
+                                  </a>
+                                ) : (
+                                  <span>{item.title}</span>
+                                )}
+                                {item.note && <span class="dc-pl-r__note">{item.note}</span>}
+                                {includes && item.desc && (
+                                  <button
+                                    type="button"
+                                    class="dc-pl-r__more"
+                                    aria-expanded="false"
+                                    aria-controls={descId}
+                                    data-price-more
+                                    data-more={page.columns.includes}
+                                    data-less={page.includesHide}
+                                  >
+                                    <Icon name="plus" size={14} strokeWidth={2.4} />
+                                    <span>{page.columns.includes}</span>
+                                  </button>
+                                )}
+                              </td>
+                              {includes && (
+                                <td class="dc-pl-r__inc" id={descId}>
+                                  {item.desc}
+                                </td>
+                              )}
+                              <td class="dc-pl-r__price">
+                                {(item.promo || item.was) && (
+                                  <span class="dc-pl-r__promo" data-cms={cmsPage('prices', 'promoLabel')}>
+                                    {page.promoLabel}
+                                  </span>
+                                )}
+                                {item.was && <s class="dc-pl-r__was">{item.was}</s>}
+                                <b class:list={['dc-pl-r__value', priceValue(item.price) === null && 'dc-pl-r__value--text']}>
+                                  {item.price}
+                                </b>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            ))
+          }
+
+          <p class="dc-pl__empty" hidden data-price-empty>
+            <span data-cms={cmsPage('prices', 'search.empty')}>{page.search.empty}</span>
+            <a href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>{clinic.phone}</a>
+          </p>
+
+          <div class="dc-price-page__foot" data-cms={cmsPage('prices', 'foot')}>
+            <p>{page.foot}</p>
+            <div class="dc-actions">
+              <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('prices', 'book')}>
+                <Icon slot="icon" name="calendar" size={20} />
+                {page.book}
+              </Button>
+              <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+                <Icon slot="icon" name="phone" size={20} />
+                {clinic.phone}
+              </Button>
+            </div>
           </div>
         </div>
-      </Reveal>
+      </div>
     </div>
   </section>
 </PageLayout>
 
 <style>
-  .dc-filter {
-    position: sticky;
-    /* Шапка на прокрученной странице ниже, чем --header-h (тот держит
-       высоту непрокрученного состояния) — фиксируем фактическую высоту,
-       иначе между шапкой и панелью фильтра остаётся видимая щель. */
-    top: 60px;
-    z-index: 20;
-    padding: var(--space-3) var(--gutter);
-    background: color-mix(in srgb, var(--dc-white) 88%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--line-hairline);
-  }
-  .dc-filter__inner {
-    max-width: var(--container);
-    margin-inline: auto;
-    display: flex;
-    gap: var(--space-2);
-    overflow-x: auto;
-    /* Полоса прокручивается на телефоне, но полосу прокрутки не показываем */
-    scrollbar-width: none;
-  }
-  .dc-filter__inner::-webkit-scrollbar {
-    display: none;
-  }
-  .dc-filter__chip {
-    flex: 0 0 auto;
-    /* Тап-цель не ниже 44px: с одними отступами чип выходил ~38px */
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 9px 16px;
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--line-hairline);
-    background: var(--surface-card);
-    color: var(--text-body);
-    font-family: var(--font-body);
-    font-size: var(--type-small);
-    font-weight: var(--fw-semibold);
-    cursor: pointer;
-    transition:
-      background var(--dur-fast) var(--ease-out),
-      color var(--dur-fast) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out);
-  }
-  .dc-filter__chip:hover {
-    border-color: var(--line-strong);
-  }
-  .dc-filter__chip[aria-pressed='true'] {
-    background: var(--cta-bg);
-    border-color: var(--cta-bg);
-    color: var(--cta-fg);
-  }
-
   .dc-price-page {
     background: var(--dc-white);
   }
-  /* Появление блока при переключении фильтра — отдельно от общего
-     scroll-reveal (тот у уже показанных блоков не повторяется). */
-  @keyframes dc-filter-enter {
-    from {
-      opacity: 0;
-      transform: translateY(var(--reveal-shift, 26px));
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
+  .dc-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
-  .dc-filter-enter {
-    animation: dc-filter-enter 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* ── Липкая кнопка раздела на телефоне ── */
+  .dc-plbar {
+    position: sticky;
+    /* Шапка на прокрученной странице ниже, чем --header-h (тот держит
+       высоту непрокрученного состояния) — фиксируем фактическую высоту,
+       иначе между шапкой и кнопкой остаётся видимая щель. */
+    top: 60px;
+    z-index: 20;
+    padding: var(--space-3) var(--gutter);
+    background: color-mix(in srgb, var(--dc-white) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line-hairline);
   }
-  @media (prefers-reduced-motion: reduce) {
-    .dc-filter-enter {
-      animation: none;
-    }
+  .dc-plbar__pick {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+    color: var(--text-strong);
+    font: var(--fw-semibold) var(--type-small) / 1.2 var(--font-body);
+    text-align: left;
+    cursor: pointer;
   }
-  .dc-price-block {
-    display: grid;
-    gap: var(--space-6);
-    padding: var(--space-8);
-    border-radius: var(--radius-xl);
+  .dc-plbar__label {
+    color: var(--text-muted);
+  }
+  .dc-plbar__current {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dc-plbar__pick :global(svg) {
+    flex: 0 0 auto;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .dc-plbar__pick[aria-expanded='true'] :global(svg) {
+    transform: rotate(180deg);
+  }
+  .dc-plbar__menu {
+    position: absolute;
+    left: var(--gutter);
+    right: var(--gutter);
+    top: calc(100% - var(--space-2));
+    max-height: 60vh;
+    overflow: auto;
+    padding: 6px;
+    border-radius: var(--radius-md);
     background: var(--surface-card);
     border: 1px solid var(--line-hairline);
-    box-shadow: var(--shadow-sm);
-    /* Глобальный scroll-padding-top на <html> уже учитывает шапку —
-       здесь добавляем только высоту липкой панели фильтра. */
-    scroll-margin-top: 64px;
+    box-shadow: var(--shadow-lg);
   }
-  .dc-price-block__head {
+
+  .dc-plbar__menu ul,
+  .dc-pl__toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 2px;
+  }
+  .dc-plbar__menu a,
+  .dc-pl__toc a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: var(--text-body);
+    text-decoration: none;
+  }
+  .dc-plbar__menu a:hover,
+  .dc-pl__toc a:hover {
+    background: color-mix(in srgb, var(--surface-quiet) 60%, transparent);
+  }
+  .dc-plbar__menu small,
+  .dc-pl__toc small {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .dc-plbar__menu a[aria-current='true'],
+  .dc-pl__toc a[aria-current='true'] {
+    background: var(--surface-quiet);
+    color: var(--text-strong);
+    font-weight: var(--fw-bold);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+
+  /* ── Раскладка: оглавление слева с компьютера, таблицы справа ── */
+  .dc-pl {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .dc-pl__aside {
     display: grid;
     gap: var(--space-3);
-    justify-items: start;
+    align-content: start;
   }
-  .dc-price-block__icon {
+  .dc-pl-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+    border: 1px solid var(--line-strong);
+  }
+  .dc-pl-search:focus-within {
+    border-color: var(--text-accent);
+    box-shadow: 0 0 0 3px var(--dc-turquoise-soft);
+  }
+  .dc-pl-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    /* 16px — иначе iOS увеличивает страницу при фокусе на поле */
+    font: 400 16px / 1.3 var(--font-body);
+    color: var(--text-strong);
+  }
+  .dc-pl__found {
+    margin: 0;
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-pl__found:empty {
+    display: none;
+  }
+  .dc-pl__toc {
+    display: none;
+  }
+  .dc-pl__main {
+    display: grid;
+    gap: var(--space-10);
+    min-width: 0;
+  }
+
+  /* ── Раздел ── */
+  .dc-pl-sec {
+    /* Над разделом при переходе по якорю — шапка и липкая кнопка раздела */
+    scroll-margin-top: 76px;
+  }
+  .dc-pl-sec__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  .dc-pl-sec__icon {
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-md);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     background: var(--surface-quiet);
     box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
   }
-  .dc-price-block__head h2 {
-    font-size: var(--type-h2);
+  .dc-pl-sec__head h2 {
+    font-size: clamp(1.375rem, 4.4vw, 1.875rem);
+    line-height: var(--lh-heading);
   }
-  .dc-price-block__head p {
-    color: var(--text-muted);
+  .dc-pl-sec__meta,
+  .dc-pl-sec__note {
+    grid-column: 1 / -1;
+    margin: 0;
     font-size: var(--type-small);
+  }
+  .dc-pl-sec__meta {
+    font-weight: var(--fw-semibold);
+    color: var(--text-muted);
+  }
+  .dc-pl-sec__note {
+    color: var(--text-body);
     max-width: min(var(--measure), 100%);
   }
-  .dc-price-block__groups {
-    display: grid;
-    gap: var(--space-8);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-    align-items: start;
+
+  /* ── Таблица: на телефоне каждая строка — карточка «название — цена» ── */
+  .dc-pl-t {
+    width: 100%;
+    border-collapse: collapse;
   }
+  .dc-pl-t thead {
+    display: none;
+  }
+  .dc-pl-t tbody,
+  .dc-pl-t tr {
+    display: block;
+  }
+  .dc-pl-g th {
+    display: block;
+    padding: var(--space-5) 0 6px;
+    text-align: left;
+    font: var(--fw-bold) var(--type-eyebrow) / 1.3 var(--font-body);
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .dc-pl-r {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name price'
+      'inc inc';
+    gap: 4px var(--space-4);
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line-hairline);
+  }
+  .dc-pl-r[hidden],
+  .dc-pl-g[hidden] {
+    display: none !important;
+  }
+  .dc-pl-r td {
+    padding: 0;
+  }
+  .dc-pl-r__name {
+    grid-area: name;
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+    min-width: 0;
+    color: var(--text-body);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  .dc-pl-r__link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 3px;
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      text-decoration-color var(--dur-fast) var(--ease-out);
+  }
+  .dc-pl-r__link:hover {
+    color: var(--text-accent);
+    text-decoration-color: var(--text-accent);
+  }
+  .dc-pl-r__note {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-pl-r__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-accent);
+    font: var(--fw-semibold) 13px / 1.3 var(--font-body);
+    cursor: pointer;
+  }
+  .dc-pl-r__more :global(svg) {
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .dc-pl-r__more[aria-expanded='true'] :global(svg) {
+    transform: rotate(45deg);
+  }
+  .dc-pl-r__inc {
+    grid-area: inc;
+    display: none;
+    font-size: var(--type-small);
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+  .dc-pl-r.is-open .dc-pl-r__inc,
+  :global(.no-js) .dc-pl-r__inc {
+    display: block;
+  }
+  :global(.no-js) .dc-pl-r__more {
+    display: none;
+  }
+  .dc-pl-r__price {
+    grid-area: price;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    text-align: right;
+  }
+  .dc-pl-r__promo {
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--dc-coral);
+    color: var(--text-on-coral);
+    font: var(--fw-bold) var(--type-eyebrow) / 1.4 var(--font-body);
+    letter-spacing: var(--ls-eyebrow);
+    white-space: nowrap;
+  }
+  .dc-pl-r__was {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+    text-decoration-thickness: 1px;
+  }
+  .dc-pl-r__value {
+    font-family: var(--font-display);
+    font-weight: var(--fw-black);
+    color: var(--text-accent);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  /* «Бесплатно», «Входит в протезирование» — словами, им можно переноситься */
+  .dc-pl-r__value--text {
+    font-family: var(--font-body);
+    font-weight: var(--fw-bold);
+    font-size: var(--type-small);
+    white-space: normal;
+  }
+
+  .dc-pl__empty {
+    margin: 0;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-quiet);
+    color: var(--text-body);
+  }
+  .dc-pl__empty a {
+    color: var(--text-accent);
+    font-weight: var(--fw-bold);
+  }
+
   .dc-price-page__foot {
     display: grid;
     gap: var(--space-6);
@@ -339,70 +701,216 @@ const leadVars = { позиций: `${total} ${plural(total, ['позиция', 
     flex-wrap: wrap;
     gap: var(--space-4);
   }
+
+  /* ── Широкий экран: настоящая таблица с колонкой «Что входит» ── */
+  @media (min-width: 900px) {
+    .dc-pl-sec__meta {
+      grid-column: auto;
+      justify-self: end;
+    }
+    .dc-pl-sec__head {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+    .dc-pl-t {
+      display: table;
+      table-layout: fixed;
+    }
+    .dc-pl-t thead {
+      display: table-header-group;
+    }
+    .dc-pl-t tbody {
+      display: table-row-group;
+    }
+    .dc-pl-t tr,
+    .dc-pl-r {
+      display: table-row !important;
+    }
+    .dc-pl-g th {
+      display: table-cell;
+      padding: var(--space-5) var(--space-4) var(--space-2);
+      border-bottom: 1px solid var(--line-hairline);
+    }
+    .dc-pl-t th,
+    .dc-pl-r td {
+      padding: 14px var(--space-4);
+      vertical-align: top;
+      text-align: left;
+      border-bottom: 1px solid var(--line-hairline);
+    }
+    .dc-pl-t thead th {
+      padding: 10px var(--space-4);
+      font: var(--fw-bold) 12px / 1.3 var(--font-body);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: var(--surface-quiet);
+      border-bottom: 0;
+    }
+    .dc-pl-t thead th:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+    .dc-pl-t thead th:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+    .dc-pl-t--includes thead th:first-child {
+      width: 36%;
+    }
+    .dc-pl-t__price {
+      width: 170px;
+      text-align: right !important;
+    }
+    .dc-pl-r__inc {
+      display: table-cell;
+    }
+    /* Селектор с td: общее правило ячеек выше выравнивает их по левому краю */
+    .dc-pl-r td.dc-pl-r__price {
+      display: table-cell;
+      text-align: right;
+    }
+    .dc-pl-r__promo {
+      display: table;
+      margin: 0 0 6px auto;
+    }
+    .dc-pl-r__was {
+      display: block;
+    }
+    .dc-pl-r__more {
+      display: none;
+    }
+    .dc-pl-r:hover td {
+      background: color-mix(in srgb, var(--surface-quiet) 50%, transparent);
+    }
+  }
+
+  @media (min-width: 1040px) {
+    .dc-plbar {
+      display: none;
+    }
+    .dc-pl {
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: var(--space-8);
+      align-items: start;
+    }
+    .dc-pl__aside {
+      position: sticky;
+      top: calc(60px + var(--space-5));
+    }
+    .dc-pl__toc {
+      display: block;
+    }
+    .dc-pl-sec {
+      scroll-margin-top: 0;
+    }
+  }
 </style>
 
 <script>
-  const panel = document.querySelector<HTMLElement>('[data-price-filter]');
-  if (panel) {
-    const chips = Array.from(panel.querySelectorAll<HTMLButtonElement>('[data-filter]'));
-    const sections = Array.from(
-      document.querySelectorAll<HTMLElement>('[data-price-section]'),
-    );
+  /** Старые якоря разделов: ссылки из закладок, поиска и карты редиректов */
+  const ALIASES: Record<string, string> = {
+    restoration: 'protezirovanie',
+    terapiya: 'karies',
+  };
 
-    const apply = (value: string, animateShown = false) => {
-      for (const chip of chips) {
-        chip.setAttribute('aria-pressed', String(chip.dataset.filter === value));
-      }
-      for (const section of sections) {
-        // Прячем обёртку появления целиком, иначе от скрытого блока
-        // остаётся его отступ в сетке контейнера.
-        const wrapper = section.closest<HTMLElement>('.dc-reveal') ?? section;
-        const shouldShow = value === 'all' || section.dataset.priceSection === value;
-        const wasHidden = wrapper.hidden;
-        wrapper.hidden = !shouldShow;
+  const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-price-section]'));
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-price-link]'));
+  const current = document.querySelector<HTMLElement>('[data-price-current]');
+  const pick = document.querySelector<HTMLButtonElement>('[data-price-pick]');
+  const menu = document.querySelector<HTMLElement>('[data-price-menu]');
 
-        // Появление по скролл-наблюдателю у блока обычно уже сыграно один раз
-        // и больше не повторится — а при переключении фильтра блок должен
-        // заново «появляться» каждый раз, иначе после первого клика он просто
-        // мгновенно выскакивает без анимации.
-        if (animateShown && shouldShow && wasHidden) {
-          wrapper.classList.remove('dc-filter-enter');
-          // eslint-disable-next-line no-unused-expressions
-          wrapper.offsetWidth;
-          wrapper.classList.add('dc-filter-enter');
-        }
-      }
-    };
+  // Пришли по старому якорю — переходим на раздел, куда он переехал.
+  // И при загрузке, и при смене якоря без перезагрузки страницы.
+  const followAlias = () => {
+    const target = ALIASES[window.location.hash.slice(1)];
+    if (!target) return;
+    history.replaceState(null, '', `#${target}`);
+    document.getElementById(target)?.scrollIntoView();
+  };
+  followAlias();
+  window.addEventListener('hashchange', followAlias);
 
-    // Выбранная кнопка не должна оставаться за краем прокручиваемой полосы —
-    // нужно и при клике по чипу, и при приходе по ссылке-якорю (с главной,
-    // из блока акции), иначе полоса фильтра остаётся на месте, а контент уезжает.
-    const scrollChipIntoView = (value: string) => {
-      const chip = chips.find((c) => c.dataset.filter === value);
-      chip?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    };
-
-    for (const chip of chips) {
-      chip.addEventListener('click', () => {
-        const value = chip.dataset.filter ?? 'all';
-        apply(value, true);
-        // Адрес отражает выбор: ссылкой можно поделиться
-        const url = value === 'all' ? window.location.pathname : `#${value}`;
-        history.replaceState(null, '', url);
-        scrollChipIntoView(value);
-      });
+  /* ── Текущий раздел: подсветка в оглавлении и подпись кнопки ── */
+  let active = '';
+  const markActive = () => {
+    const line = window.innerHeight * 0.3;
+    const visible = sections.filter((s) => !s.hidden);
+    let found = visible[0];
+    for (const section of visible) {
+      if (section.getBoundingClientRect().top <= line) found = section;
     }
+    const slug = found?.dataset.priceSection ?? '';
+    if (slug === active) return;
+    active = slug;
+    for (const link of links) {
+      link.setAttribute('aria-current', String(link.dataset.priceLink === slug));
+    }
+    if (current && found) current.textContent = found.dataset.title ?? '';
+  };
+  // Прямо в обработчике, без requestAnimationFrame: девять замеров — копейки,
+  // а rAF замирает на фоновой вкладке, и подпись осталась бы старой.
+  window.addEventListener('scroll', markActive, { passive: true });
+  markActive();
 
-    // Пришли по якорю из каталога или из акции — сразу нужный раздел.
-    // Слушаем и hashchange: на страницу можно попасть и без перезагрузки.
-    const applyHash = () => {
-      const value = window.location.hash.replace('#', '');
-      if (!value || !chips.some((chip) => chip.dataset.filter === value)) return;
-      apply(value);
-      document.getElementById(value)?.scrollIntoView();
-      scrollChipIntoView(value);
-    };
-    applyHash();
-    window.addEventListener('hashchange', applyHash);
-  }
+  /* ── Список разделов на телефоне ── */
+  const setMenu = (open: boolean) => {
+    if (!pick || !menu) return;
+    menu.hidden = !open;
+    pick.setAttribute('aria-expanded', String(open));
+  };
+  pick?.addEventListener('click', () => setMenu(menu?.hidden ?? false));
+  menu?.addEventListener('click', (event) => {
+    if ((event.target as HTMLElement).closest('a')) setMenu(false);
+  });
+  document.addEventListener('click', (event) => {
+    const target = event.target as Node;
+    if (menu && !menu.hidden && !menu.contains(target) && !pick?.contains(target)) setMenu(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && menu && !menu.hidden) {
+      setMenu(false);
+      pick?.focus();
+    }
+  });
+
+  /* ── «Что входит» у строки на телефоне ── */
+  document.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-price-more]');
+    if (!button) return;
+    const open = button.getAttribute('aria-expanded') !== 'true';
+    button.setAttribute('aria-expanded', String(open));
+    button.closest('tr')?.classList.toggle('is-open', open);
+    const label = button.querySelector('span');
+    if (label) label.textContent = (open ? button.dataset.less : button.dataset.more) ?? '';
+  });
+
+  /* ── Поиск по названию и составу услуги ── */
+  const search = document.querySelector<HTMLInputElement>('[data-price-search]');
+  const found = document.querySelector<HTMLElement>('[data-price-found]');
+  const empty = document.querySelector<HTMLElement>('[data-price-empty]');
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-price-row]'));
+  search?.addEventListener('input', () => {
+    const query = search.value.trim().toLowerCase().replaceAll('ё', 'е');
+    let count = 0;
+    for (const row of rows) {
+      const match = !query || (row.dataset.q ?? '').includes(query);
+      row.hidden = !match;
+      if (match) count++;
+    }
+    // Подзаголовок группы виден, только если под ним осталась хоть одна строка
+    for (const group of document.querySelectorAll<HTMLElement>('[data-price-group]')) {
+      let next = group.nextElementSibling as HTMLElement | null;
+      let any = false;
+      while (next && !next.hasAttribute('data-price-group')) {
+        if (!next.hidden) any = true;
+        next = next.nextElementSibling as HTMLElement | null;
+      }
+      group.hidden = !any;
+    }
+    for (const section of sections) {
+      section.hidden = !section.querySelector('[data-price-row]:not([hidden])');
+    }
+    if (found) found.textContent = query ? (found.dataset.template ?? '').replace('{число}', String(count)) : '';
+    if (empty) empty.hidden = !query || count > 0;
+    active = '';
+    markActive();
+  });
 </script>

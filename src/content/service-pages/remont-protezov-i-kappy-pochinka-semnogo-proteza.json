@@ -1,8 +1,8 @@
 {
   "title": "Починка съёмного протеза",
   "lead": "Починка съёмного протеза — быстрый ремонт или изготовление в лаборатории клиники, без ожидания стороннего подрядчика.",
-  "category": "protezirovanie",
-  "price": "3 500 ₽",
+  "category": "semnoe-protezirovanie",
+  "price": "8 000 ₽",
   "duration": "1 визит",
   "photoLabel": "Здесь фото работы",
   "includes": [
@@ -30,5 +30,7 @@
   ],
   "prices": [],
   "faq": [],
-  "order": 153
+  "order": 153,
+  "matchTitle": "",
+  "matchGroup": ""
 }

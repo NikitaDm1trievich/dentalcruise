@@ -28,11 +28,14 @@ import { absolute, priceValue, siteRoot, xml } from '../../lib/seo';
 
 /** Фото направления. Ключ — slug категории из service-categories. */
 const CATEGORY_PICTURE: Record<string, string> = {
-  restoration: 'images/services/veneers.jpg',
   protezirovanie: 'images/services/crowns.jpg',
   implantacia: 'images/services/implants.jpg',
 };
 const FALLBACK_PICTURE = 'images/clinic/clinic-01.jpg';
+
+/** Виниры живут в разделе протезирования, но коронка вместо винира на фото — чужая работа. */
+const pictureFor = (slug: string, category: string) =>
+  slug.startsWith('vinir') ? 'images/services/veneers.jpg' : (CATEGORY_PICTURE[category] ?? FALLBACK_PICTURE);
 
 export const GET: APIRoute = async ({ site }) => {
   const pages = (await getCollection('service-pages')).sort((a, b) => a.data.order - b.data.order);
@@ -55,7 +58,7 @@ export const GET: APIRoute = async ({ site }) => {
       // а «уточняйте» в поле price читается как ошибка выгрузки.
       if (!price) return null;
 
-      const picture = CATEGORY_PICTURE[s.category] ?? FALLBACK_PICTURE;
+      const picture = pictureFor(page.id, s.category);
       const description = [s.lead, s.priceNote ? `Цена ${s.price} ${s.priceNote}.` : null]
         .filter(Boolean)
         .join(' ');

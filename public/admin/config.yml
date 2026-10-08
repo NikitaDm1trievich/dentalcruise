@@ -382,12 +382,15 @@ collections:
                 required: false
                 hint: Раздел прайс-листа. Пусто — карточка не нажимается.
                 options:
-                  - { label: Эстетическая реставрация, value: restoration }
-                  - { label: Протезирование, value: protezirovanie }
+                  - { label: Диагностика, value: diagnostika }
+                  - { label: Гигиена и отбеливание, value: gigiena }
+                  - { label: Лечение кариеса, value: karies }
+                  - { label: Лечение каналов, value: endodontiya }
+                  - { label: Несъёмное протезирование, value: protezirovanie }
+                  - { label: Съёмное протезирование, value: semnoe-protezirovanie }
                   - { label: Имплантация, value: implantacia }
                   - { label: Хирургия, value: hirurgiya }
-                  - { label: Терапия, value: terapiya }
-                  - { label: Гигиена и отбеливание, value: gigiena }
+                  - { label: Каппы, value: kappy }
               - name: order
                 label: Порядок на странице
                 widget: number
@@ -429,9 +432,11 @@ collections:
                 widget: select
                 options:
                   - { label: Сияние, value: sparkles }
+                  - { label: Снимок с лупой, value: scan-search }
                   - { label: Коронка (корона), value: crown }
                   - { label: Якорь, value: anchor }
                   - { label: Ножницы, value: scissors }
+                  - { label: Щит, value: shield }
                   - { label: Стетоскоп, value: stethoscope }
                   - { label: Солнце, value: sun }
                   - { label: Микроскоп, value: microscope }
@@ -1068,10 +1073,10 @@ collections:
             label: Текст под заголовком
             widget: text
             hint: >-
-              {позиций} сайт заменит на число позиций прайса со словом: «71
-              позиция». Метку в фигурных скобках не переводите и не удаляйте:
-              метка с опечаткой попадёт на сайт как есть, её увидят посетители.
-          - { name: filterAll, label: 'Кнопка фильтра «все»', widget: string }
+              {позиций} сайт заменит на число позиций прайса со словом («80
+              позиций»), {разделах} — на число разделов («9 разделах»). Метки в
+              фигурных скобках не переводите и не удаляйте: метка с опечаткой
+              попадёт на сайт как есть, её увидят посетители.
           - name: terms
             label: Карточки условий
             label_singular: карточка
@@ -1102,11 +1107,39 @@ collections:
                   - { label: Улыбка, value: smile }
                   - { label: Стетоскоп, value: stethoscope }
                   - { label: Галочка в круге, value: circle-check }
+          - name: showIncludes
+            label: Показывать колонку «Что входит»
+            widget: boolean
+            default: true
+            hint: >-
+              Описания позиций — в поле «Что входит» в «Прайс-листе». Выключите,
+              и в прайсе останутся только названия и цены.
+          - name: columns
+            label: Заголовки колонок таблицы
+            widget: object
+            collapsed: true
+            fields:
+              - { name: service, label: Колонка с названием, widget: string }
+              - { name: includes, label: Колонка «Что входит», widget: string, hint: Эта же надпись — на кнопке под названием на телефоне. }
+              - { name: price, label: Колонка с ценой, widget: string }
+          - { name: includesHide, label: 'Кнопка «скрыть» у «Что входит» на телефоне', widget: string }
+          - name: sectionLabel
+            label: Подпись кнопки разделов на телефоне
+            widget: string
+            hint: 'Липкая кнопка над прайсом: «Раздел Хирургия».'
+          - name: search
+            label: Поиск по прайсу
+            widget: object
+            collapsed: true
+            fields:
+              - { name: placeholder, label: Подсказка в пустом поле, widget: string }
+              - { name: found, label: Сколько найдено, widget: string, hint: '{число} сайт заменит на число найденных позиций.' }
+              - { name: empty, label: Если ничего не нашлось, widget: string, hint: Дальше сайт допишет телефон клиники. }
           - name: promoLabel
             label: Метка у цены со скидкой
             widget: string
             hint: И в прайс-листе, и в таблицах цен на страницах услуг.
-          - { name: foot, label: Текст под таблицами, widget: text }
+          - { name: foot, label: Текст под таблицами, widget: text, hint: Обновляйте месяц, когда меняете цены. }
           - { name: book, label: Кнопка записи под таблицами, widget: string }
           - name: breadcrumb
             label: Название в хлебных крошках
@@ -1340,7 +1373,7 @@ collections:
     identifier_field: category
     summary: '{{category}}'
     description: >-
-      Страница «Прайс-лист», один файл на направление. Названия и порядок
+      Страница «Прайс-лист», один файл на раздел. Названия и порядок
       разделов задаются в «Главная страница» → «4. Услуги — разделы и цены».
     fields:
       - name: category
@@ -1356,7 +1389,11 @@ collections:
         widget: list
         summary: '{{fields.title}}'
         fields:
-          - { name: title, label: Название группы, widget: string }
+          - name: title
+            label: Название группы
+            widget: string
+            required: false
+            hint: Подзаголовок в таблице, например «Виниры». Пусто — позиции идут сразу под заголовком раздела.
           - name: items
             label: Позиции
             label_singular: позиция
@@ -1364,7 +1401,18 @@ collections:
             summary: '{{fields.title}} — {{fields.price}}'
             fields:
               - { name: title, label: Название, widget: string }
-              - { name: price, label: Цена, widget: string }
+              - name: price
+                label: Цена
+                widget: string
+                hint: 'Например: 8 000 ₽, от 8 500 ₽ или словами — «Бесплатно».'
+              - name: desc
+                label: Что входит
+                widget: text
+                required: false
+                hint: >-
+                  Колонка «Что входит» в прайсе, на телефоне раскрывается кнопкой
+                  под названием. Всю колонку можно выключить в «Страницы сайта» →
+                  «Прайс-лист — тексты страницы».
               - name: was
                 label: Старая цена
                 widget: string
@@ -1416,12 +1464,15 @@ collections:
         widget: select
         hint: Куда ведёт кнопка «В прайс-лист» и в каком разделе прайса ищется цена.
         options:
-          - { label: Эстетическая реставрация, value: restoration }
-          - { label: Протезирование, value: protezirovanie }
+          - { label: Диагностика, value: diagnostika }
+          - { label: Гигиена и отбеливание, value: gigiena }
+          - { label: Лечение кариеса, value: karies }
+          - { label: Лечение каналов, value: endodontiya }
+          - { label: Несъёмное протезирование, value: protezirovanie }
+          - { label: Съёмное протезирование, value: semnoe-protezirovanie }
           - { label: Имплантация, value: implantacia }
           - { label: Хирургия, value: hirurgiya }
-          - { label: Терапия, value: terapiya }
-          - { label: Гигиена и отбеливание, value: gigiena }
+          - { label: Каппы, value: kappy }
       - { name: price, label: Цена, widget: string, required: false }
       - { name: priceNote, label: Мелкий текст под ценой, widget: string, required: false }
       - { name: duration, label: Сроки, widget: string, required: false, hint: 'Например, «2 визита, 7–10 дней».' }
