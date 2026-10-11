@@ -7,6 +7,11 @@
       "icon": "zap",
       "items": [
         {
+          "title": "Лечение кариеса",
+          "price": "6 000 ₽",
+          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-srednego-kariesa"
+        },
+        {
           "title": "Помощь при острой боли",
           "price": "6 000 ₽",
           "page": "lechenie-kanalov-endodontiya-pomosch-pri-ostroy-boli"
@@ -15,11 +20,6 @@
           "title": "Лечение пульпита, 1 канал",
           "price": "8 000 ₽",
           "page": "lechenie-kanalov-endodontiya-pulpit-odnokanalnyy-zub"
-        },
-        {
-          "title": "Прицельный снимок",
-          "price": "400 ₽",
-          "page": ""
         }
       ],
       "doctors": [
