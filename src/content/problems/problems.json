@@ -157,11 +157,6 @@
       "icon": "smile",
       "items": [
         {
-          "title": "Цифровой проект улыбки",
-          "price": "Входит в работу",
-          "page": ""
-        },
-        {
           "title": "Отбеливание зубов Belle",
           "price": "9 000 ₽",
           "page": "otbelivanie-otbelivanie-zubov-belle"
@@ -170,6 +165,11 @@
           "title": "Винир",
           "price": "25 000 ₽",
           "page": "vinir-emax"
+        },
+        {
+          "title": "Циркониевая коронка",
+          "price": "19 900",
+          "page": "cirkonievaya-koronka"
         }
       ],
       "doctors": [
