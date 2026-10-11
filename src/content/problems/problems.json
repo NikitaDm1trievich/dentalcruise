@@ -63,13 +63,13 @@
     {
       "title": "Скололся или разрушен зуб",
       "short": "Скол зуба",
-      "description": "Восстановим пломбой со штифтом, вкладкой или коронкой. Что подойдёт, зависит от того, сколько зуба осталось.",
+      "description": "Восстановим пломбой, вкладкой или коронкой. Что подойдёт, определим на приёме.",
       "icon": "puzzle",
       "items": [
         {
-          "title": "Восстановление стекловолоконным штифтом",
+          "title": "Поставить пломбу",
           "price": "8 000 ₽",
-          "page": "vosstanovlenie-zuba-steklovolokonnym-shtiftom"
+          "page": "lechenie-kariesa-i-vosstanovlenie-zuba-lechenie-glubokogo-kariesa"
         },
         {
           "title": "Культевая вкладка CoCr",
