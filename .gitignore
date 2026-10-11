@@ -35,7 +35,5 @@ dist/
 npm-debug.log*
 .DS_Store
 
-# ── Cloudflare Worker ───────────────────────────────────────
-worker/node_modules/
-worker/.wrangler/
-.dev.vars
+# ── Обработчик формы записи (Yandex Cloud Functions) ────────
+booking/node_modules/

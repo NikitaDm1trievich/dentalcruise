@@ -1,3 +1,0 @@
-# Локальные секреты для `wrangler dev --env dev`. Файл .dev.vars в git не попадает.
-TELEGRAM_BOT_TOKEN="123456789:AA..."
-TELEGRAM_CHAT_ID="-1001234567890"

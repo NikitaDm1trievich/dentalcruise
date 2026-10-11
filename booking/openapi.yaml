@@ -1,0 +1,34 @@
+# Спецификация API Gateway для формы записи (вставляется в консоли Yandex Cloud
+# при создании шлюза). Подставьте два значения из README, шаг 6:
+#   <ID_функции>              — id функции dentalcruise-booking (в трёх местах)
+#   <ID_сервисного_аккаунта>  — id сервисного аккаунта dentalcruise-booking
+#
+# Шлюз вызывает приватную функцию от имени сервисного аккаунта (роль
+# functions.functionInvoker), поэтому напрямую из интернета функция недоступна.
+# Пути, которых здесь нет, шлюз отбивает сам — функция их не видит.
+openapi: 3.0.0
+info:
+  title: dentalcruise-booking
+  version: 1.0.0
+
+x-yc-apigateway:
+  service_account_id: <ID_сервисного_аккаунта>
+
+paths:
+  /booking:
+    # Заявка с формы
+    post:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: <ID_функции>
+    # Preflight-запрос браузера перед POST: заголовки CORS отдаёт сама функция
+    options:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: <ID_функции>
+  /health:
+    # Проверка, что всё поднялось: отвечает {"ok":true}, письма не шлёт
+    get:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: <ID_функции>

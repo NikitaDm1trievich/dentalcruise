@@ -57,6 +57,12 @@ jobs:
       - name: Проверка типов и шаблонов
         run: npm run check
 
+      # Обработчик формы деплоится в Yandex Cloud отдельно, но его тесты
+      # гоняем здесь: иначе обновления зависимостей от Dependabot прошли бы непроверенными.
+      - name: Тесты обработчика формы
+        working-directory: booking
+        run: npm ci && npm test && npm run check
+
       - name: Сборка Astro
         # SITE и BASE приходят из env наверху файла
         env:

@@ -1,0 +1,17 @@
+{
+  // Код — обычный JavaScript: его можно вставить в редактор консоли Yandex Cloud
+  // без сборки. Типы описаны в JSDoc, tsc только проверяет их (`npm run check`).
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["*.js"]
+}
