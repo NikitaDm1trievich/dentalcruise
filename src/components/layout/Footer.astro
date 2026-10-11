@@ -10,6 +10,7 @@ import { clinic, menu } from '../../data/site';
 import { blocks } from '../../data/ui';
 import { pageHref, withBase } from '../../lib/asset';
 import { cmsSite } from '../../lib/cms-ref';
+import { metrikaId } from '../../lib/seo';
 
 const year = new Date().getFullYear();
 const { footer } = menu;
@@ -76,6 +77,23 @@ const socials = [
               <a href={pageHref(l.href)} data-cms={cmsSite('menu', `footer.info.${i}`)}>{l.label}</a>
             </li>
           ))
+        }
+        {/* Кнопка, а не ссылка: никуда не ведёт, открывает уведомление о
+            cookie (components/layout/CookieBanner). Без счётчика Метрики
+            уведомления нет — нет и кнопки. */}
+        {
+          metrikaId && footer.cookieSettings && (
+            <li>
+              <button
+                type="button"
+                class="dc-footer__cookie"
+                data-cookie-settings
+                data-cms={cmsSite('menu', 'footer.cookieSettings')}
+              >
+                {footer.cookieSettings}
+              </button>
+            </li>
+          )
         }
       </ul>
     </nav>
@@ -217,6 +235,20 @@ const socials = [
     font-size: var(--type-body);
   }
   .dc-footer__col a:hover {
+    color: var(--dc-turquoise);
+    text-decoration: underline;
+  }
+  .dc-footer__cookie {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: var(--type-body);
+    text-align: left;
+    color: var(--text-on-dark);
+    cursor: pointer;
+  }
+  .dc-footer__cookie:hover {
     color: var(--dc-turquoise);
     text-decoration: underline;
   }

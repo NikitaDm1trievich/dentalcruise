@@ -1,42 +1,8 @@
 ---
-import StubLayout from '../layouts/StubLayout.astro';
-import { clinic } from '../data/site';
-import { privacyPage as page } from '../data/pages';
-import { cmsPage, cmsSite } from '../lib/cms-ref';
+import DocumentLayout from '../layouts/DocumentLayout.astro';
+import { privacyPage } from '../data/pages';
 ---
 
-{/* Тексты — в редакторе, «Страницы сайта» → «Политика конфиденциальности».
-    Название, адрес, телефон и почту клиники страница берёт из контактов. */}
-<StubLayout
-  title={page.seo.title}
-  description={page.seo.description}
-  path="/privacy"
-  eyebrow={page.eyebrow}
-  heading={page.heading}
-  lead={page.lead}
-  cms={cmsPage('privacy')}
->
-  <div class="dc-doc">
-    <p>
-      {page.operator} «{clinic.name}»,
-      {clinic.address.locality}, {clinic.address.street}.
-    </p>
-    {page.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
-    <p>
-      {page.contact}
-      <a href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>{clinic.phone}</a> {page.contactOr}
-      <a href={`mailto:${clinic.email}`} data-cms={cmsSite('clinic', 'email')}>{clinic.email}</a>.
-    </p>
-  </div>
-</StubLayout>
-
-<style>
-  .dc-doc {
-    display: grid;
-    gap: var(--space-4);
-    max-width: min(var(--measure), 100%);
-    color: var(--text-body);
-    font-size: var(--type-body);
-    line-height: var(--lh-body);
-  }
-</style>
+{/* Текст — в редакторе, «Страницы сайта» → «Политика конфиденциальности».
+    Реквизиты, адреса, телефон и почту документ берёт из контактов клиники. */}
+<DocumentLayout page={privacyPage} path="/privacy" file="privacy" />

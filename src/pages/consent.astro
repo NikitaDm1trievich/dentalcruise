@@ -1,0 +1,8 @@
+---
+import DocumentLayout from '../layouts/DocumentLayout.astro';
+import { consentPage } from '../data/pages';
+---
+
+{/* Текст — в редакторе, «Страницы сайта» → «Согласие на обработку
+    персональных данных». На эту страницу ведёт чекбокс формы записи. */}
+<DocumentLayout page={consentPage} path="/consent" file="consent" />

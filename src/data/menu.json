@@ -67,8 +67,21 @@
       {
         "label": "Политика конфиденциальности",
         "href": "/privacy"
+      },
+      {
+        "label": "Документы",
+        "href": "/documents"
+      },
+      {
+        "label": "Согласие на обработку ПДн",
+        "href": "/consent"
+      },
+      {
+        "label": "Политика cookie",
+        "href": "/cookies"
       }
     ],
+    "cookieSettings": "Настройки cookie",
     "contactsTitle": "Контакты"
   },
   "sticky": {

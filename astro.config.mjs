@@ -115,13 +115,16 @@ export default defineConfig({
       /**
        * Приоритет и частота обновления — подсказка обходчику, куда
        * заглядывать чаще. Прайс и врачи меняются в редакторе постоянно,
-       * политика конфиденциальности — никогда.
+       * юридические документы — раз в год, не чаще.
        */
       serialize: (item) => {
         // Хвостовой слеш у Astro необязателен, поэтому сравниваем по срезу,
         // а не по точному совпадению строки.
         const path = new URL(item.url).pathname.replace(/\/$/, '');
-        if (path.endsWith('/privacy')) return { ...item, changefreq: 'yearly', priority: 0.2 };
+        // Юридические документы: политика, согласие, cookie — и «Документы»
+        // с реквизитами и лицензией (чуть выше: по ним ищут клинику)
+        if (/\/(privacy|consent|cookies)$/.test(path)) return { ...item, changefreq: 'yearly', priority: 0.2 };
+        if (path.endsWith('/documents')) return { ...item, changefreq: 'yearly', priority: 0.3 };
         if (path.endsWith('/pricelist') || path.endsWith('/doctors'))
           return { ...item, changefreq: 'weekly', priority: 0.9 };
         if (path.includes('/uslugi/') || path.includes('/doctors/'))

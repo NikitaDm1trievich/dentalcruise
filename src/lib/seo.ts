@@ -8,6 +8,7 @@
  * пришлось искать по шаблонам, где какой префикс забыли.
  */
 import { withBase } from './asset';
+import seoSettings from '../data/seo.json';
 
 /** Домен сборки. Подставляется из astro.config (env SITE). */
 export const FALLBACK_SITE = 'https://dentalcruise.ru';
@@ -33,6 +34,23 @@ export function isIndexable(site: URL | undefined): boolean {
   const host = (site ?? new URL(FALLBACK_SITE)).hostname.toLowerCase();
   return INDEXABLE_HOSTS.includes(host);
 }
+
+/**
+ * Номер счётчика Яндекс Метрики из редактора — только цифры. Значение
+ * уходит в браузер, поэтому всё, что не похоже на номер (например,
+ * вставленный целиком код счётчика), считаем пустым. Пусто — Метрики на
+ * сайте нет вовсе: ни счётчика, ни уведомления о cookie, ни кнопки
+ * «Настройки cookie» (см. components/layout/CookieBanner).
+ *
+ * На закрытой от индекса сборке (staging на github.io) счётчика тоже нет:
+ * визиты тестового адреса смешались бы с боевой статистикой, а политика
+ * cookie описывает только dentalcruise.ru.
+ */
+const rawMetrikaId = (seoSettings.metrikaId ?? '').trim();
+export const metrikaId: string =
+  /^\d{5,12}$/.test(rawMetrikaId) && isIndexable(import.meta.env.SITE ? new URL(import.meta.env.SITE) : undefined)
+    ? rawMetrikaId
+    : '';
 
 /**
  * Абсолютный адрес страницы или файла: базовый путь сборки плюс домен.

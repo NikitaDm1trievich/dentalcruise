@@ -41,8 +41,15 @@ const warned = new Set<string>();
  * нет среди значений (опечатка), оставляем как есть: её видно на странице,
  * а сборка пишет предупреждение. Про метку, которую из текста удалили,
  * сборка тоже предупреждает: значение молча пропало бы со страницы.
+ *
+ * `partial` — метки необязательны: у юридических документов один набор
+ * значений (реквизиты, адрес) на все разделы, и раздел без адреса — не ошибка.
  */
-export function fillParts(template: string, values: Record<string, string>): FilledPart[] {
+export function fillParts(
+  template: string,
+  values: Record<string, string>,
+  { partial = false }: { partial?: boolean } = {},
+): FilledPart[] {
   const parts: FilledPart[] = [];
   const used = new Set<string>();
   let at = 0;
@@ -60,7 +67,7 @@ export function fillParts(template: string, values: Record<string, string>): Fil
     at = index + match[0].length;
   }
   if (at < template.length) parts.push({ text: template.slice(at) });
-  for (const key of Object.keys(values)) {
+  for (const key of partial ? [] : Object.keys(values)) {
     if (!used.has(key)) warn(`в тексте «${template}» нет метки {${key}} — значение на страницу не попадёт`);
   }
   if (/[{}]/.test(template.replace(/\{[^{}]*\}/g, ''))) {
@@ -70,8 +77,12 @@ export function fillParts(template: string, values: Record<string, string>): Fil
 }
 
 /** То же одной строкой: `fill('Что спрашивают про «{услуга}»', { услуга: 'виниры' })`. */
-export function fill(template: string, values: Record<string, string>): string {
-  return fillParts(template, values)
+export function fill(
+  template: string,
+  values: Record<string, string>,
+  options?: { partial?: boolean },
+): string {
+  return fillParts(template, values, options)
     .map((part) => part.text)
     .join('');
 }

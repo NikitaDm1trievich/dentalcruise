@@ -1,0 +1,124 @@
+---
+/**
+ * Страница юридического документа: политика конфиденциальности, согласие
+ * на обработку персональных данных, политика cookie.
+ *
+ * Документ в редакторе — дата редакции и список разделов «заголовок +
+ * текст»: длинный текст с нумерованными разделами так правится по частям,
+ * а не одним полем на десять экранов. Текст раздела — Markdown (абзацы,
+ * списки, подзаголовки, ссылки), разметку собирает lib/doc-text.
+ * Реквизиты, адреса, телефон и почта в тексте — метками {ИНН}, {почта}…:
+ * значения сайт берёт из контактов клиники, вписывать их руками не нужно.
+ */
+import PageLayout from './PageLayout.astro';
+import Reveal from '../components/core/Reveal.astro';
+import { docValues } from '../data/site';
+import { documentsPage, type LegalDocPage } from '../data/pages';
+import { pageHref } from '../lib/asset';
+import { cmsPage } from '../lib/cms-ref';
+import { renderDocText } from '../lib/doc-text';
+import { clampText } from '../lib/seo';
+import { fill } from '../lib/format';
+
+interface Props {
+  page: LegalDocPage;
+  /** Адрес страницы: /privacy, /consent, /cookies */
+  path: string;
+  /** Запись в «Страницах сайта» редактора */
+  file: 'privacy' | 'consent' | 'cookies';
+}
+
+const { page, path, file } = Astro.props;
+const render = (body: string | null | undefined) =>
+  renderDocText(body, { values: docValues, internalHref: (href) => pageHref(href) });
+const sections = page.sections.filter((section) => section.title || section.body);
+---
+
+<PageLayout
+  title={page.seo.title}
+  description={clampText(page.seo.description)}
+  path={path}
+  eyebrow={page.eyebrow}
+  heading={page.heading}
+  lead={page.lead ? fill(page.lead, docValues, { partial: true }) : undefined}
+  breadcrumbs={[
+    { label: documentsPage.breadcrumb, href: pageHref('documents'), cms: cmsPage('documents', 'breadcrumb') },
+    { label: page.breadcrumb, cms: cmsPage(file, 'breadcrumb') },
+  ]}
+  cms={cmsPage(file)}
+>
+  <p slot="head-extra" class="dc-legal__edition" data-cms={cmsPage(file, 'edition')}>
+    {fill(page.editionLabel, { дата: page.edition })}
+  </p>
+
+  <section class="dc-section dc-legal-wrap">
+    <Reveal>
+      <article class="dc-legal">
+        {
+          sections.map((section) => (
+            <section class="dc-legal__part" data-cms={cmsPage(file, `sections.${page.sections.indexOf(section)}`)}>
+              {section.title && <h2>{section.title}</h2>}
+              <div class="dc-legal__text" set:html={render(section.body)} />
+            </section>
+          ))
+        }
+      </article>
+    </Reveal>
+  </section>
+</PageLayout>
+
+<style>
+  .dc-legal__edition {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-legal-wrap {
+    background: var(--dc-white);
+  }
+  .dc-legal {
+    max-width: var(--container);
+    margin-inline: auto;
+    display: grid;
+    gap: var(--space-10);
+  }
+  .dc-legal__part {
+    display: grid;
+    gap: var(--space-4);
+    max-width: min(var(--measure), 100%);
+  }
+  .dc-legal__part h2 {
+    font-size: var(--type-h3);
+    letter-spacing: var(--ls-display);
+    margin: 0;
+  }
+  /* Разметку текста собирает lib/doc-text — стили к ней только через :global */
+  .dc-legal__text {
+    display: grid;
+    gap: var(--space-3);
+    color: var(--text-body);
+    line-height: var(--lh-body);
+    /* Длинные адреса (https://yandex.ru/support/…) на 320px — переносом, а не вбок */
+    overflow-wrap: anywhere;
+  }
+  .dc-legal__text :global(:is(p, ul, ol, h3, h4)) {
+    margin: 0;
+  }
+  .dc-legal__text :global(h3) {
+    margin-top: var(--space-3);
+    font-size: var(--type-h4);
+  }
+  .dc-legal__text :global(h4) {
+    font-size: var(--type-body);
+  }
+  .dc-legal__text :global(:is(ul, ol)) {
+    display: grid;
+    gap: var(--space-2);
+    padding-left: 1.4em;
+  }
+  .dc-legal__text :global(a) {
+    color: var(--text-accent);
+    font-weight: var(--fw-semibold);
+  }
+</style>

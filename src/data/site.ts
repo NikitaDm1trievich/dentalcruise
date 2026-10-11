@@ -109,7 +109,11 @@ type Clinic = {
     /** Полное название юрлица — для разметки поисковиков */
     fullName?: Optional;
     inn: Optional;
+    /** КПП — на странице «Документы» и в юридических документах */
+    kpp?: Optional;
     ogrn: Optional;
+    /** Адрес юрлица из ЕГРЮЛ (с помещением и комнатой) — для документов, не для навигации */
+    address?: Optional;
   };
 };
 
@@ -168,6 +172,24 @@ export const clinic = {
   licenseScans: licenseScans(data.license),
 };
 
+/**
+ * Метки `{…}` в текстах юридических документов (политика, согласие,
+ * cookie): реквизиты, адреса, телефон и почта пишутся в тексте меткой, а
+ * значение берётся отсюда — поменяли почту в контактах, она поменялась и
+ * в документах. Пустое поле даёт пустое место в тексте, а не выдумку.
+ */
+export const docValues: Record<string, string> = {
+  'полное название': data.legal.fullName ?? '',
+  название: data.legal.orgName ?? '',
+  ИНН: data.legal.inn ?? '',
+  КПП: data.legal.kpp ?? '',
+  ОГРН: data.legal.ogrn ?? '',
+  'юридический адрес': data.legal.address ?? '',
+  'адрес клиники': `г. ${data.address.locality}, ${data.address.street}`,
+  телефон: data.phone,
+  почта: data.email,
+};
+
 /** Меню шапки, бургер-меню и подвала. Ссылки на страницы — через pageHref. */
 export const menu: {
   services: { label: string; all: string };
@@ -180,6 +202,8 @@ export const menu: {
     pages: Link[];
     infoTitle: string;
     info: Link[];
+    /** Кнопка в конце второй колонки: снова открывает уведомление о cookie */
+    cookieSettings: string;
     contactsTitle: string;
   };
   sticky: { call: string; book: string; max: string };

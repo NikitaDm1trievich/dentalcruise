@@ -1,0 +1,323 @@
+---
+/**
+ * «Документы»: сведения об организации, лицензия, документы об обработке
+ * персональных данных. Реквизиты и лицензия — из контактов клиники (один
+ * источник с подвалом, окном лицензии и микроразметкой), подписи и свои
+ * разделы — в редакторе, «Страницы сайта» → «Документы».
+ */
+import PageLayout from '../layouts/PageLayout.astro';
+import Reveal from '../components/core/Reveal.astro';
+import Button from '../components/core/Button.astro';
+import Icon from '../components/core/Icon.astro';
+import { clinic, docValues } from '../data/site';
+import { blocks } from '../data/ui';
+import { documentsPage as page } from '../data/pages';
+import { pageHref, withBase } from '../lib/asset';
+import { cmsPage, cmsSite } from '../lib/cms-ref';
+import { renderDocText } from '../lib/doc-text';
+import { fill } from '../lib/format';
+import { clampText, metrikaId, siteRoot } from '../lib/seo';
+
+const { legal, license } = clinic;
+const { labels } = page.org;
+const site = siteRoot(Astro.site).replace(/\/$/, '');
+
+/* Строки реквизитов: пустое поле не выводится — выдуманных значений нет */
+const rows = [
+  { label: labels.fullName, value: legal.fullName, cms: 'legal.fullName' },
+  { label: labels.orgName, value: legal.orgName, cms: 'legal.orgName' },
+  { label: labels.inn, value: legal.inn, cms: 'legal.inn' },
+  { label: labels.kpp, value: legal.kpp, cms: 'legal.kpp' },
+  { label: labels.ogrn, value: legal.ogrn, cms: 'legal.ogrn' },
+  { label: labels.legalAddress, value: legal.address, cms: 'legal.address' },
+  { label: labels.address, value: docValues['адрес клиники'], cms: 'address' },
+  { label: labels.schedule, value: clinic.scheduleLong, cms: 'scheduleLong' },
+].filter((row): row is { label: string; value: string; cms: string } => !!row.value);
+
+const licenseText = fill(
+  page.license.text,
+  {
+    номер: license.number ?? '',
+    'прежний номер': license.formerNumber ?? '',
+    дата: license.date ?? '',
+    орган: license.issuer ?? '',
+  },
+  { partial: true },
+);
+
+const docHtml = (body: string | null | undefined) =>
+  renderDocText(body, { values: docValues, internalHref: (href) => pageHref(href) });
+const paidHtml = docHtml(page.paid.body);
+
+const sections = page.sections
+  .map((section, index) => ({
+    ...section,
+    index,
+    html: docHtml(section.body),
+  }))
+  // Раздел без текста не выводится: заголовок без содержимого — пустое обещание
+  .filter((section) => section.title && section.html);
+
+const docs = [
+  { label: page.privacy.policy, href: pageHref('privacy'), cms: 'privacy.policy' },
+  { label: page.privacy.consent, href: pageHref('consent'), cms: 'privacy.consent' },
+  { label: page.privacy.cookies, href: pageHref('cookies'), cms: 'privacy.cookies' },
+];
+---
+
+<PageLayout
+  title={page.seo.title}
+  description={clampText(page.seo.description)}
+  path="/documents"
+  heading={page.heading}
+  lead={fill(page.lead, docValues, { partial: true })}
+  breadcrumbs={[{ label: page.breadcrumb, cms: cmsPage('documents', 'breadcrumb') }]}
+  cms={cmsPage('documents')}
+>
+  <section class="dc-section dc-docs">
+    <div class="dc-docs__grid">
+      <Reveal>
+        <section class="dc-docs__part" data-cms={cmsSite('clinic', 'legal')}>
+          <h2 data-cms={cmsPage('documents', 'org.title')}>{page.org.title}</h2>
+          <dl class="dc-docs__facts">
+            {
+              rows.map((row) => (
+                <div data-cms={cmsSite('clinic', row.cms)}>
+                  <dt>{row.label}</dt>
+                  <dd>{row.value}</dd>
+                </div>
+              ))
+            }
+            <div data-cms={cmsSite('clinic', 'phone')}>
+              <dt>{labels.phone}</dt>
+              <dd><a href={clinic.phoneHref}>{clinic.phone}</a></dd>
+            </div>
+            <div data-cms={cmsSite('clinic', 'email')}>
+              <dt>{labels.email}</dt>
+              <dd><a href={`mailto:${clinic.email}`}>{clinic.email}</a></dd>
+            </div>
+            <div>
+              <dt>{labels.site}</dt>
+              <dd><a href={pageHref('')}>{site}</a></dd>
+            </div>
+          </dl>
+        </section>
+      </Reveal>
+
+      <Reveal>
+        <section class="dc-docs__part" data-cms={cmsPage('documents', 'license')}>
+          <h2>{page.license.title}</h2>
+          <p data-cms={cmsSite('clinic', 'license')}>{licenseText}</p>
+          <div class="dc-docs__actions">
+            <Button variant="secondary" data-open="dc-license" data-cms={cmsPage('documents', 'license.scans')}>
+              <Icon slot="icon" name="shield-check" size={20} />
+              {page.license.scans}
+            </Button>
+            {
+              license.pdf && (
+                <Button
+                  variant="ghost"
+                  href={encodeURI(withBase(license.pdf))}
+                  target="_blank"
+                  rel="noopener"
+                  data-cms={cmsSite('blocks', 'license.open')}
+                >
+                  <Icon slot="icon" name="file-text" size={20} />
+                  {blocks.license.open}
+                </Button>
+              )
+            }
+          </div>
+          {
+            license.registryUrl && (
+              <a
+                class="dc-docs__registry"
+                href={license.registryUrl}
+                target="_blank"
+                rel="noopener"
+                data-cms={cmsSite('blocks', 'license.registry')}
+              >
+                {blocks.license.registry}
+              </a>
+            )
+          }
+        </section>
+      </Reveal>
+
+      {
+        (paidHtml || page.paid.contract) && (
+          <Reveal>
+            <section class="dc-docs__part" data-cms={cmsPage('documents', 'paid')}>
+              <h2>{page.paid.title}</h2>
+              {paidHtml && <div class="dc-docs__text" set:html={paidHtml} />}
+              {/* Образец договора — пока PDF не загружен, пункта нет */}
+              {page.paid.contract && (
+                <ul class="dc-docs__links" role="list">
+                  <li>
+                    <Icon name="file-text" size={20} color="var(--text-accent)" />
+                    <a
+                      href={encodeURI(withBase(page.paid.contract))}
+                      target="_blank"
+                      rel="noopener"
+                      data-cms={cmsPage('documents', 'paid.contract')}
+                    >
+                      {page.paid.contractLabel}
+                    </a>
+                  </li>
+                </ul>
+              )}
+            </section>
+          </Reveal>
+        )
+      }
+
+      {
+        sections.map((section) => (
+          <Reveal>
+            <section class="dc-docs__part" data-cms={cmsPage('documents', `sections.${section.index}`)}>
+              <h2>{section.title}</h2>
+              <div class="dc-docs__text" set:html={section.html} />
+            </section>
+          </Reveal>
+        ))
+      }
+
+      <Reveal>
+        <section class="dc-docs__part" data-cms={cmsPage('documents', 'privacy')}>
+          <h2>{page.privacy.title}</h2>
+          <ul class="dc-docs__links" role="list">
+            {
+              docs.map((doc) => (
+                <li>
+                  <Icon name="file-text" size={20} color="var(--text-accent)" />
+                  <a href={doc.href} data-cms={cmsPage('documents', doc.cms)}>{doc.label}</a>
+                </li>
+              ))
+            }
+            {/* Кнопки нет, пока Метрика не подключена: соглашаться не на что */}
+            {
+              metrikaId && (
+                <li>
+                  <Icon name="cookie" size={20} color="var(--text-accent)" />
+                  <button
+                    type="button"
+                    class="dc-docs__settings"
+                    data-cookie-settings
+                    data-cms={cmsPage('documents', 'privacy.settings')}
+                  >
+                    {page.privacy.settings}
+                  </button>
+                </li>
+              )
+            }
+          </ul>
+        </section>
+      </Reveal>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .dc-docs {
+    background: var(--dc-white);
+  }
+  .dc-docs__grid {
+    max-width: var(--container);
+    margin-inline: auto;
+    display: grid;
+    gap: var(--space-12);
+  }
+  .dc-docs__part {
+    display: grid;
+    gap: var(--space-4);
+    justify-items: start;
+    max-width: min(var(--measure), 100%);
+    color: var(--text-body);
+  }
+  .dc-docs__part h2 {
+    font-size: var(--type-h3);
+    letter-spacing: var(--ls-display);
+    margin: 0;
+  }
+
+  .dc-docs__facts {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    width: 100%;
+  }
+  .dc-docs__facts > div {
+    display: grid;
+    grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+    gap: var(--space-1) var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--line-hairline);
+  }
+  .dc-docs__facts dt {
+    color: var(--text-muted);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-docs__facts dd {
+    margin: 0;
+    color: var(--text-strong);
+    overflow-wrap: anywhere;
+  }
+  /* На телефоне подпись над значением: в две колонки адрес шёл бы в 12 строк */
+  @media (max-width: 560px) {
+    .dc-docs__facts > div {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .dc-docs__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .dc-docs__registry,
+  .dc-docs__part a {
+    color: var(--text-accent);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-docs__text {
+    display: grid;
+    gap: var(--space-3);
+    overflow-wrap: anywhere;
+  }
+  .dc-docs__text :global(:is(p, ul, ol, h3, h4)) {
+    margin: 0;
+  }
+  .dc-docs__text :global(a) {
+    color: var(--text-accent);
+    font-weight: var(--fw-semibold);
+  }
+
+  .dc-docs__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .dc-docs__links li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+  .dc-docs__links li > :global(.dc-icon) {
+    flex: none;
+    margin-top: 3px;
+  }
+  .dc-docs__settings {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: var(--fw-semibold);
+    color: var(--text-accent);
+    text-decoration: underline;
+    text-align: left;
+    cursor: pointer;
+  }
+</style>

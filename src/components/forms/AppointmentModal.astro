@@ -138,9 +138,13 @@ import { cmsSite } from '../../lib/cms-ref';
 <script>
   /**
    * Кнопка записи с `data-book-topic` (подбор по проблеме на главной)
-   * открывает форму с выбранной жалобой: строкой под заголовком и текстом в
-   * поле комментария. Обычная кнопка «Записаться» убирает строку и стирает
-   * комментарий, только если его вписал сайт, а не человек.
+   * открывает форму с выбранной жалобой строкой под заголовком — её видит
+   * только посетитель. В поле комментария, которое уходит в заявку, сайт
+   * вписывает не жалобу, а направление (`data-book-service`, раздел прайса):
+   * «Направление: Лечение каналов». «Болит зуб» в заявке — сведения о
+   * здоровье, которые сайт сам собирать не должен (политика, раздел 4.1).
+   * Обычная кнопка «Записаться» убирает строку и стирает комментарий,
+   * только если его вписал сайт, а не человек.
    */
   const modal = document.getElementById('dc-book');
   const picked = modal?.querySelector<HTMLElement>('[data-book-picked]');
@@ -154,11 +158,12 @@ import { cmsSite } from '../../lib/cms-ref';
       const opener = (event.target as HTMLElement).closest<HTMLElement>('[data-open="dc-book"]');
       if (!opener || !modal || !picked || !pickedText || !comment) return;
       const topic = opener.dataset.bookTopic?.trim() ?? '';
+      const service = opener.dataset.bookService?.trim() ?? '';
       picked.hidden = !topic;
       pickedText.textContent = topic;
-      if (topic) {
+      if (service) {
         if (!comment.value || comment.value === autoComment) {
-          autoComment = `${modal.dataset.pickedComment ?? ''} ${topic}`.trim();
+          autoComment = `${modal.dataset.pickedComment ?? ''} ${service}`.trim();
           comment.value = autoComment;
         }
       } else if (comment.value === autoComment) {

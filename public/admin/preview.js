@@ -70,6 +70,9 @@
     prices: 'pricelist/',
     gallery: 'gallery/',
     privacy: 'privacy/',
+    consent: 'consent/',
+    cookies: 'cookies/',
+    documents: 'documents/',
     // Такой страницы нет: сайт отвечает своей страницей 404 — её и показываем.
     'not-found': '404/',
   };
@@ -864,6 +867,9 @@
     'service-page',
     'gallery',
     'privacy',
+    'consent',
+    'cookies',
+    'documents',
     'not-found',
     // «Шапка, подвал и контакты»
     'clinic',

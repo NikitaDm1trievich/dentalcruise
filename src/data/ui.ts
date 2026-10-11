@@ -22,6 +22,18 @@ export const blocks: {
     close: string;
   };
   stub: { book: string; home: string };
+  /** Уведомление о cookie: `{ссылка}` в тексте — ссылка на политику cookie с подписью link */
+  cookie: {
+    label: string;
+    text: string;
+    link: string;
+    accept: string;
+    decline: string;
+    stateOn: string;
+    stateOff: string;
+  };
+  /** Заглушки виджетов Яндекс Карт до нажатия кнопки */
+  embed: { mapText: string; mapButton: string; reviewsText: string; reviewsButton: string };
 } = blocksRaw;
 
 export type FormCopy = {
@@ -29,7 +41,11 @@ export type FormCopy = {
   lead: string;
   /** Строка под заголовком, когда запись открыта из подбора по проблеме: «Вы выбрали: Болит зуб» */
   picked: string;
-  /** Начало текста, который подставляется в поле комментария: «Беспокоит: Болит зуб» */
+  /**
+   * Начало текста, который подставляется в поле комментария, — направление
+   * (раздел прайса), а не жалоба: «Направление: Лечение каналов». Жалоба
+   * в заявку не уходит: это сведения о здоровье.
+   */
   pickedComment: string;
   fields: {
     name: string;
@@ -37,11 +53,18 @@ export type FormCopy = {
     phonePlaceholder: string;
     phoneHint: string;
     comment: string;
+    commentPlaceholder: string;
+    /** Пояснение под комментарием: не описывать симптомы */
+    commentHint: string;
+    /** `{согласие}` и `{политикой}` — ссылки на /consent/ и /privacy/ с подписями ниже */
     consent: string;
     consentLink: string;
+    privacyLink: string;
   };
   submit: string;
   sending: string;
+  /** Строка под кнопкой отправки; пусто — строки нет */
+  privacyNote: string;
   fallback: string;
   done: { title: string; text: string; call: string; max: string };
   errors: {

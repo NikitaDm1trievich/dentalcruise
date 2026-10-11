@@ -1438,25 +1438,280 @@ collections:
             label: Надпись над заголовком
             widget: string
             hint: >-
-              Где на сайте: страница «Политика конфиденциальности», на неё
-              ведёт ссылка из формы записи. Название, адрес, телефон и почту
-              клиники страница вписывает сама.
-          - { name: heading, label: Заголовок страницы, widget: string }
-          - { name: lead, label: Текст под заголовком, widget: text }
-          - name: operator
-            label: Начало первого абзаца
-            widget: text
-            hint: Дальше сайт дописывает название и адрес клиники.
-          - name: paragraphs
-            label: Абзацы
-            label_singular: абзац
+              Где на сайте: страница «Политика конфиденциальности» (/privacy/, ссылка из формы записи и подвала). Текст
+              юридический — правки согласуйте с юристом.
+          - { name: heading, label: Заголовок документа, widget: string }
+          - name: breadcrumb
+            label: Название в хлебных крошках
+            widget: string
+            hint: Строка «Главная › Документы › …» над заголовком.
+          - name: edition
+            label: Дата редакции
+            widget: string
+            pattern: ['^\d{2}\.\d{2}\.\d{4}$', 'Дата как 11.10.2026']
+            hint: Меняйте вместе с текстом документа — с какого дня действует новая редакция.
+          - name: editionLabel
+            label: Строка с датой редакции
+            widget: string
+            hint: Под заголовком. Метку {дата} сайт заменит датой редакции.
+          - { name: lead, label: Текст под заголовком, widget: text, required: false, hint: Необязательно. }
+          - name: sections
+            label: Разделы документа
+            label_singular: раздел
             widget: list
-            field: { name: paragraph, label: Абзац, widget: text }
-          - name: contact
-            label: Последний абзац до телефона
+            collapsed: true
+            summary: '{{fields.title}}'
+            hint: >-
+              Разделы по порядку, номер раздела — в заголовке. Реквизиты,
+              адреса, телефон и почту в текст не вписывайте — ставьте метки,
+              сайт подставит значения из «Шапка, подвал и контакты» →
+              «Контакты и реквизиты клиники»: {полное название}, {название},
+              {ИНН}, {КПП}, {ОГРН}, {юридический адрес}, {адрес клиники},
+              {телефон}, {почта}. Ссылка на страницу сайта — от корня,
+              например /consent/.
+            fields:
+              - { name: title, label: Заголовок раздела, widget: string }
+              - name: body
+                label: Текст раздела
+                widget: markdown
+                required: false
+                buttons: [bold, italic, link, heading-three, bulleted-list, numbered-list]
+                editor_components: []
+                hint: 'Абзацы, списки, подзаголовки (### 4.1. …) и ссылки. Картинок и таблиц нет.'
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: не на странице, а в выдаче Яндекса и Google и в
+              превью ссылки в мессенджерах. Заголовок — до ~60 знаков,
+              описание — до ~160: длиннее поисковик обрежет.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string }
+              - { name: description, label: Описание страницы в поиске, widget: text }
+
+      - name: consent
+        label: Согласие на обработку персональных данных
+        file: src/data/pages/consent.json
+        fields:
+          - name: eyebrow
+            label: Надпись над заголовком
+            widget: string
+            hint: >-
+              Где на сайте: страница «Согласие на обработку персональных данных» (/consent/, ссылка из чекбокса формы записи). Текст
+              юридический — правки согласуйте с юристом.
+          - { name: heading, label: Заголовок документа, widget: string }
+          - name: breadcrumb
+            label: Название в хлебных крошках
+            widget: string
+            hint: Строка «Главная › Документы › …» над заголовком.
+          - name: edition
+            label: Дата редакции
+            widget: string
+            pattern: ['^\d{2}\.\d{2}\.\d{4}$', 'Дата как 11.10.2026']
+            hint: Меняйте вместе с текстом документа — с какого дня действует новая редакция.
+          - name: editionLabel
+            label: Строка с датой редакции
+            widget: string
+            hint: Под заголовком. Метку {дата} сайт заменит датой редакции.
+          - { name: lead, label: Текст под заголовком, widget: text, required: false, hint: Необязательно. }
+          - name: sections
+            label: Разделы документа
+            label_singular: раздел
+            widget: list
+            collapsed: true
+            summary: '{{fields.title}}'
+            hint: >-
+              Разделы по порядку, номер раздела — в заголовке. Реквизиты,
+              адреса, телефон и почту в текст не вписывайте — ставьте метки,
+              сайт подставит значения из «Шапка, подвал и контакты» →
+              «Контакты и реквизиты клиники»: {полное название}, {название},
+              {ИНН}, {КПП}, {ОГРН}, {юридический адрес}, {адрес клиники},
+              {телефон}, {почта}. Ссылка на страницу сайта — от корня,
+              например /consent/.
+            fields:
+              - { name: title, label: Заголовок раздела, widget: string }
+              - name: body
+                label: Текст раздела
+                widget: markdown
+                required: false
+                buttons: [bold, italic, link, heading-three, bulleted-list, numbered-list]
+                editor_components: []
+                hint: 'Абзацы, списки, подзаголовки (### 4.1. …) и ссылки. Картинок и таблиц нет.'
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: не на странице, а в выдаче Яндекса и Google и в
+              превью ссылки в мессенджерах. Заголовок — до ~60 знаков,
+              описание — до ~160: длиннее поисковик обрежет.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string }
+              - { name: description, label: Описание страницы в поиске, widget: text }
+
+      - name: cookies
+        label: Политика cookie
+        file: src/data/pages/cookies.json
+        fields:
+          - name: eyebrow
+            label: Надпись над заголовком
+            widget: string
+            hint: >-
+              Где на сайте: страница «Политика cookie» (/cookies/, ссылка из уведомления о cookie). Текст
+              юридический — правки согласуйте с юристом.
+          - { name: heading, label: Заголовок документа, widget: string }
+          - name: breadcrumb
+            label: Название в хлебных крошках
+            widget: string
+            hint: Строка «Главная › Документы › …» над заголовком.
+          - name: edition
+            label: Дата редакции
+            widget: string
+            pattern: ['^\d{2}\.\d{2}\.\d{4}$', 'Дата как 11.10.2026']
+            hint: Меняйте вместе с текстом документа — с какого дня действует новая редакция.
+          - name: editionLabel
+            label: Строка с датой редакции
+            widget: string
+            hint: Под заголовком. Метку {дата} сайт заменит датой редакции.
+          - { name: lead, label: Текст под заголовком, widget: text, required: false, hint: Необязательно. }
+          - name: sections
+            label: Разделы документа
+            label_singular: раздел
+            widget: list
+            collapsed: true
+            summary: '{{fields.title}}'
+            hint: >-
+              Разделы по порядку, номер раздела — в заголовке. Реквизиты,
+              адреса, телефон и почту в текст не вписывайте — ставьте метки,
+              сайт подставит значения из «Шапка, подвал и контакты» →
+              «Контакты и реквизиты клиники»: {полное название}, {название},
+              {ИНН}, {КПП}, {ОГРН}, {юридический адрес}, {адрес клиники},
+              {телефон}, {почта}. Ссылка на страницу сайта — от корня,
+              например /consent/.
+            fields:
+              - { name: title, label: Заголовок раздела, widget: string }
+              - name: body
+                label: Текст раздела
+                widget: markdown
+                required: false
+                buttons: [bold, italic, link, heading-three, bulleted-list, numbered-list]
+                editor_components: []
+                hint: 'Абзацы, списки, подзаголовки (### 4.1. …) и ссылки. Картинок и таблиц нет.'
+          - name: seo
+            label: Для поисковиков
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: не на странице, а в выдаче Яндекса и Google и в
+              превью ссылки в мессенджерах. Заголовок — до ~60 знаков,
+              описание — до ~160: длиннее поисковик обрежет.
+            fields:
+              - { name: title, label: Заголовок страницы в поиске, widget: string }
+              - { name: description, label: Описание страницы в поиске, widget: text }
+
+      - name: documents
+        label: Документы
+        file: src/data/pages/documents.json
+        fields:
+          - name: heading
+            label: Заголовок страницы
+            widget: string
+            hint: >-
+              Где на сайте: страница /documents/, ссылка «Документы» в подвале.
+              Реквизиты, адреса, телефон и лицензия на ней — из «Шапка, подвал
+              и контакты» → «Контакты и реквизиты клиники».
+          - name: lead
+            label: Текст под заголовком
             widget: text
-            hint: Дальше идёт телефон клиники.
-          - { name: contactOr, label: Слова между телефоном и почтой, widget: string }
+            hint: Метку {почта} сайт заменит почтой клиники.
+          - name: breadcrumb
+            label: Название в хлебных крошках
+            widget: string
+            hint: Оно же — первая крошка на страницах политики, согласия и cookie.
+          - name: org
+            label: Сведения об организации
+            widget: object
+            collapsed: true
+            hint: Значения строк — из контактов и реквизитов клиники; пустое поле не выводится.
+            fields:
+              - { name: title, label: Заголовок блока, widget: string }
+              - name: labels
+                label: Подписи строк
+                widget: object
+                fields:
+                  - { name: fullName, label: Полное наименование, widget: string }
+                  - { name: orgName, label: Сокращённое наименование, widget: string }
+                  - { name: inn, label: ИНН, widget: string }
+                  - { name: kpp, label: КПП, widget: string }
+                  - { name: ogrn, label: ОГРН, widget: string }
+                  - { name: legalAddress, label: Юридический адрес, widget: string }
+                  - { name: address, label: Адрес клиники, widget: string }
+                  - { name: schedule, label: Режим работы, widget: string }
+                  - { name: phone, label: Телефон, widget: string }
+                  - { name: email, label: Электронная почта, widget: string }
+                  - { name: site, label: Сайт, widget: string }
+          - name: license
+            label: Лицензия
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Заголовок блока, widget: string }
+              - name: text
+                label: Текст о лицензии
+                widget: text
+                hint: >-
+                  Метки {номер}, {прежний номер}, {дата}, {орган} сайт заменит
+                  данными лицензии из контактов клиники.
+              - { name: scans, label: Кнопка окна со сканами, widget: string }
+          - name: paid
+            label: Платные медицинские услуги
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Заголовок блока, widget: string }
+              - name: body
+                label: Текст
+                widget: markdown
+                required: false
+                buttons: [bold, italic, link, bulleted-list]
+                editor_components: []
+              - { name: contractLabel, label: Подпись ссылки на образец договора, widget: string }
+              - name: contract
+                label: Образец договора (PDF)
+                widget: file
+                required: false
+                media_folder: /public/docs
+                public_folder: /docs
+                hint: Пока файл не загружен, ссылки на странице нет.
+          - name: sections
+            label: Другие разделы
+            label_singular: раздел
+            widget: list
+            collapsed: true
+            summary: '{{fields.title}}'
+            hint: Идут после платных услуг. Раздел без текста на странице не выводится.
+            fields:
+              - { name: title, label: Заголовок раздела, widget: string }
+              - name: body
+                label: Текст раздела
+                widget: markdown
+                required: false
+                buttons: [bold, italic, link, heading-three, bulleted-list, numbered-list]
+                editor_components: []
+          - name: privacy
+            label: Персональные данные и cookie
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Заголовок блока, widget: string }
+              - { name: policy, label: Ссылка на политику, widget: string }
+              - { name: consent, label: Ссылка на согласие, widget: string }
+              - { name: cookies, label: Ссылка на политику cookie, widget: string }
+              - name: settings
+                label: Кнопка «Настройки cookie»
+                widget: string
+                hint: Видна, когда в «Поиск и счётчики» заполнен номер счётчика Метрики.
           - name: seo
             label: Для поисковиков
             widget: object
@@ -2112,8 +2367,10 @@ collections:
             widget: object
             collapsed: true
             hint: >-
-              Мелкой строкой внизу подвала и в разметке для поисковиков. Из
-              выписки из реестра лицензий. Пустое поле не выводится.
+              Мелкой строкой внизу подвала, на странице «Документы», в текстах
+              политики, согласия и политики cookie (метки {название}, {ИНН} и
+              т. д.) и в разметке для поисковиков. Из выписки из реестра
+              лицензий и ЕГРЮЛ. Пустое поле не выводится.
             fields:
               - name: orgName
                 label: Короткое название юрлица
@@ -2130,11 +2387,26 @@ collections:
                 widget: string
                 required: false
                 pattern: ['^\d{10}(\d{2})?$', 'ИНН — 10 цифр у организации']
+              - name: kpp
+                label: КПП
+                widget: string
+                required: false
+                pattern: ['^\d{4}[\dA-Z]{2}\d{3}$', 'КПП — 9 знаков, как в выписке']
+                hint: На странице «Документы» и в тексте политики конфиденциальности.
               - name: ogrn
                 label: ОГРН
                 widget: string
                 required: false
                 pattern: ['^\d{13}(\d{2})?$', 'ОГРН — 13 цифр у организации']
+              - name: address
+                label: Юридический адрес
+                widget: string
+                required: false
+                hint: >-
+                  Как в выписке из ЕГРЮЛ, с индексом, помещением и комнатой.
+                  На странице «Документы», в политике, согласии и политике
+                  cookie (метка {юридический адрес}). Адрес клиники для
+                  посетителей — в группе «Адрес» выше.
           - name: geo
             label: 'Служебное: координаты входа'
             widget: object
@@ -2179,6 +2451,9 @@ collections:
                   - { label: Галерея работ, value: /gallery }
                   - { label: Контакты, value: /contacts }
                   - { label: Политика конфиденциальности, value: /privacy }
+                  - { label: Документы, value: /documents }
+                  - { label: Согласие на обработку ПДн, value: /consent }
+                  - { label: Политика cookie, value: /cookies }
                   - { label: 'Главная › Акции', value: '/#promo' }
                   - { label: 'Главная › Услуги', value: '/#services' }
                   - { label: 'Главная › Врачи', value: '/#doctors' }
@@ -2226,6 +2501,9 @@ collections:
                       - { label: Галерея работ, value: /gallery }
                       - { label: Контакты, value: /contacts }
                       - { label: Политика конфиденциальности, value: /privacy }
+                      - { label: Документы, value: /documents }
+                      - { label: Согласие на обработку ПДн, value: /consent }
+                      - { label: Политика cookie, value: /cookies }
                       - { label: 'Главная › Акции', value: '/#promo' }
                       - { label: 'Главная › Услуги', value: '/#services' }
                       - { label: 'Главная › Врачи', value: '/#doctors' }
@@ -2254,6 +2532,9 @@ collections:
                       - { label: Галерея работ, value: /gallery }
                       - { label: Контакты, value: /contacts }
                       - { label: Политика конфиденциальности, value: /privacy }
+                      - { label: Документы, value: /documents }
+                      - { label: Согласие на обработку ПДн, value: /consent }
+                      - { label: Политика cookie, value: /cookies }
                       - { label: 'Главная › Акции', value: '/#promo' }
                       - { label: 'Главная › Услуги', value: '/#services' }
                       - { label: 'Главная › Врачи', value: '/#doctors' }
@@ -2262,6 +2543,12 @@ collections:
                       - { label: 'Главная › Вопросы', value: '/#faq' }
                       - { label: 'Главная › Отзывы', value: '/#reviews' }
                       - { label: 'Главная › Контакты', value: '/#contacts' }
+              - name: cookieSettings
+                label: Кнопка «Настройки cookie»
+                widget: string
+                hint: >-
+                  В конце второй колонки, снова открывает уведомление о cookie.
+                  Видна, когда в «Поиск и счётчики» заполнен номер счётчика Метрики.
               - { name: contactsTitle, label: Заголовок колонки контактов, widget: string }
           - name: sticky
             label: Нижняя панель на телефоне
@@ -2327,12 +2614,47 @@ collections:
             widget: object
             collapsed: true
             hint: >-
-              Где на сайте: под текстом страниц «О клинике», «Галерея работ»,
-              «Политика конфиденциальности» и 404. Первая кнопка — телефон
-              клиники.
+              Где на сайте: под текстом страниц-заглушек и 404. Первая кнопка —
+              телефон клиники.
             fields:
               - { name: book, label: Кнопка записи, widget: string }
               - { name: home, label: Кнопка «На главную», widget: string }
+          - name: cookie
+            label: Уведомление о cookie
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: полоса внизу экрана, пока посетитель не выбрал
+              «Принять» или «Отказаться», и по кнопке «Настройки cookie».
+              Появляется, только когда в «Поиск и счётчики» заполнен номер
+              счётчика Метрики. Текст согласован с юристом — правки тоже.
+            fields:
+              - { name: label, label: Название полосы для незрячих, widget: string }
+              - name: text
+                label: Текст
+                widget: text
+                hint: Метку {ссылка} сайт заменит ссылкой на политику cookie.
+              - { name: link, label: Подпись ссылки на политику cookie, widget: string }
+              - { name: accept, label: Кнопка согласия, widget: string }
+              - { name: decline, label: Кнопка отказа, widget: string }
+              - name: stateOn
+                label: Подпись «Метрика включена»
+                widget: string
+                hint: Видна, когда полосу открыли кнопкой «Настройки cookie».
+              - { name: stateOff, label: Подпись «Метрика выключена», widget: string }
+          - name: embed
+            label: Заглушки карты и отзывов Яндекса
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: на месте карты (перед подвалом, «Контакты») и ленты
+              отзывов (главная), пока посетитель не нажал кнопку. До нажатия
+              Яндекс ничего не получает.
+            fields:
+              - { name: mapText, label: Текст на месте карты, widget: text }
+              - { name: mapButton, label: Кнопка карты, widget: string }
+              - { name: reviewsText, label: Текст на месте отзывов, widget: text }
+              - { name: reviewsButton, label: Кнопка отзывов, widget: string }
 
       - name: form
         label: Форма записи
@@ -2351,13 +2673,16 @@ collections:
             widget: string
             hint: >-
               Видна, когда форму открыли из подбора по проблеме на главной:
-              «Вы выбрали: Болит зуб». Жалобу сайт допишет сам.
+              «Вы выбрали: Болит зуб». Жалобу сайт допишет сам; в заявку она
+              не уходит.
           - name: pickedComment
             label: 'Начало текста в поле комментария'
             widget: string
             hint: >-
-              Тогда же поле комментария заполняется само: «Беспокоит: Болит
-              зуб». Человек может его поправить или стереть.
+              Тогда же поле комментария заполняется направлением — разделом
+              прайса этой жалобы: «Направление: Лечение каналов». Саму жалобу
+              сайт в заявку не пишет: это сведения о здоровье. Человек может
+              текст поправить или стереть.
           - name: fields
             label: Поля формы
             widget: object
@@ -2368,10 +2693,26 @@ collections:
               - { name: phonePlaceholder, label: Пример номера в пустом поле, widget: string }
               - { name: phoneHint, label: Подсказка под телефоном, widget: string }
               - { name: comment, label: Подпись поля комментария, widget: string }
-              - { name: consent, label: Текст согласия, widget: string, hint: Дальше идёт ссылка на политику. }
-              - { name: consentLink, label: Ссылка на политику, widget: string }
+              - { name: commentPlaceholder, label: Пример в пустом поле комментария, widget: string }
+              - name: commentHint
+                label: Пояснение под комментарием
+                widget: string
+                hint: Просьба не описывать симптомы — её требует политика конфиденциальности.
+              - name: consent
+                label: Текст согласия
+                widget: string
+                hint: >-
+                  Метка {согласие} — ссылка на страницу согласия, {политикой} —
+                  на политику конфиденциальности. Подписи ссылок — ниже.
+              - { name: consentLink, label: Подпись ссылки на согласие, widget: string }
+              - { name: privacyLink, label: Подпись ссылки на политику, widget: string }
           - { name: submit, label: Кнопка отправки, widget: string }
           - { name: sending, label: Кнопка во время отправки, widget: string }
+          - name: privacyNote
+            label: Строка под кнопкой отправки
+            widget: string
+            required: false
+            hint: Пусто — строки нет.
           - name: fallback
             label: Текст перед телефоном под кнопкой
             widget: string

@@ -1,0 +1,249 @@
+---
+/**
+ * Уведомление о cookie: «Принять» / «Отказаться». Яндекс Метрика
+ * загружается только после «Принять» (lib/analytics) — до выбора и после
+ * отказа счётчика на странице нет.
+ *
+ * Показывается само, пока посетитель не выбрал (или выбору больше
+ * 12 месяцев), и по кнопке «Настройки cookie» (`data-cookie-settings`) в
+ * подвале и на странице «Документы» — тогда с подписью «Сейчас: Метрика
+ * включена / выключена» и фокусом на первой кнопке. Esc в этом режиме
+ * просто прячет уведомление, выбор не меняется.
+ *
+ * Не модальное окно, а полоса внизу: сайтом можно пользоваться, пока она
+ * открыта, фокус при автопоказе не перехватывается. В разметке стоит
+ * сразу за ссылкой «Перейти к содержимому» — с клавиатуры до неё два
+ * нажатия Tab. На телефоне полоса стоит над нижней панелью действий, а не
+ * на ней; окно записи (z-index выше) её накрывает. Пока полоса открыта,
+ * у страницы снизу отступ её высоты — подвал не прячется под ней.
+ *
+ * Кнопки одного размера и вида: «Отказаться» не должна быть мельче или
+ * бледнее «Принять» (требование юриста, ui-texts).
+ *
+ * Номера счётчика в редакторе нет — компонента на странице нет: соглашаться
+ * не на что, а текст «Мы используем Яндекс Метрику» был бы неправдой.
+ */
+import Button from '../core/Button.astro';
+import { blocks } from '../../data/ui';
+import { pageHref } from '../../lib/asset';
+import { cmsSite } from '../../lib/cms-ref';
+import { fillParts } from '../../lib/format';
+import { metrikaId } from '../../lib/seo';
+
+const copy = blocks.cookie;
+const parts = fillParts(copy.text, { ссылка: copy.link });
+---
+
+{
+  metrikaId && (
+    <section
+      class="dc-cookie"
+      aria-label={copy.label}
+      data-cookie-banner
+      data-metrika={metrikaId}
+      hidden
+      data-cms={cmsSite('blocks', 'cookie')}
+    >
+      <div class="dc-cookie__inner">
+        <div class="dc-cookie__copy">
+          <p data-cms={cmsSite('blocks', 'cookie.text')}>
+            {parts.map((part) =>
+              part.key ? (
+                <a href={pageHref('cookies')} data-cms={cmsSite('blocks', 'cookie.link')}>{part.text}</a>
+              ) : (
+                part.text
+              ),
+            )}
+          </p>
+          <p class="dc-cookie__state" data-cookie-state hidden>
+            <span data-cookie-on hidden>{copy.stateOn}</span>
+            <span data-cookie-off hidden>{copy.stateOff}</span>
+          </p>
+        </div>
+        <div class="dc-cookie__actions">
+          <Button variant="primary" data-cookie-accept data-cms={cmsSite('blocks', 'cookie.accept')}>
+            {copy.accept}
+          </Button>
+          <Button variant="primary" data-cookie-decline data-cms={cmsSite('blocks', 'cookie.decline')}>
+            {copy.decline}
+          </Button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .dc-cookie {
+    position: fixed;
+    inset: auto 0 0 0;
+    /* Над кнопкой «наверх» (50), под нижней панелью (65), меню (70) и
+       окном записи (100): форму и панель действий полоса не закрывает */
+    z-index: 60;
+    padding: var(--space-4) var(--gutter) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    background: var(--surface-card);
+    border-top: 1px solid var(--line-hairline);
+    box-shadow: 0 -8px 24px rgba(4, 48, 65, 0.1);
+  }
+  .dc-cookie[hidden] {
+    display: none;
+  }
+  /* Фокус после выбора уходит на <main> (см. hide) — рамка вокруг всей страницы не нужна */
+  :global(#main[tabindex='-1']:focus) {
+    outline: none;
+  }
+  /* На телефоне — над нижней панелью «Позвонить · Записаться · Max» */
+  :global(html.has-sticky-actions) .dc-cookie {
+    bottom: var(--sticky-actions-h);
+    padding-bottom: var(--space-4);
+  }
+  :global(html.has-cookie-banner body) {
+    padding-bottom: var(--dc-cookie-h, 0px);
+  }
+  :global(html.has-cookie-banner.has-sticky-actions body) {
+    padding-bottom: calc(var(--sticky-actions-h) + var(--dc-cookie-h, 0px));
+  }
+
+  .dc-cookie__inner {
+    max-width: var(--container);
+    margin-inline: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-6);
+  }
+  .dc-cookie__copy {
+    flex: 1 1 28rem;
+    display: grid;
+    gap: var(--space-1);
+    font-size: var(--type-small);
+    line-height: var(--lh-body);
+    color: var(--text-body);
+  }
+  .dc-cookie__copy p {
+    margin: 0;
+  }
+  .dc-cookie__copy a {
+    color: var(--text-accent);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-cookie__state {
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+  }
+  /* Кнопки равной ширины: на узком экране — пополам строки */
+  .dc-cookie__actions {
+    flex: 0 1 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    min-width: min(100%, 18rem);
+  }
+  /* На телефоне полоса и так занимает заметную часть экрана над нижней
+     панелью — поля и промежутки плотнее, кнопки той же высоты (tap-min) */
+  @media (max-width: 559.98px) {
+    .dc-cookie {
+      padding-top: var(--space-3);
+    }
+    :global(html.has-sticky-actions) .dc-cookie {
+      padding-bottom: var(--space-3);
+    }
+    .dc-cookie__inner {
+      gap: var(--space-2);
+    }
+    .dc-cookie__actions {
+      flex-basis: 100%;
+      gap: var(--space-2);
+    }
+  }
+</style>
+
+<script>
+  import { readConsent, saveConsent, startMetrika, stopMetrika, trackContactClicks } from '../../lib/analytics';
+
+  const banner = document.querySelector<HTMLElement>('[data-cookie-banner]');
+  const id = banner?.dataset.metrika ?? '';
+
+  if (banner && id) {
+    const root = document.documentElement;
+    const state = banner.querySelector<HTMLElement>('[data-cookie-state]');
+    const stateOn = banner.querySelector<HTMLElement>('[data-cookie-on]');
+    const stateOff = banner.querySelector<HTMLElement>('[data-cookie-off]');
+    const accept = banner.querySelector<HTMLButtonElement>('[data-cookie-accept]');
+    const decline = banner.querySelector<HTMLButtonElement>('[data-cookie-decline]');
+    let opener: HTMLElement | null = null;
+
+    // Высота полосы — в отступ страницы снизу, пока полоса открыта
+    const syncHeight = () => root.style.setProperty('--dc-cookie-h', `${banner.offsetHeight}px`);
+    const resize = 'ResizeObserver' in window ? new ResizeObserver(syncHeight) : null;
+
+    const show = (fromSettings: boolean) => {
+      const choice = readConsent();
+      if (state && stateOn && stateOff) {
+        state.hidden = !fromSettings || choice === null;
+        stateOn.hidden = choice !== true;
+        stateOff.hidden = choice !== false;
+      }
+      banner.hidden = false;
+      root.classList.add('has-cookie-banner');
+      syncHeight();
+      resize?.observe(banner);
+      if (fromSettings) accept?.focus();
+    };
+
+    const hide = () => {
+      const hadFocus = banner.contains(document.activeElement);
+      banner.hidden = true;
+      root.classList.remove('has-cookie-banner');
+      resize?.disconnect();
+      // Фокус — туда, откуда открыли настройки; при первом выборе — к началу
+      // содержимого, как после «Перейти к содержимому». Иначе он остался бы
+      // на исчезнувшей кнопке и следующий Tab начинался бы с начала страницы.
+      if (opener && document.contains(opener)) opener.focus();
+      else if (hadFocus) {
+        const main = document.getElementById('main');
+        if (main) {
+          if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
+          main.focus({ preventScroll: true });
+        }
+      }
+      opener = null;
+    };
+
+    accept?.addEventListener('click', () => {
+      saveConsent(true);
+      hide();
+      startMetrika(id);
+    });
+    decline?.addEventListener('click', () => {
+      saveConsent(false);
+      hide();
+      stopMetrika(id);
+    });
+
+    document.addEventListener('click', (event) => {
+      const button = (event.target as Element | null)?.closest?.<HTMLElement>('[data-cookie-settings]');
+      if (!button) return;
+      opener = button;
+      show(true);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && opener && !banner.hidden) hide();
+    });
+
+    const choice = readConsent();
+    if (choice === null) show(false);
+    else if (choice) {
+      // Согласие уже дано: счётчик — когда браузер освободится, первый
+      // экран из-за него не ждёт
+      const start = () => startMetrika(id);
+      // Safari до 18 без requestIdleCallback — тогда после загрузки страницы
+      const idle = (window as { requestIdleCallback?: Window['requestIdleCallback'] }).requestIdleCallback;
+      if (idle) idle.call(window, start, { timeout: 4000 });
+      else if (document.readyState === 'complete') start();
+      else addEventListener('load', start, { once: true });
+    }
+
+    trackContactClicks();
+  }
+</script>

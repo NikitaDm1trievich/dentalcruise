@@ -71,6 +71,9 @@ type PageFile =
   | 'prices'
   | 'gallery'
   | 'privacy'
+  | 'consent'
+  | 'cookies'
+  | 'documents'
   | 'not-found'
   | 'doctor-page'
   | 'service-page';

@@ -37,6 +37,8 @@ interface Props {
 
 const { page } = Astro.props as unknown as Props;
 const s = page.data;
+/* Цена посреди заголовка: «Бесплатно» из прайса — со строчной, суммы как есть */
+const titlePrice = s.price ? s.price.charAt(0).toLowerCase() + s.price.slice(1) : '';
 
 const categories = await getCollection('service-categories');
 const category = categories.find((c) => c.data.slug === s.category);
@@ -116,12 +118,12 @@ if (amount) {
 <PageLayout
   title={
     s.seoTitle ||
-    (s.price ? `${s.title} — ${s.price} | Дентал Круиз, Москва` : `${s.title} | Дентал Круиз, Москва`)
+    (s.price ? `${s.title} — ${titlePrice} | Дентал Круиз, Москва` : `${s.title} | Дентал Круиз, Москва`)
   }
   description={
     s.seoDescription ||
     clampText(
-      `${s.title}${s.price ? ` — ${s.price}` : ''} в стоматологии «Дентал Круиз», м. Полежаевская. ${s.lead}`,
+      `${s.title}${s.price ? ` — ${titlePrice}` : ''} в стоматологии «Дентал Круиз», м. Полежаевская. ${s.lead}`,
     )
   }
   path={`/uslugi/${page.id}`}

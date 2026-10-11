@@ -1,7 +1,8 @@
 ---
 /**
- * Заявка на приём. Уходит POST-запросом на Cloudflare Worker,
- * который пересылает её в Telegram-бота (токен — секрет Worker'а).
+ * Заявка на приём. Уходит POST-запросом на функцию в Yandex Cloud,
+ * которая отправляет её письмом на почту клиники (booking/README.md).
+ * Так и описано в политике конфиденциальности.
  *
  * Адрес эндпоинта задаётся переменной PUBLIC_BOOKING_ENDPOINT (.env).
  * Пока она не задана, форма честно предлагает позвонить, а не делает вид,
@@ -18,9 +19,19 @@ import { clinic } from '../../data/site';
 import { form } from '../../data/ui';
 import { pageHref } from '../../lib/asset';
 import { cmsSite } from '../../lib/cms-ref';
+import { fillParts } from '../../lib/format';
 
 const endpoint = import.meta.env.PUBLIC_BOOKING_ENDPOINT ?? '';
 const { fields, done } = form;
+/* Текст согласия с двумя ссылками: на согласие и на политику */
+const consentLinks: Record<string, { href: string; label: string }> = {
+  согласие: { href: pageHref('consent'), label: fields.consentLink },
+  политикой: { href: pageHref('privacy'), label: fields.privacyLink },
+};
+const consentParts = fillParts(
+  fields.consent,
+  Object.fromEntries(Object.entries(consentLinks).map(([key, link]) => [key, link.label])),
+);
 ---
 
 <form class="dc-form" data-booking-form data-endpoint={endpoint} novalidate>
@@ -50,7 +61,16 @@ const { fields, done } = form;
 
   <div class="dc-field">
     <label for="dc-comment">{fields.comment}</label>
-    <textarea id="dc-comment" name="comment" rows="3" maxlength="600"></textarea>
+    <!-- Комментарий — для организационных вопросов: о симптомах врач спросит на приёме
+         (политика, раздел 4.1). Подсказка под полем связана с ним aria-describedby -->
+    <textarea
+      id="dc-comment"
+      name="comment"
+      rows="3"
+      maxlength="600"
+      placeholder={fields.commentPlaceholder}
+      aria-describedby="dc-comment-hint"></textarea>
+    <span class="dc-field__hint" id="dc-comment-hint">{fields.commentHint}</span>
   </div>
 
   <!-- Ловушка для ботов: живой человек это поле не увидит и не заполнит -->
@@ -72,14 +92,23 @@ const { fields, done } = form;
       <!-- Ссылка внутри label: клик по интерактивному потомку по спецификации
            не переключает чекбокс, а Tab доходит до ссылки как до любой другой -->
       <span>
-        {fields.consent}
-        <a href={pageHref('privacy')} target="_blank" rel="noopener">{fields.consentLink}</a>
+        {
+          consentParts.map((part) =>
+            part.key && consentLinks[part.key] ? (
+              <a href={consentLinks[part.key].href} target="_blank" rel="noopener">{part.text}</a>
+            ) : (
+              part.text
+            ),
+          )
+        }
       </span>
     </label>
     <p class="dc-field__error" id="dc-consent-error" hidden></p>
   </div>
 
   <Button type="submit" variant="primary" size="lg" fullWidth>{form.submit}</Button>
+
+  {form.privacyNote && <p class="dc-form__note" data-cms={cmsSite('form', 'privacyNote')}>{form.privacyNote}</p>}
 
   <p class="dc-form__error" data-form-error hidden role="alert"></p>
 
@@ -211,6 +240,10 @@ const { fields, done } = form;
     outline-offset: 2px;
   }
 
+  .dc-form__note {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
   .dc-form__fallback {
     font-size: var(--type-small);
     color: var(--text-muted);
@@ -244,6 +277,7 @@ const { fields, done } = form;
 
 <script>
   import { maskPhone, phoneToE164 } from '../../lib/phone';
+  import { reachGoal } from '../../lib/analytics';
   // Сообщения формы правит владелец в редакторе («Шапка, подвал и
   // контакты» → «Форма записи»). В браузер уходит только этот файл.
   import copy from '../../data/form.json';
@@ -359,7 +393,7 @@ const { fields, done } = form;
       if (referrerField) referrerField.value = document.referrer;
 
       try {
-        // В JSON поле остаётся `contact`, но уже в E.164 — воркер деплоится отдельно от сайта
+        // В JSON поле остаётся `contact`, но уже в E.164 — обработчик деплоится отдельно от сайта
         const payload = { ...Object.fromEntries(new FormData(form).entries()), contact: phone };
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -372,6 +406,8 @@ const { fields, done } = form;
         const data: { error?: unknown } | null = await response.json().catch(() => null);
 
         if (response.ok) {
+          // Цель Метрики «заявка отправлена» — только если посетитель принял cookie
+          reachGoal('booking_sent');
           form.hidden = true;
           if (done) {
             done.hidden = false;
@@ -380,7 +416,7 @@ const { fields, done } = form;
           }
           return;
         }
-        // Воркер отвечает { ok: false, error }: лимит частоты, неполный номер — текст показываем как есть
+        // Обработчик отвечает { ok: false, error }: лимит частоты, неполный номер — текст показываем как есть
         fail(typeof data?.error === 'string' && data.error ? data.error : GENERIC_ERROR);
       } catch (err) {
         const timedOut = err instanceof DOMException && err.name === 'TimeoutError';

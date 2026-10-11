@@ -34,7 +34,7 @@
 | `/contacts/` | `/contacts/` | адрес совпадает |
 | `/pricelist/` | `/pricelist/` | адрес совпадает |
 | `/policy/` | `/privacy/` | |
-| `/soglasie-na-obrabotku-personalnykh-dannykh/` | `/privacy/` | пока нет отдельной страницы согласия |
+| `/soglasie-na-obrabotku-personalnykh-dannykh/` | `/consent/` | |
 | `/special/` | `/#promo` | |
 | `/special/superaktsiya-vsemtsirkon/` | `/uslugi/cirkonievaya-koronka/` | акция на циркониевую коронку |
 | `/special/tsirkonievaya-koronka-na-implante-vintovaya-fiksatsiya/` | `/uslugi/cirkonievaya-koronka-na-implante-vintovaya-fiksaciya/` | |

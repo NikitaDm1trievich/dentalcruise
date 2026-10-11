@@ -22,20 +22,57 @@ import { absolute, priceValue, siteRoot, xml } from '../../lib/seo';
  * рисуют сайт. Владелец правит цену в редакторе — она уезжает всюду сама.
  *
  * Картинка обязательна для Магазина ВКонтакте, а своих снимков у карточек
- * услуг пока нет: подставляем фото направления, а где его нет — интерьер
- * клиники. Это честная иллюстрация, а не чужая работа, выданная за свою.
+ * услуг пока нет. Порядок: фото работы из карточки услуги → фото
+ * направления (коронки, импланты, виниры — настоящие снимки) → картинка
+ * раздела из public/images/2gis (1000×1000, те же, что в карточке 2ГИС).
+ * Это честная иллюстрация, а не чужая работа, выданная за свою.
  */
 
 /** Фото направления. Ключ — slug категории из service-categories. */
-const CATEGORY_PICTURE: Record<string, string> = {
+const CATEGORY_PHOTO: Record<string, string> = {
   protezirovanie: 'images/services/crowns.jpg',
   implantacia: 'images/services/implants.jpg',
 };
+
+/** Картинка раздела из карточки 2ГИС — для всех, у кого нет фото. */
+const CATEGORY_PICTURE: Record<string, string> = {
+  diagnostika: 'images/2gis/diagnostika.png',
+  gigiena: 'images/2gis/gigiena.png',
+  karies: 'images/2gis/karies.png',
+  // Лечение каналов — то же лечение зуба, своей картинки у 2ГИС нет
+  endodontiya: 'images/2gis/karies.png',
+  protezirovanie: 'images/2gis/koronki.png',
+  'semnoe-protezirovanie': 'images/2gis/protezy.png',
+  implantacia: 'images/2gis/implantologiya.png',
+  hirurgiya: 'images/2gis/hirurgiya.png',
+  kappy: 'images/2gis/protezy.png',
+};
+/** Новый раздел, для которого картинку ещё не выбрали, — интерьер клиники */
 const FALLBACK_PICTURE = 'images/clinic/clinic-01.jpg';
 
-/** Виниры живут в разделе протезирования, но коронка вместо винира на фото — чужая работа. */
-const pictureFor = (slug: string, category: string) =>
-  slug.startsWith('vinir') ? 'images/services/veneers.jpg' : (CATEGORY_PICTURE[category] ?? FALLBACK_PICTURE);
+/** Картинка оффера: своё фото → фото направления → картинка раздела. */
+function pictureFor(slug: string, category: string, photo: string | undefined): string {
+  if (photo) return photo;
+  // Каппа для отбеливания лежит в «Каппах», но по смыслу — отбеливание, а не протез
+  if (slug.includes('otbelivanie')) return 'images/2gis/gigiena.png';
+  // Виниры живут в разделе протезирования, но коронка вместо винира на фото — чужая работа
+  if (slug.startsWith('vinir')) return 'images/services/veneers.jpg';
+  // Акриловые протезы — отдельная картинка 2ГИС
+  if (category === 'semnoe-protezirovanie' && slug.includes('akril')) return 'images/2gis/akrilovye-protezy.png';
+  return CATEGORY_PHOTO[category] ?? CATEGORY_PICTURE[category] ?? FALLBACK_PICTURE;
+}
+
+/**
+ * Описание оффера: лид страницы и, если у цены есть пояснение, строка о
+ * цене — «Цена: от 49 900 ₽ — Osstem с циркониевой коронкой, всё
+ * включено.» Раньше склеивалось «Цена от 49 900 ₽ Osstem с …» без знаков.
+ */
+function describe(lead: string, price: string, note: string | undefined): string {
+  const sentence = (text: string) => (/[.!?…]$/.test(text) ? text : `${text}.`);
+  const parts = [sentence(lead.trim())];
+  if (note?.trim()) parts.push(sentence(`Цена: ${price} — ${note.trim()}`));
+  return parts.join(' ');
+}
 
 export const GET: APIRoute = async ({ site }) => {
   const pages = (await getCollection('service-pages')).sort((a, b) => a.data.order - b.data.order);
@@ -58,10 +95,8 @@ export const GET: APIRoute = async ({ site }) => {
       // а «уточняйте» в поле price читается как ошибка выгрузки.
       if (!price) return null;
 
-      const picture = pictureFor(page.id, s.category);
-      const description = [s.lead, s.priceNote ? `Цена ${s.price} ${s.priceNote}.` : null]
-        .filter(Boolean)
-        .join(' ');
+      const picture = pictureFor(page.id, s.category, s.photo);
+      const description = describe(s.lead, s.price ?? '', s.priceNote);
 
       return [
         `      <offer id="${xml(page.id)}" available="true">`,

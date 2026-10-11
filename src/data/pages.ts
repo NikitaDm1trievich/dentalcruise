@@ -12,6 +12,9 @@ import about from './pages/about.json';
 import gallery from './pages/gallery.json';
 import notFound from './pages/not-found.json';
 import privacy from './pages/privacy.json';
+import consent from './pages/consent.json';
+import cookies from './pages/cookies.json';
+import documents from './pages/documents.json';
 import contacts from './pages/contacts.json';
 import team from './pages/team.json';
 import doctor from './pages/doctor-page.json';
@@ -67,14 +70,64 @@ export const galleryPage: {
 } = gallery;
 export const notFoundPage: StubPage = notFound;
 
-export const privacyPage: StubPage & {
-  /** Начало первого абзаца, дальше сайт дописывает название и адрес клиники */
-  operator: string;
-  paragraphs: string[];
-  /** Последний абзац: текст перед телефоном и между телефоном и почтой */
-  contact: string;
-  contactOr: string;
-} = privacy;
+/**
+ * Юридический документ: политика, согласие, политика cookie. Текст —
+ * разделы «заголовок + Markdown» (lib/doc-text), реквизиты в нём — метками
+ * `{ИНН}`, `{почта}` из контактов клиники (docValues в data/site).
+ */
+export type LegalDocPage = {
+  eyebrow: string;
+  heading: string;
+  /** Последняя хлебная крошка: «Главная › Документы › …» */
+  breadcrumb: string;
+  /** «Редакция от {дата}» — `{дата}` заменяется полем edition */
+  editionLabel: string;
+  /** Дата редакции, как в документе: 11.10.2026 */
+  edition: string;
+  lead: Optional<string>;
+  sections: { title: string; body: Optional<string> }[];
+  seo: Seo;
+};
+
+export const privacyPage: LegalDocPage = privacy;
+export const consentPage: LegalDocPage = consent;
+export const cookiesPage: LegalDocPage = cookies;
+
+export const documentsPage: {
+  heading: string;
+  lead: string;
+  breadcrumb: string;
+  org: {
+    title: string;
+    /** Подписи строк реквизитов; значения — из контактов клиники */
+    labels: {
+      fullName: string;
+      orgName: string;
+      inn: string;
+      kpp: string;
+      ogrn: string;
+      legalAddress: string;
+      address: string;
+      schedule: string;
+      phone: string;
+      email: string;
+      site: string;
+    };
+  };
+  license: {
+    title: string;
+    /** Метки: {номер}, {прежний номер}, {дата}, {орган} — из контактов клиники, группа «Лицензия» */
+    text: string;
+    /** Кнопка окна со сканами лицензии */
+    scans: string;
+  };
+  /** Платные медуслуги: текст (Markdown) и образец договора — PDF; пока файла нет, пункта нет */
+  paid: { title: string; body: Optional<string>; contractLabel: string; contract: Optional<string> };
+  /** Свои разделы: заголовок и текст (Markdown). Раздел без текста не выводится */
+  sections: { title: string; body: Optional<string> }[];
+  privacy: { title: string; policy: string; consent: string; cookies: string; settings: string };
+  seo: Seo;
+} = documents;
 
 export const contactsPage: {
   eyebrow: string;

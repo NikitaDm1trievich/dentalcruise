@@ -2,11 +2,18 @@
 /**
  * Виджет Яндекс Карт (карта организации или лента отзывов).
  *
- * iframe подставляется скриптом, только когда блок доезжает до экрана:
- * оба виджета тяжёлые, а сидят они в самом низу страницы — грузить их
- * на первом экране незачем.
+ * До нажатия кнопки «Показать карту» / «Показать отзывы» на месте виджета
+ * заглушка: iframe Яндекса при загрузке передаёт Яндексу IP и данные
+ * браузера и может поставить его cookie, а политика и политика cookie
+ * обещают, что это происходит только по действию посетителя. Поэтому iframe
+ * создаётся только по нажатию — не при прокрутке и не по «Принять» в
+ * уведомлении о cookie (оно — про Метрику, о картах в нём ни слова).
+ * Обычная ссылка на Яндекс Карты под виджетом работает и без него.
  */
-import type { CmsLock } from '../../lib/cms-ref';
+import Button from '../core/Button.astro';
+import Icon from '../core/Icon.astro';
+import { blocks } from '../../data/ui';
+import { cmsSite, type CmsLock } from '../../lib/cms-ref';
 
 interface Props {
   src: string;
@@ -23,6 +30,8 @@ interface Props {
 }
 
 const { src, title, height = 400, linkHref, linkLabel, cms, lock = 'map', class: className } = Astro.props;
+const reviews = lock === 'reviews';
+const { embed } = blocks;
 ---
 
 <div
@@ -35,6 +44,19 @@ const { src, title, height = 400, linkHref, linkLabel, cms, lock = 'map', class:
   {/* Сам виджет рисует Яндекс: в редакторе сайта его не поменять */}
   <div class="dc-embed__frame" data-cms-lock={lock}>
     <div class="dc-embed__skeleton" aria-hidden="true"></div>
+    <div class="dc-embed__stub" data-embed-stub>
+      <Icon name={reviews ? 'message-square-text' : 'map-pinned'} size={32} color="var(--text-accent)" />
+      <p data-cms={cmsSite('blocks', reviews ? 'embed.reviewsText' : 'embed.mapText')}>
+        {reviews ? embed.reviewsText : embed.mapText}
+      </p>
+      <Button
+        variant="secondary"
+        data-embed-show
+        data-cms={cmsSite('blocks', reviews ? 'embed.reviewsButton' : 'embed.mapButton')}
+      >
+        {reviews ? embed.reviewsButton : embed.mapButton}
+      </Button>
+    </div>
   </div>
 
   {
@@ -75,6 +97,24 @@ const { src, title, height = 400, linkHref, linkLabel, cms, lock = 'map', class:
     inset: 0;
     background: var(--grad-shallow);
   }
+  /* Заглушка до нажатия: текст о передаче данных Яндексу и кнопка */
+  .dc-embed__stub {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    text-align: center;
+  }
+  .dc-embed__stub p {
+    max-width: 34ch;
+    margin: 0;
+    color: var(--text-body);
+    font-size: var(--type-small);
+    line-height: var(--lh-body);
+  }
   .dc-embed__link {
     display: flex;
     align-items: center;
@@ -91,6 +131,7 @@ const { src, title, height = 400, linkHref, linkLabel, cms, lock = 'map', class:
 </style>
 
 <script>
+  /* iframe — только по кнопке: до нажатия к Яндексу не уходит ни одного запроса */
   const mount = (host: HTMLElement) => {
     const frame = host.querySelector<HTMLElement>('.dc-embed__frame');
     if (!frame || frame.querySelector('iframe')) return;
@@ -98,29 +139,17 @@ const { src, title, height = 400, linkHref, linkLabel, cms, lock = 'map', class:
     const iframe = document.createElement('iframe');
     iframe.src = host.dataset.src ?? '';
     iframe.title = host.dataset.title ?? '';
-    iframe.loading = 'lazy';
     iframe.setAttribute('allowfullscreen', 'true');
     iframe.addEventListener('load', () => host.querySelector('.dc-embed__skeleton')?.remove(), {
       once: true,
     });
+    host.querySelector('[data-embed-stub]')?.remove();
     frame.appendChild(iframe);
+    // Кнопка исчезла вместе с заглушкой — фокус переходит на сам виджет
+    iframe.focus();
   };
 
-  const hosts = document.querySelectorAll<HTMLElement>('[data-embed]');
-
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          io.unobserve(entry.target);
-          mount(entry.target as HTMLElement);
-        }
-      },
-      { rootMargin: '300px' },
-    );
-    hosts.forEach((host) => io.observe(host));
-  } else {
-    hosts.forEach(mount);
-  }
+  document.querySelectorAll<HTMLElement>('[data-embed]').forEach((host) => {
+    host.querySelector('[data-embed-show]')?.addEventListener('click', () => mount(host));
+  });
 </script>

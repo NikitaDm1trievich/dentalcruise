@@ -40,6 +40,14 @@ import Icon from './Icon.astro';
   :global(html.has-sticky-actions) .dc-totop {
     bottom: calc(var(--sticky-actions-h) + var(--space-3));
   }
+  /* Пока открыто уведомление о cookie (CookieBanner пишет его высоту
+     в --dc-cookie-h), кнопка стоит над ним, а не под ним. */
+  :global(html.has-cookie-banner) .dc-totop {
+    bottom: calc(var(--dc-cookie-h, 0px) + var(--space-3));
+  }
+  :global(html.has-cookie-banner.has-sticky-actions) .dc-totop {
+    bottom: calc(var(--sticky-actions-h) + var(--dc-cookie-h, 0px) + var(--space-3));
+  }
   .dc-totop[data-visible='true'] {
     opacity: 1;
     transform: translateY(0);
