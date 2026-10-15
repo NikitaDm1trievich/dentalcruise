@@ -1,0 +1,365 @@
+---
+/**
+ * Страница одной работы «до/после»: /gallery/<имя файла записи>/.
+ *
+ * Главное на странице — слайдер сравнения (components/media/BeforeAfter),
+ * под ним подписи к снимкам, рассказ о работе, «Что сделано», запись на
+ * консультацию и соседние работы. Одна вёрстка на все работы: содержимое —
+ * запись коллекции cases, тексты интерфейса — «Страницы сайта» →
+ * «Галерея работ» (src/data/pages/gallery.json, раздел case).
+ *
+ * Страница есть только у опубликованной работы (оба фото на месте,
+ * src/lib/cases.ts), поэтому ссылка из ленты не ведёт в 404. Необязательные
+ * блоки (подписи, описание, этапы) без данных не рисуются.
+ */
+import type { GetStaticPaths } from 'astro';
+
+import PageLayout from '../../layouts/PageLayout.astro';
+import Reveal from '../../components/core/Reveal.astro';
+import Button from '../../components/core/Button.astro';
+import Icon from '../../components/core/Icon.astro';
+import BeforeAfter from '../../components/media/BeforeAfter.astro';
+import CaseCard from '../../components/content/CaseCard.astro';
+import { clinic } from '../../data/site';
+import { galleryPage as page } from '../../data/pages';
+import { pageHref } from '../../lib/asset';
+import { cmsPage, cmsSite } from '../../lib/cms-ref';
+import { clampText } from '../../lib/seo';
+import { paragraphs, publishedCases, type PublishedCase } from '../../lib/cases';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const cases = await publishedCases();
+  return cases.map((item, i) => ({
+    params: { slug: item.entry.id },
+    props: { item, prev: cases[i - 1], next: cases[i + 1] },
+  }));
+};
+
+interface Props {
+  item: PublishedCase;
+  prev?: PublishedCase;
+  next?: PublishedCase;
+}
+
+const { item, prev, next } = Astro.props as unknown as Props;
+const { entry, before, after } = item;
+const d = entry.data;
+const cms = `cases/${entry.id}`;
+
+const text = paragraphs(d.description);
+const galleryHref = pageHref('gallery');
+const category = (page.filter as Record<string, string | undefined>)[d.category];
+
+/* Запасные значения через `||`: пустое поле редактор пишет как "" */
+const title = page.case.seoTitle.replace('{работа}', d.title);
+/* Части склеиваются точкой; своя точка в конце части не удваивается */
+const description =
+  d.seoDescription ||
+  clampText(
+    [d.title, d.note, text[0]]
+      .filter(Boolean)
+      .map((part) => part!.trim().replace(/[.!?…]+$/, ''))
+      .join('. ') + '.',
+  );
+
+/** Соседи по ленте: «предыдущая» и «следующая» в её порядке */
+const neighbours = [prev && { item: prev, label: page.case.prev }, next && { item: next, label: page.case.next }].filter(
+  Boolean,
+) as { item: PublishedCase; label: string }[];
+---
+
+<PageLayout
+  title={title}
+  description={description}
+  path={`/gallery/${entry.id}`}
+  eyebrow={category || page.eyebrow}
+  heading={d.title}
+  lead={d.note}
+  breadcrumbs={[{ label: page.breadcrumb, href: galleryHref, cms: cmsPage('gallery', 'breadcrumb') }, { label: d.title }]}
+  cms={cms}
+>
+  <section class="dc-section dc-section--first dc-bg-white">
+    <div class="dc-container">
+      <BeforeAfter
+        before={before}
+        after={after}
+        beforeAlt={`${d.title}: ${page.before.toLowerCase()}`}
+        afterAlt={`${d.title}: ${page.after.toLowerCase()}`}
+        labels={{ before: page.before, after: page.after, drag: page.case.drag, compare: page.case.compare }}
+        cms={{
+          before: `${cms}:before`,
+          after: `${cms}:after`,
+          tagBefore: cmsPage('gallery', 'before'),
+          tagAfter: cmsPage('gallery', 'after'),
+          drag: cmsPage('gallery', 'case.drag'),
+        }}
+      />
+
+      {
+        (d.beforeCaption || d.afterCaption) && (
+          <div class="dc-captions">
+            {d.beforeCaption && (
+              <p class="dc-caption">
+                <span class="dc-caption__tag dc-caption__tag--before" data-cms={cmsPage('gallery', 'before')}>
+                  {page.before}
+                </span>
+                <span data-cms={`${cms}:beforeCaption`}>{d.beforeCaption}</span>
+              </p>
+            )}
+            {d.afterCaption && (
+              <p class="dc-caption">
+                <span class="dc-caption__tag dc-caption__tag--after" data-cms={cmsPage('gallery', 'after')}>
+                  {page.after}
+                </span>
+                <span data-cms={`${cms}:afterCaption`}>{d.afterCaption}</span>
+              </p>
+            )}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    (text.length > 0 || d.steps.length > 0) && (
+      <section class="dc-section dc-bg-warm">
+        <div class="dc-container dc-story">
+          {text.length > 0 && (
+            <Reveal>
+              <div class="dc-story__text" data-cms={`${cms}:description`}>
+                <h2 data-cms={cmsPage('gallery', 'case.about')}>{page.case.about}</h2>
+                {text.map((paragraph) => (
+                  <p>{paragraph}</p>
+                ))}
+              </div>
+            </Reveal>
+          )}
+          {d.steps.length > 0 && (
+            <Reveal delay={90}>
+              <div class="dc-panel" data-cms={`${cms}:steps`}>
+                <h2 data-cms={cmsPage('gallery', 'case.steps')}>{page.case.steps}</h2>
+                <ol class="dc-steps" role="list">
+                  {d.steps.map((step, i) => (
+                    <li>
+                      <span class="dc-steps__num" aria-hidden="true">
+                        {i + 1}
+                      </span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </Reveal>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="dc-section--tight dc-bg-white" data-cms={cmsPage('gallery', 'foot')}>
+    <div class="dc-container">
+      <Reveal>
+        <div class="dc-foot">
+          <p>{page.foot.text}</p>
+          <div class="dc-actions">
+            <Button variant="primary" size="lg" data-open="dc-book">
+              <Icon slot="icon" name="calendar" size={20} />
+              {page.foot.book}
+            </Button>
+            <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+              <Icon slot="icon" name="phone" size={20} />
+              {clinic.phone}
+            </Button>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  <section class="dc-section--tight dc-bg-warm">
+    <div class="dc-container">
+      {
+        neighbours.length > 0 && (
+          <>
+            <h2 class="dc-others__title" data-cms={cmsPage('gallery', 'case.other')}>
+              {page.case.other}
+            </h2>
+            <ul class="dc-others" role="list">
+              {neighbours.map(({ item: other, label }, i) => (
+                <Reveal as="li" delay={i * 70}>
+                  <p class="dc-others__label" data-cms={cmsPage('gallery', i === 0 && prev ? 'case.prev' : 'case.next')}>
+                    {label}
+                  </p>
+                  <CaseCard item={other} level="h3" />
+                </Reveal>
+              ))}
+            </ul>
+          </>
+        )
+      }
+      <div>
+        <Button variant="ghost" size="lg" href={galleryHref} data-cms={cmsPage('gallery', 'case.all')}>
+          <Icon slot="icon" name="arrow-left" size={20} />
+          {page.case.all}
+        </Button>
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  /* Слайдер — сразу под шапкой, большой отступ сверху ему не нужен */
+  .dc-section--first {
+    padding-top: var(--space-10);
+  }
+
+  /* Ширина — как у рамки слайдера (BeforeAfter: кадр 4:3, не выше 78% экрана) */
+  .dc-captions {
+    width: min(100%, 960px, calc(78svh * 4 / 3));
+    margin-inline: auto;
+    display: grid;
+    gap: var(--space-4) var(--space-6);
+  }
+  @media (min-width: 760px) {
+    .dc-captions {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .dc-caption {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+    /* Соседняя подпись длиннее — лишняя высота уходит вниз, а не в метку */
+    align-content: start;
+    margin: 0;
+    font-size: var(--type-small);
+    color: var(--text-body);
+  }
+  .dc-caption__tag {
+    white-space: nowrap;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    font-weight: var(--fw-bold);
+    line-height: 1.2;
+  }
+  .dc-caption__tag--before {
+    background: var(--dc-sea-glass);
+    color: var(--text-strong);
+  }
+  .dc-caption__tag--after {
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+  }
+
+  .dc-story {
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .dc-story {
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: var(--space-8);
+    }
+  }
+  .dc-story__text {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .dc-story__text h2,
+  .dc-panel h2 {
+    font-size: var(--type-h3);
+  }
+  .dc-story__text p {
+    color: var(--text-body);
+    max-width: min(var(--measure), 100%);
+  }
+
+  .dc-panel {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .dc-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    color: var(--text-body);
+  }
+  .dc-steps__num {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface-quiet);
+    color: var(--text-accent);
+    font-family: var(--font-display);
+    font-size: var(--type-small);
+    font-weight: var(--fw-black);
+  }
+
+  .dc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+  .dc-foot {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+  }
+  .dc-foot p {
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: var(--fw-black);
+    line-height: var(--lh-heading);
+    color: var(--text-strong);
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .dc-others__title {
+    font-size: var(--type-h3);
+    margin: 0;
+  }
+  .dc-others {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  }
+  .dc-others > :global(li) {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: var(--space-2);
+  }
+  .dc-others__label {
+    font-size: var(--type-eyebrow);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-eyebrow);
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .dc-bg-white {
+    background: var(--dc-white);
+  }
+  .dc-bg-warm {
+    background: var(--surface-warm);
+  }
+</style>

@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
 /**
  * Редактор сайта (public/admin/index.html) подключает preview.js — шаблон
@@ -67,18 +67,31 @@ const BASE = process.env.BASE ?? '/';
 
 /**
  * Есть ли в галерее хоть одна работа с обоими фото — то же условие, по
- * которому src/pages/gallery.astro показывает работу. Пустая галерея —
- * заглушка «идёт съёмка» с noindex, в карте сайта ей не место.
+ * которому src/lib/cases.ts публикует работу: оба поля заполнены и оба
+ * файла лежат в src/assets/cases. Пустая галерея — заглушка «идёт съёмка»
+ * с noindex, в карте сайта ей не место. Страницы работ (/gallery/<файл>/)
+ * собираются только для опубликованных работ, их фильтр не трогает.
  */
 const galleryHasCases = (() => {
   const dir = new URL('./src/content/cases/', import.meta.url);
+  const photos = new URL('./src/assets/cases/', import.meta.url);
+  /** `/images/cases/a.jpg` из записи → есть ли src/assets/cases/a.jpg */
+  const hasPhoto = (value) => {
+    if (typeof value !== 'string' || !value) return false;
+    const name = value.split(/[?#]/)[0].split('/').pop() ?? '';
+    try {
+      return existsSync(new URL(encodeURIComponent(decodeURIComponent(name)), photos));
+    } catch {
+      return false;
+    }
+  };
   try {
     return readdirSync(dir)
       .filter((name) => name.endsWith('.json'))
       .some((name) => {
         try {
           const data = JSON.parse(readFileSync(new URL(name, dir), 'utf8'));
-          return Boolean(data?.before && data?.after);
+          return hasPhoto(data?.before) && hasPhoto(data?.after);
         } catch {
           return false;
         }

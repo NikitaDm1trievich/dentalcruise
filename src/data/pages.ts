@@ -65,6 +65,23 @@ export const galleryPage: {
   filter: { all: string; veneers: string; crowns: string; implants: string };
   before: string;
   after: string;
+  /** Ссылка на страницу работы в карточке ленты */
+  more: string;
+  /** Страница одной работы /gallery/<файл>/ */
+  case: {
+    /** Название слайдера сравнения для экранного диктора */
+    compare: string;
+    /** Подсказка на ручке слайдера, гаснет после первого касания */
+    drag: string;
+    about: string;
+    steps: string;
+    other: string;
+    prev: string;
+    next: string;
+    all: string;
+    /** Заголовок в поиске; `{работа}` — название работы */
+    seoTitle: string;
+  };
   foot: { text: string; book: string };
   seo: Seo;
 } = gallery;

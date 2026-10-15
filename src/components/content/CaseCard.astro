@@ -1,0 +1,204 @@
+---
+/**
+ * Карточка работы «до/после» в ленте галереи (/gallery) и в блоке «Другие
+ * работы» на странице работы.
+ *
+ * Превью — неподвижное сравнение: «после» целиком, «до» — левая половина
+ * поверх, между ними полоска. Сразу видно, что это пара, и намекает на
+ * слайдер внутри. Вся карточка нажимается: ссылка «Смотреть работу»
+ * растянута на неё псевдоэлементом, отдельных ссылок внутри нет.
+ */
+import Icon from '../core/Icon.astro';
+import { galleryPage as page } from '../../data/pages';
+import { pageHref } from '../../lib/asset';
+import { cmsPage } from '../../lib/cms-ref';
+import type { PublishedCase } from '../../lib/cases';
+
+interface Props {
+  item: PublishedCase;
+  /** Уровень заголовка: в ленте h2, в «Других работах» под своим h2 — h3 */
+  level?: 'h2' | 'h3';
+}
+
+const { item, level: Heading = 'h2' } = Astro.props;
+const { entry, before, after } = item;
+const d = entry.data;
+const href = pageHref(`gallery/${entry.id}`);
+---
+
+<article class="dc-case" data-case={d.category} data-cms={`cases/${entry.id}`}>
+  <div class="dc-case__preview">
+    <img
+      class="dc-case__img"
+      src={after.card.src}
+      width={after.card.width}
+      height={after.card.height}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      data-cms={`cases/${entry.id}:after`}
+    />
+    <img
+      class="dc-case__img dc-case__img--before"
+      src={before.card.src}
+      width={before.card.width}
+      height={before.card.height}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      data-cms={`cases/${entry.id}:before`}
+    />
+    <span class="dc-case__line" aria-hidden="true"></span>
+    <span class="dc-case__tag dc-case__tag--before" data-cms={cmsPage('gallery', 'before')}>{page.before}</span>
+    <span class="dc-case__tag dc-case__tag--after" data-cms={cmsPage('gallery', 'after')}>{page.after}</span>
+  </div>
+  <div class="dc-case__body">
+    <Heading class="dc-case__title">{d.title}</Heading>
+    {d.note && <p class="dc-case__note">{d.note}</p>}
+    <a class="dc-case__more" href={href} aria-label={`${page.more}: ${d.title}`} data-cms={cmsPage('gallery', 'more')}>
+      {page.more}
+      <Icon name="arrow-right" size={18} strokeWidth={2.2} />
+    </a>
+  </div>
+</article>
+
+<style>
+  .dc-case {
+    position: relative;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: var(--space-4);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+    transition:
+      box-shadow var(--dur-mid) var(--ease-out),
+      transform var(--dur-mid) var(--ease-out);
+  }
+  .dc-case:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .dc-case:focus-within {
+    box-shadow: var(--shadow-md);
+  }
+
+  .dc-case__preview {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--grad-shallow);
+  }
+  .dc-case__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .dc-case__img--before {
+    clip-path: inset(0 50% 0 0);
+  }
+  .dc-case__line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--dc-white);
+    box-shadow: 0 0 8px rgba(4, 48, 65, 0.3);
+  }
+  .dc-case__tag {
+    position: absolute;
+    top: var(--space-2);
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    line-height: 1.2;
+  }
+  .dc-case__tag--before {
+    left: var(--space-2);
+    background: var(--glass-dark);
+    color: var(--text-on-dark);
+  }
+  .dc-case__tag--after {
+    right: var(--space-2);
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+  }
+
+  /* Ссылка прижата к низу: в ряду карточек с разной длиной текста
+     «Смотреть работу» стоит на одной линии */
+  .dc-case__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: 0 var(--space-2) var(--space-2);
+  }
+  .dc-case__title {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: var(--fw-black);
+    line-height: var(--lh-tight);
+    color: var(--text-strong);
+    text-wrap: balance;
+    margin: 0;
+  }
+  .dc-case__note {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+    max-width: min(var(--measure), 100%);
+  }
+  .dc-case__more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    margin-top: auto;
+    padding-top: var(--space-1);
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+    text-decoration: none;
+  }
+  /* Нажимается вся карточка */
+  .dc-case__more::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .dc-case__more :global(svg) {
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .dc-case:hover .dc-case__more :global(svg) {
+    transform: translateX(4px);
+  }
+  .dc-case__more:focus-visible {
+    outline: none;
+  }
+  .dc-case__more:focus-visible::after {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dc-case,
+    .dc-case__more :global(svg) {
+      transition: none;
+    }
+    .dc-case:hover {
+      transform: none;
+    }
+    .dc-case:hover .dc-case__more :global(svg) {
+      transform: none;
+    }
+  }
+</style>

@@ -1,35 +1,32 @@
 ---
 /**
- * Галерея работ «до/после» с фильтром по типу работы.
+ * Галерея работ «до/после»: лента карточек с фильтром по типу работы.
+ * Карточка ведёт на страницу работы /gallery/<файл>/ со слайдером
+ * сравнения (src/pages/gallery/[slug].astro).
  *
  * Работы — коллекция cases (src/content/cases, по файлу на работу), их
  * добавляет владелец в редакторе, раздел «Галерея работ (до и после)».
- * Тексты страницы — «Страницы сайта» → «Галерея работ».
+ * Тексты ленты и страниц работ — «Страницы сайта» → «Галерея работ».
+ * Фото на сайт уходят копиями со знаком клиники (src/lib/case-photos.ts),
+ * какие работы опубликованы — решает src/lib/cases.ts.
  *
  * Пока нет ни одной работы с обоими фото, страница честно говорит, что
  * идёт съёмка, и закрыта от поисковиков; в карту сайта её не пускает
  * astro.config.mjs по тому же условию. Первая работа открывает страницу.
  */
-import { getCollection } from 'astro:content';
-
 import PageLayout from '../layouts/PageLayout.astro';
 import Reveal from '../components/core/Reveal.astro';
 import Button from '../components/core/Button.astro';
-import Badge from '../components/core/Badge.astro';
 import Icon from '../components/core/Icon.astro';
-import PhotoPlaceholder from '../components/media/PhotoPlaceholder.astro';
+import CaseCard from '../components/content/CaseCard.astro';
 import { clinic } from '../data/site';
 import { galleryPage as page } from '../data/pages';
 import { cmsPage, cmsSite } from '../lib/cms-ref';
 import { clampText } from '../lib/seo';
-
-type Ordered = { data: { order: number } };
-const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
+import { publishedCases } from '../lib/cases';
 
 /** Работа без одного из снимков — не пара «до/после», на сайт не выходит */
-const cases = (await getCollection('cases'))
-  .filter((item) => item.data.before && item.data.after)
-  .sort(byOrder);
+const cases = await publishedCases();
 
 /**
  * Кнопки фильтра — типы работ из выпадающего списка редактора, в его
@@ -37,7 +34,7 @@ const cases = (await getCollection('cases'))
  * видна в «Все работы», своей кнопки у неё нет.
  */
 const types = (['veneers', 'crowns', 'implants'] as const).filter((type) =>
-  cases.some((item) => item.data.category === type),
+  cases.some((item) => item.entry.data.category === type),
 );
 const hasCases = cases.length > 0;
 ---
@@ -104,37 +101,8 @@ const hasCases = cases.length > 0;
 
           <ul class="dc-cases" role="list">
             {cases.map((item, i) => (
-              <Reveal as="li" delay={(i % 2) * 70}>
-                <article class="dc-case" data-case={item.data.category} data-cms={`cases/${item.id}`}>
-                  <div class="dc-case__pair">
-                    <figure class="dc-case__shot">
-                      <PhotoPlaceholder
-                        src={item.data.before}
-                        alt={`${item.data.title}: ${page.before.toLowerCase()}`}
-                        ratio="4 / 3"
-                        radius="var(--radius-md)"
-                      />
-                      <figcaption class="dc-case__tag" data-cms={cmsPage('gallery', 'before')}>
-                        <Badge tone="quiet">{page.before}</Badge>
-                      </figcaption>
-                    </figure>
-                    <figure class="dc-case__shot">
-                      <PhotoPlaceholder
-                        src={item.data.after}
-                        alt={`${item.data.title}: ${page.after.toLowerCase()}`}
-                        ratio="4 / 3"
-                        radius="var(--radius-md)"
-                      />
-                      <figcaption class="dc-case__tag" data-cms={cmsPage('gallery', 'after')}>
-                        <Badge tone="accent">{page.after}</Badge>
-                      </figcaption>
-                    </figure>
-                  </div>
-                  <div class="dc-case__body">
-                    <h2 class="dc-case__title">{item.data.title}</h2>
-                    {item.data.note && <p class="dc-case__note">{item.data.note}</p>}
-                  </div>
-                </article>
+              <Reveal as="li" delay={(i % 3) * 70}>
+                <CaseCard item={item} />
               </Reveal>
             ))}
           </ul>
@@ -210,65 +178,20 @@ const hasCases = cases.length > 0;
     color: var(--cta-fg);
   }
 
-  /* Одна колонка на телефоне, две — от планшета: в карточке уже два фото
-     рядом, в три колонки снимки стали бы слишком мелкими. */
+  /* Одна колонка на телефоне, две — от планшета, три — на широком экране:
+     в карточке одно превью-сравнение, в три колонки оно ещё читается. */
   .dc-cases {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     gap: var(--space-5);
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
-    align-items: start;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    align-items: stretch;
   }
   /* li рисует Reveal — у него своя область видимости стилей */
   .dc-cases > :global(li[hidden]) {
     display: none;
-  }
-
-  .dc-case {
-    display: grid;
-    gap: var(--space-4);
-    padding: var(--space-4);
-    border-radius: var(--radius-lg);
-    background: var(--surface-card);
-    border: 1px solid var(--line-hairline);
-    box-shadow: var(--shadow-sm);
-  }
-  /* «До» и «После» всегда рядом, и на телефоне: сравнивают их взглядом. */
-  .dc-case__pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-2);
-  }
-  .dc-case__shot {
-    position: relative;
-    margin: 0;
-    min-width: 0;
-  }
-  .dc-case__tag {
-    position: absolute;
-    top: var(--space-2);
-    left: var(--space-2);
-  }
-  .dc-case__body {
-    display: grid;
-    gap: var(--space-2);
-    padding-inline: var(--space-1);
-  }
-  .dc-case__title {
-    font-family: var(--font-display);
-    font-size: var(--type-h4);
-    font-weight: var(--fw-black);
-    line-height: var(--lh-tight);
-    color: var(--text-strong);
-    text-wrap: balance;
-    margin: 0;
-  }
-  .dc-case__note {
-    font-size: var(--type-small);
-    color: var(--text-muted);
-    max-width: min(var(--measure), 100%);
   }
 
   /* Появление работы при переключении фильтра — как у разделов прайса */

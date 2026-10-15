@@ -29,6 +29,13 @@ const list = <T extends z.ZodType>(item: T) =>
     .nullish()
     .transform((value) => value ?? []);
 
+/** Число из поля-числа редактора; пустое поле приходит как null или "" */
+const percent = () =>
+  z
+    .union([z.number(), z.string()])
+    .nullish()
+    .transform((value) => (value === '' || value == null || Number.isNaN(Number(value)) ? undefined : Number(value)));
+
 const orderable = { order: z.number().nullish().transform((value) => value ?? 100) };
 
 /**
@@ -88,9 +95,11 @@ const services = defineCollection({
 });
 
 /**
- * Работы «до/после» для страницы «Галерея работ» (/gallery). Файлы
- * создаёт редактор. Фото могут прийти пустыми (работу сохранили до
- * загрузки снимков) — такая работа на сайт не выходит, сборка не падает.
+ * Работы «до/после»: лента «Галерея работ» (/gallery) и страница каждой
+ * работы (/gallery/<файл>/). Файлы создаёт редактор. Фото могут прийти
+ * пустыми (работу сохранили до загрузки снимков) — такая работа на сайт не
+ * выходит, сборка не падает. Сами снимки — в src/assets/cases, на сайт они
+ * уходят копиями со знаком клиники (src/lib/case-photos.ts).
  */
 const cases = defineCollection({
   loader: glob({ pattern: '**/*.json', base: './src/content/cases' }),
@@ -100,7 +109,23 @@ const cases = defineCollection({
     category: textOr(''),
     before: text(),
     after: text(),
+    /** Положение кадра 4:3 на снимке, как object-position: «50% 30%».
+        Пусто — центр (src/lib/case-photos.ts) */
+    beforePosition: text(),
+    afterPosition: text(),
+    /** Увеличение снимка в процентах (150 — в полтора раза крупнее). Пусто — 100 */
+    beforeZoom: percent(),
+    afterZoom: percent(),
+    /** Подписи под снимками на странице работы */
+    beforeCaption: text(),
+    afterCaption: text(),
+    /** Короткая строка: карточка в ленте и текст под заголовком работы */
     note: text(),
+    /** Рассказ о работе; абзацы разделены пустой строкой */
+    description: text(),
+    /** «Что сделано» — этапы по порядку */
+    steps: list(z.string()),
+    seoDescription: text(),
     ...orderable,
   }),
 });

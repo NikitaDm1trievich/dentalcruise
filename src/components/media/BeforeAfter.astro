@@ -1,0 +1,471 @@
+---
+/**
+ * Слайдер сравнения «до/после»: два снимка один над другим, слева видно
+ * «до», справа «после», между ними полоска с ручкой.
+ *
+ * Полоску тянут мышью или пальцем, нажатие (касание) в любом месте
+ * переносит её туда. С клавиатуры ручка — role="slider": стрелки, Page
+ * Up/Down, Home/End. Горизонтальный жест на снимке забирает слайдер,
+ * вертикальный остаётся прокрутке страницы (touch-action: pan-y).
+ *
+ * Положение — одна переменная --ba-p (0…100) на корне. От неё считаются
+ * clip-path снимка «до» и сдвиг ручки (transform в единицах cqw контейнера),
+ * поэтому движение не трогает раскладку страницы. Когда слайдер впервые
+ * появляется на экране, полоска сама проезжает в стороны и возвращается —
+ * показывает, что её можно двигать. При prefers-reduced-motion проезда нет.
+ *
+ * Без JS (класс .no-js на <html>) снимки стоят рядом, каждый со своей меткой.
+ */
+import Icon from '../core/Icon.astro';
+import { CASE_PHOTO_RATIO, type CasePhoto } from '../../lib/case-photos';
+
+interface Props {
+  before: CasePhoto;
+  after: CasePhoto;
+  beforeAlt: string;
+  afterAlt: string;
+  /** Метки «До» / «После», подсказка «Потяните» и название для диктора */
+  labels: { before: string; after: string; drag: string; compare: string };
+  /** Адреса полей в редакторе (lib/cms-ref) для выбора блока в предпросмотре */
+  cms?: { before?: string; after?: string; tagBefore?: string; tagAfter?: string; drag?: string };
+}
+
+const { before, after, beforeAlt, afterAlt, labels, cms = {} } = Astro.props;
+
+/* Оба снимка сборка уже обрезала к одному кадру (lib/case-photos), рамка —
+   тех же пропорций. object-fit: cover в стилях — страховка от расхождения
+   в пиксель при округлении. */
+const ratio = CASE_PHOTO_RATIO;
+
+/** srcset из двух копий; у маленького исходника они одной ширины — тогда одна */
+const sources = (photo: CasePhoto) =>
+  photo.card.width < photo.full.width
+    ? `${photo.card.src} ${photo.card.width}w, ${photo.full.src} ${photo.full.width}w`
+    : `${photo.full.src} ${photo.full.width}w`;
+/* Рамка не шире 960px и не выше ~78% экрана (см. стили) */
+const sizes = '(min-width: 1040px) 960px, calc(100vw - 40px)';
+---
+
+<div
+  class="dc-ba"
+  data-ba
+  data-label-before={labels.before}
+  data-label-after={labels.after}
+  style={`--ba-ratio:${ratio.toFixed(4)};`}
+>
+  <div class="dc-ba__stage" data-ba-stage>
+    <figure class="dc-ba__pane dc-ba__pane--before">
+      <img
+        src={before.full.src}
+        srcset={sources(before)}
+        sizes={sizes}
+        width={before.full.width}
+        height={before.full.height}
+        alt={beforeAlt}
+        decoding="async"
+        draggable="false"
+        data-cms={cms.before}
+      />
+      <figcaption class="dc-ba__tag dc-ba__tag--before" data-cms={cms.tagBefore}>{labels.before}</figcaption>
+    </figure>
+    <figure class="dc-ba__pane dc-ba__pane--after">
+      <img
+        src={after.full.src}
+        srcset={sources(after)}
+        sizes={sizes}
+        width={after.full.width}
+        height={after.full.height}
+        alt={afterAlt}
+        decoding="async"
+        fetchpriority="high"
+        draggable="false"
+        data-cms={cms.after}
+      />
+      <figcaption class="dc-ba__tag dc-ba__tag--after" data-cms={cms.tagAfter}>{labels.after}</figcaption>
+    </figure>
+
+    <div
+      class="dc-ba__handle"
+      data-ba-handle
+      role="slider"
+      tabindex="0"
+      aria-label={labels.compare}
+      aria-orientation="horizontal"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="50"
+      aria-valuetext={`${labels.before} 50 %, ${labels.after.toLowerCase()} 50 %`}
+    >
+      <span class="dc-ba__grip" aria-hidden="true">
+        <Icon name="chevron-left" size={20} strokeWidth={2.6} />
+        <Icon name="chevron-right" size={20} strokeWidth={2.6} />
+      </span>
+      <span class="dc-ba__hint" aria-hidden="true" data-cms={cms.drag}>{labels.drag}</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .dc-ba {
+    /* Положение полоски, 0…100; меняет скрипт */
+    --ba-p: 50;
+    /* Рамка не выше ~78% экрана: квадратный и портретный снимок на
+       ноутбуке иначе не помещался целиком вместе с ручкой */
+    width: min(100%, 960px, calc(78svh * var(--ba-ratio)));
+    margin-inline: auto;
+  }
+
+  .dc-ba__stage {
+    position: relative;
+    aspect-ratio: var(--ba-ratio);
+    /* Единицы cqw для сдвига ручки — от ширины рамки */
+    container-type: inline-size;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--grad-shallow);
+    box-shadow: var(--shadow-md);
+    /* Вертикальный свайп — прокрутка страницы, горизонтальный — слайдер */
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    cursor: ew-resize;
+  }
+
+  .dc-ba__pane {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+  }
+  .dc-ba__pane img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  /* «До» сверху и видна слева от полоски */
+  .dc-ba__pane--before {
+    z-index: 1;
+    clip-path: inset(0 calc(100% - var(--ba-p) * 1%) 0 0);
+  }
+
+  .dc-ba__tag {
+    position: absolute;
+    top: var(--space-3);
+    padding: 6px 12px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    line-height: 1.2;
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+  .dc-ba__tag--before {
+    left: var(--space-3);
+    background: var(--glass-dark);
+    color: var(--text-on-dark);
+  }
+  .dc-ba__tag--after {
+    right: var(--space-3);
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+  }
+  /* Сторона почти скрыта — её метка гаснет, чтобы не висела на чужом фото */
+  .dc-ba[data-hide-before] .dc-ba__tag--before,
+  .dc-ba[data-hide-after] .dc-ba__tag--after {
+    opacity: 0;
+  }
+
+  /* Ручка: зона касания 48px во всю высоту, сдвиг — transform */
+  .dc-ba__handle {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--tap-min);
+    margin-left: calc(var(--tap-min) / -2);
+    transform: translateX(calc(var(--ba-p) * 1cqw));
+    display: grid;
+    place-items: center;
+    outline: none;
+  }
+  /* Сама полоска */
+  .dc-ba__handle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    margin-left: -1.5px;
+    background: var(--dc-white);
+    box-shadow: 0 0 0 1px rgba(4, 48, 65, 0.18), 0 0 12px rgba(4, 48, 65, 0.25);
+  }
+  .dc-ba__grip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--dc-white);
+    color: var(--text-accent);
+    box-shadow: var(--shadow-lg), 0 0 0 4px rgba(255, 255, 255, 0.45);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .dc-ba__grip :global(svg) {
+    margin-inline: -3px;
+  }
+  .dc-ba__stage:hover .dc-ba__grip,
+  .dc-ba.is-dragging .dc-ba__grip {
+    transform: scale(1.08);
+  }
+  .dc-ba__handle:focus-visible .dc-ba__grip {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  /* «Потяните» — под ручкой; после первого касания гаснет навсегда */
+  .dc-ba__hint {
+    position: absolute;
+    top: calc(50% + 40px);
+    left: 50%;
+    translate: -50% 0;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--glass-dark);
+    color: var(--text-on-dark);
+    font-family: var(--font-body);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+    line-height: 1.2;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+  .dc-ba.is-touched .dc-ba__hint {
+    opacity: 0;
+  }
+
+  /* Перенос по нажатию и клавишам Home/End — плавно; при перетаскивании
+     полоска идёт за пальцем без задержки */
+  .dc-ba.is-jump .dc-ba__pane--before {
+    transition: clip-path 260ms var(--ease-out);
+  }
+  .dc-ba.is-jump .dc-ba__handle {
+    transition: transform 260ms var(--ease-out);
+  }
+
+  /* Без JS — просто два снимка рядом */
+  :global(.no-js) .dc-ba {
+    width: min(100%, 960px);
+  }
+  :global(.no-js) .dc-ba__stage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    aspect-ratio: auto;
+    container-type: normal;
+    overflow: visible;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    cursor: auto;
+    user-select: auto;
+    -webkit-user-select: auto;
+  }
+  :global(.no-js) .dc-ba__pane {
+    position: relative;
+    inset: auto;
+    aspect-ratio: var(--ba-ratio);
+    clip-path: none;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  :global(.no-js) .dc-ba__tag--after {
+    left: var(--space-3);
+    right: auto;
+  }
+  :global(.no-js) .dc-ba__handle {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dc-ba__grip,
+    .dc-ba__tag,
+    .dc-ba__hint,
+    .dc-ba.is-jump .dc-ba__pane--before,
+    .dc-ba.is-jump .dc-ba__handle {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const clamp = (value: number) => Math.min(100, Math.max(0, value));
+  /** Сдвиг пальца, после которого жест считается горизонтальным, px */
+  const SLOP = 6;
+  /** Проезд при первом показе: точки и время перехода к каждой, мс */
+  const INTRO: [number, number][] = [
+    [80, 650],
+    [20, 950],
+    [50, 650],
+  ];
+
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((root) => {
+    const stage = root.querySelector<HTMLElement>('[data-ba-stage]');
+    const handle = root.querySelector<HTMLElement>('[data-ba-handle]');
+    if (!stage || !handle) return;
+    const labelBefore = root.dataset.labelBefore ?? '';
+    const labelAfter = (root.dataset.labelAfter ?? '').toLowerCase();
+
+    let position = 50;
+    let jumpTimer = 0;
+    let introFrame = 0;
+
+    const set = (value: number, announce = true) => {
+      position = clamp(value);
+      root.style.setProperty('--ba-p', position.toFixed(2));
+      root.toggleAttribute('data-hide-before', position < 12);
+      root.toggleAttribute('data-hide-after', position > 88);
+      // Во время проезда диктору не о чем сообщать — значение вернётся к 50
+      if (!announce) return;
+      const shown = Math.round(position);
+      handle.setAttribute('aria-valuenow', String(shown));
+      handle.setAttribute('aria-valuetext', `${labelBefore} ${shown} %, ${labelAfter} ${100 - shown} %`);
+    };
+
+    /** Плавный перенос (нажатие, Home/End) — класс с transition на миг */
+    const jump = (value: number) => {
+      root.classList.add('is-jump');
+      set(value);
+      window.clearTimeout(jumpTimer);
+      jumpTimer = window.setTimeout(() => root.classList.remove('is-jump'), 280);
+    };
+
+    const stopIntro = () => {
+      if (introFrame) window.cancelAnimationFrame(introFrame);
+      introFrame = 0;
+    };
+
+    /** Первое касание: подсказка гаснет, проезд прекращается */
+    const touched = () => {
+      stopIntro();
+      root.classList.add('is-touched');
+    };
+
+    /* ── Мышь и палец ── */
+    let rect: DOMRect | null = null;
+    let pointer: { id: number; x: number; y: number; dragging: boolean } | null = null;
+    const at = (clientX: number) => (rect ? ((clientX - rect.left) / rect.width) * 100 : position);
+
+    stage.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || pointer) return;
+      touched();
+      // Размер рамки читаем раз на жест, а не на каждое движение
+      rect = stage.getBoundingClientRect();
+      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false };
+      if (event.pointerType === 'mouse') {
+        // Мышь: полоска сразу под курсором, дальше тянем
+        event.preventDefault();
+        pointer.dragging = true;
+        stage.setPointerCapture(event.pointerId);
+        root.classList.add('is-dragging');
+        jump(at(event.clientX));
+      }
+      // Палец и перо: ждём первого движения — вдруг это прокрутка страницы
+    });
+
+    stage.addEventListener('pointermove', (event) => {
+      if (!pointer || event.pointerId !== pointer.id) return;
+      if (!pointer.dragging) {
+        const dx = Math.abs(event.clientX - pointer.x);
+        const dy = Math.abs(event.clientY - pointer.y);
+        if (dx < SLOP || dx < dy) return;
+        pointer.dragging = true;
+        stage.setPointerCapture(event.pointerId);
+        root.classList.add('is-dragging');
+      }
+      root.classList.remove('is-jump');
+      set(at(event.clientX));
+    });
+
+    const release = (event: PointerEvent, tap: boolean) => {
+      if (!pointer || event.pointerId !== pointer.id) return;
+      // Касание без движения — перенос полоски в место касания
+      if (tap && !pointer.dragging) jump(at(event.clientX));
+      if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+      root.classList.remove('is-dragging');
+      pointer = null;
+      rect = null;
+    };
+    stage.addEventListener('pointerup', (event) => release(event, true));
+    // Браузер забрал жест под прокрутку — ничего не двигаем
+    stage.addEventListener('pointercancel', (event) => release(event, false));
+
+    /* ── Клавиатура ── */
+    handle.addEventListener('keydown', (event) => {
+      const step = event.shiftKey ? 10 : 2;
+      const keys: Record<string, number> = {
+        ArrowLeft: position - step,
+        ArrowDown: position - step,
+        ArrowRight: position + step,
+        ArrowUp: position + step,
+        PageDown: position - 10,
+        PageUp: position + 10,
+        Home: 0,
+        End: 100,
+      };
+      if (!(event.key in keys)) return;
+      event.preventDefault();
+      touched();
+      jump(keys[event.key]);
+    });
+
+    /* ── Проезд при первом показе ── */
+    if (reduced.matches || !('IntersectionObserver' in window)) return;
+    const ease = (t: number) => 0.5 - Math.cos(Math.PI * t) / 2;
+    const playIntro = () => {
+      let leg = 0;
+      let from = position;
+      let start = performance.now();
+      const frame = (now: number) => {
+        const [to, duration] = INTRO[leg];
+        const t = Math.min(1, (now - start) / duration);
+        set(from + (to - from) * ease(t), false);
+        if (t < 1) {
+          introFrame = window.requestAnimationFrame(frame);
+          return;
+        }
+        leg += 1;
+        if (leg >= INTRO.length) {
+          introFrame = 0;
+          set(position);
+          return;
+        }
+        from = to;
+        start = now;
+        introFrame = window.requestAnimationFrame(frame);
+      };
+      introFrame = window.requestAnimationFrame(frame);
+    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        // Пауза, чтобы взгляд успел остановиться на снимке
+        window.setTimeout(() => {
+          if (!root.classList.contains('is-touched')) playIntro();
+        }, 350);
+      },
+      { threshold: 0.6 },
+    );
+    observer.observe(stage);
+  });
+</script>

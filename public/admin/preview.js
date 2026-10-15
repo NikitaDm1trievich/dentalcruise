@@ -101,8 +101,10 @@
         return slug ? 'uslugi/' + slug + '/' : 'pricelist/';
       case 'price-list':
         return 'pricelist/' + (data && data.slug ? '#' + data.slug : '');
+      // Страница работы есть только у опубликованной (оба фото): новая
+      // работа до сохранения откроется страницей 404 — как новый врач.
       case 'cases':
-        return 'gallery/';
+        return slug ? 'gallery/' + slug + '/' : 'gallery/';
       default:
         return '';
     }
