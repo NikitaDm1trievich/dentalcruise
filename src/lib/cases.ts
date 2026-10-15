@@ -15,7 +15,7 @@ export type PublishedCase = {
   before: CasePhoto;
   after: CasePhoto;
   /** Ещё снимки работы; без загруженного файла снимок просто пропускается */
-  photos: { photo: CasePhoto; caption?: string }[];
+  photos: { photo: CasePhoto; caption: string | undefined }[];
 };
 
 let cached: Promise<PublishedCase[]> | undefined;
