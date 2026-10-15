@@ -2004,7 +2004,8 @@ collections:
       - name: experience
         label: Стаж
         widget: string
-        hint: 'Без слова «стаж»: на сайте оно добавляется само. Например, «6 лет».'
+        required: false
+        hint: 'Без слова «стаж»: на сайте оно добавляется само. Например, «6 лет». Пусто — стаж не показывается.'
       - name: note
         label: Короткий факт о враче
         widget: text
@@ -2028,6 +2029,14 @@ collections:
         widget: boolean
         default: false
         hint: Врач появится в блоке «6. Врачи» на главной.
+      - name: staff
+        label: Не врач (зубной техник, ассистент)
+        widget: boolean
+        default: false
+        required: false
+        hint: >-
+          Сотрудник показывается на сайте, как врачи, но не попадает в фид
+          врачей для Яндекса и не размечается для поиска как врач.
       - name: about
         label: 'О враче: абзацы'
         label_singular: абзац

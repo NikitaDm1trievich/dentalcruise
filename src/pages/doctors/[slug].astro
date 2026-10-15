@@ -58,22 +58,36 @@ const undated = d.education.filter((row) => !row.year);
  */
 const pageUrl = absolute(`doctors/${doctor.id}`, Astro.site);
 const years = experienceYears(d.experience);
-const doctorSchema: Record<string, unknown> = {
-  '@context': 'https://schema.org',
-  '@type': 'Physician',
-  '@id': `${pageUrl}#physician`,
-  name: d.name,
-  url: pageUrl,
-  jobTitle: d.speciality,
-  medicalSpecialty: 'Dentistry',
-  description: d.note,
-  worksFor: clinicRef(Astro.site, clinic),
-  availableService: services.map((page) => ({
-    '@type': 'MedicalProcedure',
-    name: page.data.title,
-    url: absolute(`uslugi/${page.id}`, Astro.site),
-  })),
-};
+/** «, стаж 6 лет» — только когда стаж указан */
+const stazh = d.experience ? `, стаж ${d.experience}` : '';
+/* Зубной техник и другие сотрудники — не врачи: для них просто Person */
+const doctorSchema: Record<string, unknown> = d.staff
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      '@id': `${pageUrl}#person`,
+      name: d.name,
+      url: pageUrl,
+      jobTitle: d.speciality,
+      description: d.note,
+      worksFor: clinicRef(Astro.site, clinic),
+    }
+  : {
+      '@context': 'https://schema.org',
+      '@type': 'Physician',
+      '@id': `${pageUrl}#physician`,
+      name: d.name,
+      url: pageUrl,
+      jobTitle: d.speciality,
+      medicalSpecialty: 'Dentistry',
+      description: d.note,
+      worksFor: clinicRef(Astro.site, clinic),
+      availableService: services.map((page) => ({
+        '@type': 'MedicalProcedure',
+        name: page.data.title,
+        url: absolute(`uslugi/${page.id}`, Astro.site),
+      })),
+    };
 if (d.photo) doctorSchema.image = absolute(d.photo, Astro.site);
 if (d.skills.length > 0) doctorSchema.knowsAbout = d.skills;
 /* Диплом с подтверждённым годом — единственное, что можно назвать
@@ -104,15 +118,15 @@ if (years) {
   уходили в сборку с пустым <title>.
 */}
 <PageLayout
-  title={d.seoTitle || `${d.name} — ${d.speciality}, стаж ${d.experience} | Дентал Круиз`}
+  title={d.seoTitle || `${d.name} — ${d.speciality}${stazh} | Дентал Круиз`}
   description={
     d.seoDescription ||
     clampText(
-      `${d.name} — ${d.speciality.toLowerCase()} клиники «Дентал Круиз», стаж ${d.experience}. ${d.note} Запись по телефону ${clinic.phone}.`,
+      `${d.name} — ${d.speciality.toLowerCase()} клиники «Дентал Круиз»${stazh}. ${d.note} Запись по телефону ${clinic.phone}.`,
     )
   }
   path={`/doctors/${doctor.id}`}
-  eyebrow={`${d.speciality} · ${copy.experience.toLowerCase()} ${d.experience}`}
+  eyebrow={d.experience ? `${d.speciality} · ${copy.experience.toLowerCase()} ${d.experience}` : d.speciality}
   heading={d.name}
   lead={d.note}
   breadcrumbs={[
@@ -125,7 +139,8 @@ if (years) {
   <div slot="head-extra" class="dc-doc-page__actions">
     <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('doctor-page', 'book')}>
       <Icon slot="icon" name="calendar" size={20} />
-      {copy.book}
+      {/* К зубному технику не записываются — у него общая кнопка записи */}
+      {d.staff ? copy.foot.book : copy.book}
     </Button>
     <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
       <Icon slot="icon" name="phone" size={20} />

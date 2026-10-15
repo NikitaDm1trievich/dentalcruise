@@ -50,12 +50,16 @@ const doctors = defineCollection({
   schema: z.object({
     name: z.string(),
     speciality: z.string(),
-    experience: z.string(),
+    /** Стаж; пусто — не показывается (выдумывать нельзя) */
+    experience: textOr(''),
     note: z.string(),
     extra: text(),
     photo: text(),
     photoLabel: textOr('Здесь фото врача'),
     featured: flag(),
+    /** Не врач (зубной техник, ассистент): нет в фиде врачей Яндекса,
+        в разметке страницы — Person, а не Physician */
+    staff: flag(),
     /* ── Поля персональной страницы /doctors/<файл>. Все необязательные:
           пустые блоки на странице не рисуются. ───────────────────────── */
     /** Пара абзацев о подходе врача */

@@ -57,7 +57,10 @@ const SHOP_PICTURE = 'apple-touch-icon.png';
 const CLINIC_PICTURE = 'images/clinic/clinic-01.jpg';
 
 export const GET: APIRoute = async ({ site }) => {
-  const doctors = (await getCollection('doctors')).sort((a, b) => a.data.order - b.data.order);
+  // Зубной техник и другие сотрудники-не врачи в фид врачей не идут
+  const doctors = (await getCollection('doctors'))
+    .filter((doctor) => !doctor.data.staff)
+    .sort((a, b) => a.data.order - b.data.order);
   const servicePages = await getCollection('service-pages');
 
   /** Услуги, которые попали хотя бы в один оффер, — для блока <services>. */

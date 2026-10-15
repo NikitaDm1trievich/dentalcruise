@@ -65,7 +65,11 @@ const names = doctors.map((d) => d.data.name).join(', ');
                 <span class="dc-team__body">
                   <span class="dc-team__name">{doctor.data.name}</span>
                   <span class="dc-team__spec">{doctor.data.speciality}</span>
-                  <span class="dc-team__exp">{doctorPage.experience} {doctor.data.experience}</span>
+                  {doctor.data.experience && (
+                    <span class="dc-team__exp">
+                      {doctorPage.experience} {doctor.data.experience}
+                    </span>
+                  )}
                   <span class="dc-team__note">{doctor.data.note}</span>
                   <span class="dc-team__more" data-cms={cmsPage('team', 'more')}>
                     {page.more}
