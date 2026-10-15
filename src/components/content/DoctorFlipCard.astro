@@ -22,11 +22,13 @@ interface Props {
    * была тупиком — с неё можно было только записаться.
    */
   href?: string;
+  /** Не врач (зубной техник): своя подпись ссылки на страницу */
+  staff?: boolean;
   /** Запись врача в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
   cms?: string;
 }
 
-const { name, speciality, experience, note, extra, photo, photoLabel, href, cms } = Astro.props;
+const { name, speciality, experience, note, extra, photo, photoLabel, href, staff, cms } = Astro.props;
 const facts = [experience && `${doctorPage.experience} ${experience}`, note, extra].filter(Boolean) as string[];
 ---
 
@@ -71,8 +73,8 @@ const facts = [experience && `${doctorPage.experience} ${experience}`, note, ext
       <div class="dc-doc__actions">
         {
           href && (
-            <a href={href} class="dc-doc__more" data-cms={cmsText('doctors.cardPage')}>
-              {copy.doctors.cardPage}
+            <a href={href} class="dc-doc__more" data-cms={cmsText(staff ? 'doctors.cardPageStaff' : 'doctors.cardPage')}>
+              {staff ? copy.doctors.cardPageStaff : copy.doctors.cardPage}
               <Icon name="arrow-right" size={16} strokeWidth={2.2} />
             </a>
           )

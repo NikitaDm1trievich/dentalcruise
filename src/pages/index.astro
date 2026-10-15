@@ -292,6 +292,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
                 photo={doctor.data.photo}
                 photoLabel={doctor.data.photoLabel}
                 href={pageHref(`doctors/${doctor.id}`)}
+                staff={doctor.data.staff}
                 cms={`doctors/${doctor.id}`}
               />
             </Reveal>

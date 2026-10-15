@@ -218,6 +218,10 @@ collections:
                   Внизу лицевой стороны. Слово перед стажем — в «Страницы
                   сайта» → «Страница врача — общие тексты».
               - { name: cardPage, label: 'Карточка: ссылка на страницу врача', widget: string }
+              - name: cardPageStaff
+                label: 'Карточка: ссылка на страницу техника'
+                widget: string
+                hint: 'Вместо ссылки «Страница врача» у сотрудников с галочкой «Не врач».'
               - { name: cardBook, label: 'Карточка: кнопка записи', widget: string }
 
           - name: why
@@ -1119,6 +1123,10 @@ collections:
           - { name: heading, label: Заголовок страницы, widget: string }
           - { name: lead, label: Текст под заголовком, widget: text }
           - { name: more, label: Ссылка внизу карточки врача, widget: string }
+          - name: moreStaff
+            label: Ссылка внизу карточки техника
+            widget: string
+            hint: 'У сотрудников с галочкой «Не врач», например «Подробнее о технике».'
           - { name: book, label: Кнопка записи под карточками, widget: string }
           - name: breadcrumb
             label: Название в хлебных крошках

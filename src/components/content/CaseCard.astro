@@ -3,11 +3,13 @@
  * Карточка работы «до/после» в ленте галереи (/gallery) и в блоке «Другие
  * работы» на странице работы.
  *
- * Превью — неподвижное сравнение: «после» целиком, «до» — левая половина
- * поверх, между ними полоска. Сразу видно, что это пара, и намекает на
- * слайдер внутри. Вся карточка нажимается: ссылка «Смотреть работу»
- * растянута на неё псевдоэлементом, отдельных ссылок внутри нет.
+ * Превью — тот же слайдер «до/после», что на странице работы (компактный
+ * вариант): полоску можно тянуть прямо в ленте. Остальная карточка
+ * нажимается: ссылка «Смотреть работу» растянута на неё псевдоэлементом,
+ * а слайдер лежит выше этой ссылки — жест по снимку двигает полоску, а не
+ * открывает работу.
  */
+import BeforeAfter from '../media/BeforeAfter.astro';
 import Icon from '../core/Icon.astro';
 import { galleryPage as page } from '../../data/pages';
 import { pageHref } from '../../lib/asset';
@@ -28,29 +30,21 @@ const href = pageHref(`gallery/${entry.id}`);
 
 <article class="dc-case" data-case={d.category} data-cms={`cases/${entry.id}`}>
   <div class="dc-case__preview">
-    <img
-      class="dc-case__img"
-      src={after.card.src}
-      width={after.card.width}
-      height={after.card.height}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      data-cms={`cases/${entry.id}:after`}
+    <BeforeAfter
+      compact
+      before={before}
+      after={after}
+      beforeAlt={`${d.title}: ${page.before.toLowerCase()}`}
+      afterAlt={`${d.title}: ${page.after.toLowerCase()}`}
+      labels={{ before: page.before, after: page.after, drag: page.case.drag, compare: `${page.case.compare}: ${d.title}` }}
+      cms={{
+        before: `cases/${entry.id}:before`,
+        after: `cases/${entry.id}:after`,
+        tagBefore: cmsPage('gallery', 'before'),
+        tagAfter: cmsPage('gallery', 'after'),
+        drag: cmsPage('gallery', 'case.drag'),
+      }}
     />
-    <img
-      class="dc-case__img dc-case__img--before"
-      src={before.card.src}
-      width={before.card.width}
-      height={before.card.height}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      data-cms={`cases/${entry.id}:before`}
-    />
-    <span class="dc-case__line" aria-hidden="true"></span>
-    <span class="dc-case__tag dc-case__tag--before" data-cms={cmsPage('gallery', 'before')}>{page.before}</span>
-    <span class="dc-case__tag dc-case__tag--after" data-cms={cmsPage('gallery', 'after')}>{page.after}</span>
   </div>
   <div class="dc-case__body">
     <Heading class="dc-case__title">{d.title}</Heading>
@@ -86,52 +80,10 @@ const href = pageHref(`gallery/${entry.id}`);
     box-shadow: var(--shadow-md);
   }
 
+  /* Слайдер выше растянутой ссылки карточки: жест по снимку — сравнение */
   .dc-case__preview {
     position: relative;
-    aspect-ratio: 4 / 3;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    background: var(--grad-shallow);
-  }
-  .dc-case__img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .dc-case__img--before {
-    clip-path: inset(0 50% 0 0);
-  }
-  .dc-case__line {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 2px;
-    margin-left: -1px;
-    background: var(--dc-white);
-    box-shadow: 0 0 8px rgba(4, 48, 65, 0.3);
-  }
-  .dc-case__tag {
-    position: absolute;
-    top: var(--space-2);
-    padding: 5px 12px;
-    border-radius: var(--radius-pill);
-    font-family: var(--font-body);
-    font-size: var(--type-small);
-    font-weight: var(--fw-bold);
-    line-height: 1.2;
-  }
-  .dc-case__tag--before {
-    left: var(--space-2);
-    background: var(--glass-dark);
-    color: var(--text-on-dark);
-  }
-  .dc-case__tag--after {
-    right: var(--space-2);
-    background: var(--cta-bg);
-    color: var(--cta-fg);
+    z-index: 1;
   }
 
   /* Ссылка прижата к низу: в ряду карточек с разной длиной текста

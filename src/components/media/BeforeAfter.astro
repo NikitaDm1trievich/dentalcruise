@@ -15,6 +15,9 @@
  * показывает, что её можно двигать. При prefers-reduced-motion проезда нет.
  *
  * Без JS (класс .no-js на <html>) снимки стоят рядом, каждый со своей меткой.
+ *
+ * compact — для карточки в ленте работ: во всю ширину карточки, ручка
+ * меньше, снимки малой копией и с отложенной загрузкой.
  */
 import Icon from '../core/Icon.astro';
 import { CASE_PHOTO_RATIO, type CasePhoto } from '../../lib/case-photos';
@@ -28,9 +31,11 @@ interface Props {
   labels: { before: string; after: string; drag: string; compare: string };
   /** Адреса полей в редакторе (lib/cms-ref) для выбора блока в предпросмотре */
   cms?: { before?: string; after?: string; tagBefore?: string; tagAfter?: string; drag?: string };
+  /** Вариант для карточки в ленте работ */
+  compact?: boolean;
 }
 
-const { before, after, beforeAlt, afterAlt, labels, cms = {} } = Astro.props;
+const { before, after, beforeAlt, afterAlt, labels, cms = {}, compact = false } = Astro.props;
 
 /* Оба снимка сборка уже обрезала к одному кадру (lib/case-photos), рамка —
    тех же пропорций. object-fit: cover в стилях — страховка от расхождения
@@ -42,12 +47,17 @@ const sources = (photo: CasePhoto) =>
   photo.card.width < photo.full.width
     ? `${photo.card.src} ${photo.card.width}w, ${photo.full.src} ${photo.full.width}w`
     : `${photo.full.src} ${photo.full.width}w`;
-/* Рамка не шире 960px и не выше ~78% экрана (см. стили) */
-const sizes = '(min-width: 1040px) 960px, calc(100vw - 40px)';
+/* Рамка не шире 960px и не выше ~78% экрана (см. стили); в карточке ленты —
+   колонка сетки шириной от 320px */
+const sizes = compact
+  ? '(min-width: 1040px) 400px, (min-width: 700px) 50vw, calc(100vw - 40px)'
+  : '(min-width: 1040px) 960px, calc(100vw - 40px)';
+/* В ленте карточек много — снимки грузятся по мере прокрутки */
+const loading = compact ? 'lazy' : undefined;
 ---
 
 <div
-  class="dc-ba"
+  class:list={['dc-ba', { 'dc-ba--compact': compact }]}
   data-ba
   data-label-before={labels.before}
   data-label-after={labels.after}
@@ -62,6 +72,7 @@ const sizes = '(min-width: 1040px) 960px, calc(100vw - 40px)';
         width={before.full.width}
         height={before.full.height}
         alt={beforeAlt}
+        loading={loading}
         decoding="async"
         draggable="false"
         data-cms={cms.before}
@@ -76,8 +87,9 @@ const sizes = '(min-width: 1040px) 960px, calc(100vw - 40px)';
         width={after.full.width}
         height={after.full.height}
         alt={afterAlt}
+        loading={loading}
         decoding="async"
-        fetchpriority="high"
+        fetchpriority={compact ? undefined : 'high'}
         draggable="false"
         data-cms={cms.after}
       />
@@ -259,6 +271,36 @@ const sizes = '(min-width: 1040px) 960px, calc(100vw - 40px)';
   }
   .dc-ba.is-jump .dc-ba__handle {
     transition: transform 260ms var(--ease-out);
+  }
+
+  /* Карточка в ленте: во всю ширину, без своей тени, ручка меньше */
+  .dc-ba--compact {
+    width: 100%;
+  }
+  .dc-ba--compact .dc-ba__stage {
+    border-radius: var(--radius-md);
+    box-shadow: none;
+  }
+  .dc-ba--compact .dc-ba__tag {
+    top: var(--space-2);
+    padding: 5px 12px;
+  }
+  .dc-ba--compact .dc-ba__tag--before {
+    left: var(--space-2);
+  }
+  .dc-ba--compact .dc-ba__tag--after {
+    right: var(--space-2);
+  }
+  .dc-ba--compact .dc-ba__grip {
+    width: 44px;
+    height: 44px;
+  }
+  .dc-ba--compact .dc-ba__grip :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+  .dc-ba--compact .dc-ba__hint {
+    top: calc(50% + 32px);
   }
 
   /* Без JS — просто два снимка рядом */

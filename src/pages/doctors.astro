@@ -71,8 +71,8 @@ const names = doctors.map((d) => d.data.name).join(', ');
                     </span>
                   )}
                   <span class="dc-team__note">{doctor.data.note}</span>
-                  <span class="dc-team__more" data-cms={cmsPage('team', 'more')}>
-                    {page.more}
+                  <span class="dc-team__more" data-cms={cmsPage('team', doctor.data.staff ? 'moreStaff' : 'more')}>
+                    {doctor.data.staff ? page.moreStaff : page.more}
                     <Icon name="arrow-right" size={16} />
                   </span>
                 </span>
