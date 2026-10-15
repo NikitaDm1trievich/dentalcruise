@@ -75,6 +75,8 @@ export const galleryPage: {
     drag: string;
     about: string;
     steps: string;
+    /** Заголовок блока «Ещё снимки» под слайдером */
+    photos: string;
     other: string;
     prev: string;
     next: string;

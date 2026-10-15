@@ -1,0 +1,25 @@
+{
+  "title": "Восстановление улыбки",
+  "category": "",
+  "before": "/images/cases/smile-restoration-01-before.jpg",
+  "beforePosition": "44% 50%",
+  "beforeZoom": null,
+  "after": "/images/cases/smile-restoration-01-after.jpg",
+  "afterPosition": "58% 8%",
+  "afterZoom": 190,
+  "beforeCaption": "",
+  "afterCaption": "",
+  "photos": [
+    {
+      "photo": "/images/cases/smile-restoration-01-after-side.jpg",
+      "position": "5% 0%",
+      "zoom": 140,
+      "caption": ""
+    }
+  ],
+  "note": "",
+  "description": "",
+  "steps": [],
+  "seoDescription": "",
+  "order": 50
+}

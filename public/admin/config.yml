@@ -1428,6 +1428,7 @@ collections:
                 hint: 'Гаснет, как только посетитель потянет полоску: «Потяните».'
               - { name: about, label: Заголовок рассказа о работе, widget: string }
               - { name: steps, label: Заголовок списка этапов, widget: string }
+              - { name: photos, label: Заголовок блока «Ещё снимки», widget: string }
               - { name: other, label: Заголовок блока соседних работ, widget: string }
               - { name: prev, label: Подпись предыдущей работы, widget: string }
               - { name: next, label: Подпись следующей работы, widget: string }
@@ -2187,6 +2188,41 @@ collections:
         widget: text
         required: false
         hint: Под слайдером рядом с подписью «до». Что сделано в итоге.
+      - name: photos
+        label: Ещё снимки
+        label_singular: снимок
+        widget: list
+        required: false
+        collapsed: true
+        summary: '{{fields.caption}}'
+        hint: >-
+          Необязательно. Снимки, которые не нужно сравнивать в слайдере:
+          улыбка сбоку, вторая челюсть, этап лечения. На странице работы —
+          под слайдером, каждый со своей подписью.
+        fields:
+          - name: photo
+            label: Фото
+            widget: image
+            media_folder: /src/assets/cases
+            public_folder: /images/cases
+          - name: position
+            label: Какую часть оставить в кадре
+            widget: string
+            required: false
+            hint: Необязательно. Как у фото «до», например «50% 30%».
+          - name: zoom
+            label: Увеличение, %
+            widget: number
+            value_type: int
+            min: 100
+            max: 400
+            required: false
+            hint: Необязательно. Как у фото «до», например 150.
+          - name: caption
+            label: Подпись
+            widget: text
+            required: false
+            hint: 'Под снимком, например «После. Улыбка сбоку».'
       - name: note
         label: Короткое описание
         widget: text

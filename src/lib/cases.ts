@@ -14,6 +14,8 @@ export type PublishedCase = {
   entry: CollectionEntry<'cases'>;
   before: CasePhoto;
   after: CasePhoto;
+  /** Ещё снимки работы; без загруженного файла снимок просто пропускается */
+  photos: { photo: CasePhoto; caption?: string }[];
 };
 
 let cached: Promise<PublishedCase[]> | undefined;
@@ -27,11 +29,13 @@ async function load(): Promise<PublishedCase[]> {
   const cases = await Promise.all(
     entries.map(async (entry) => {
       const { before: b, after: a, beforePosition, afterPosition, beforeZoom, afterZoom } = entry.data;
-      const [before, after] = await Promise.all([
+      const [before, after, ...more] = await Promise.all([
         casePhoto({ value: b, position: beforePosition, zoom: beforeZoom }),
         casePhoto({ value: a, position: afterPosition, zoom: afterZoom }),
+        ...entry.data.photos.map(({ photo, position, zoom }) => casePhoto({ value: photo, position, zoom })),
       ]);
-      return before && after ? { entry, before, after } : undefined;
+      const photos = more.flatMap((photo, i) => (photo ? [{ photo, caption: entry.data.photos[i].caption }] : []));
+      return before && after ? { entry, before, after, photos } : undefined;
     }),
   );
   return cases.filter((item): item is PublishedCase => Boolean(item));

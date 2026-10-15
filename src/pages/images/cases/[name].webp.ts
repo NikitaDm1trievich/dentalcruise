@@ -16,6 +16,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const sources = cases.flatMap(({ entry: { data } }) => [
     { value: data.before, position: data.beforePosition, zoom: data.beforeZoom },
     { value: data.after, position: data.afterPosition, zoom: data.afterZoom },
+    ...data.photos.map(({ photo, position, zoom }) => ({ value: photo, position, zoom })),
   ]);
   // Расширение — в имени файла маршрута: так Astro понимает, что это файл,
   // и не требует слеша на конце адреса (trailingSlash: 'always')

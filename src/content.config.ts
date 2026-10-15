@@ -119,6 +119,16 @@ const cases = defineCollection({
     /** Подписи под снимками на странице работы */
     beforeCaption: text(),
     afterCaption: text(),
+    /** Ещё снимки под слайдером: другой ракурс, вторая челюсть. Не сравниваются,
+        стоят рядом по одному; кадр, увеличение и знак — как у «до/после» */
+    photos: list(
+      z.object({
+        photo: text(),
+        position: text(),
+        zoom: percent(),
+        caption: text(),
+      }),
+    ),
     /** Короткая строка: карточка в ленте и текст под заголовком работы */
     note: text(),
     /** Рассказ о работе; абзацы разделены пустой строкой */
@@ -372,7 +382,8 @@ const comparison = defineCollection({
 export const collections = {
   doctors,
   services,
-  cases,  faq,
+  cases,
+  faq,
   promos,
   brands,
   'price-list': priceList,

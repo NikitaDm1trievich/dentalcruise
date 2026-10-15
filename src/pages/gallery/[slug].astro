@@ -10,7 +10,7 @@
  *
  * Страница есть только у опубликованной работы (оба фото на месте,
  * src/lib/cases.ts), поэтому ссылка из ленты не ведёт в 404. Необязательные
- * блоки (подписи, описание, этапы) без данных не рисуются.
+ * блоки (подписи, ещё снимки, описание, этапы) без данных не рисуются.
  */
 import type { GetStaticPaths } from 'astro';
 
@@ -26,6 +26,7 @@ import { pageHref } from '../../lib/asset';
 import { cmsPage, cmsSite } from '../../lib/cms-ref';
 import { clampText } from '../../lib/seo';
 import { paragraphs, publishedCases, type PublishedCase } from '../../lib/cases';
+import type { CasePhoto } from '../../lib/case-photos';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const cases = await publishedCases();
@@ -42,7 +43,7 @@ interface Props {
 }
 
 const { item, prev, next } = Astro.props as unknown as Props;
-const { entry, before, after } = item;
+const { entry, before, after, photos } = item;
 const d = entry.data;
 const cms = `cases/${entry.id}`;
 
@@ -61,6 +62,15 @@ const description =
       .map((part) => part!.trim().replace(/[.!?…]+$/, ''))
       .join('. ') + '.',
   );
+
+/** srcset из двух копий, как у слайдера: у маленького исходника они одной ширины */
+const sources = (photo: CasePhoto) =>
+  photo.card.width < photo.full.width
+    ? `${photo.card.src} ${photo.card.width}w, ${photo.full.src} ${photo.full.width}w`
+    : `${photo.full.src} ${photo.full.width}w`;
+/* Один снимок — во всю ширину рамки слайдера, несколько — по два в ряд */
+const photoSizes =
+  photos.length > 1 ? '(min-width: 1040px) 470px, (min-width: 760px) 50vw, 100vw' : '(min-width: 1040px) 960px, 100vw';
 
 /** Соседи по ленте: «предыдущая» и «следующая» в её порядке */
 const neighbours = [prev && { item: prev, label: page.case.prev }, next && { item: next, label: page.case.next }].filter(
@@ -114,6 +124,35 @@ const neighbours = [prev && { item: prev, label: page.case.prev }, next && { ite
                 <span data-cms={`${cms}:afterCaption`}>{d.afterCaption}</span>
               </p>
             )}
+          </div>
+        )
+      }
+
+      {
+        photos.length > 0 && (
+          <div class="dc-more" data-cms={`${cms}:photos`}>
+            <h2 class="dc-more__title" data-cms={cmsPage('gallery', 'case.photos')}>
+              {page.case.photos}
+            </h2>
+            <ul class:list={['dc-more__list', { 'dc-more__list--pair': photos.length > 1 }]} role="list">
+              {photos.map(({ photo, caption }, i) => (
+                <Reveal as="li" delay={i * 70}>
+                  <figure class="dc-more__item">
+                    <img
+                      src={photo.full.src}
+                      srcset={sources(photo)}
+                      sizes={photoSizes}
+                      width={photo.full.width}
+                      height={photo.full.height}
+                      alt={`${d.title}: ${caption || page.case.photos.toLowerCase()}`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    {caption && <figcaption>{caption}</figcaption>}
+                  </figure>
+                </Reveal>
+              ))}
+            </ul>
           </div>
         )
       }
@@ -249,6 +288,48 @@ const neighbours = [prev && { item: prev, label: page.case.prev }, next && { ite
   .dc-caption__tag--after {
     background: var(--cta-bg);
     color: var(--cta-fg);
+  }
+
+  /* Та же ширина, что у слайдера и подписей */
+  .dc-more {
+    width: min(100%, 960px, calc(78svh * 4 / 3));
+    margin: var(--space-10) auto 0;
+    display: grid;
+    gap: var(--space-4);
+  }
+  .dc-more__title {
+    font-size: var(--type-h3);
+    margin: 0;
+  }
+  .dc-more__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-5);
+  }
+  @media (min-width: 760px) {
+    .dc-more__list--pair {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .dc-more__item {
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-more__item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    background: var(--surface-quiet);
+  }
+  .dc-more__item figcaption {
+    font-size: var(--type-small);
+    color: var(--text-body);
   }
 
   .dc-story {
