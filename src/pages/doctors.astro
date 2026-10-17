@@ -1,7 +1,8 @@
 ---
 /**
- * Список врачей. Карточка ведёт на персональную страницу /doctors/<файл>,
- * которую собирает src/pages/doctors/[slug].astro из того же JSON.
+ * Список врачей. Карточка (components/content/DoctorCard) ведёт на
+ * персональную страницу /doctors/<файл>, которую собирает
+ * src/pages/doctors/[slug].astro из того же JSON.
  */
 import { getCollection } from 'astro:content';
 
@@ -9,11 +10,10 @@ import PageLayout from '../layouts/PageLayout.astro';
 import Reveal from '../components/core/Reveal.astro';
 import Button from '../components/core/Button.astro';
 import Icon from '../components/core/Icon.astro';
-import PhotoPlaceholder from '../components/media/PhotoPlaceholder.astro';
+import DoctorCard from '../components/content/DoctorCard.astro';
 import TrustBar from '../components/content/TrustBar.astro';
 import { clinic } from '../data/site';
-import { doctorPage, teamPage as page } from '../data/pages';
-import { pageHref } from '../lib/asset';
+import { teamPage as page } from '../data/pages';
 import { cmsList, cmsPage, cmsSite } from '../lib/cms-ref';
 
 type Ordered = { data: { order: number } };
@@ -53,30 +53,7 @@ const names = doctors.map((d) => d.data.name).join(', ');
         {
           doctors.map((doctor, i) => (
             <Reveal as="li" delay={i * 70}>
-              <a href={pageHref(`doctors/${doctor.id}`)} class="dc-team__card" data-cms={`doctors/${doctor.id}`}>
-                <PhotoPlaceholder
-                  label={doctor.data.photoLabel}
-                  src={doctor.data.photo}
-                  alt={`${doctor.data.name}, ${doctor.data.speciality}`}
-                  ratio="3 / 4"
-                  radius="0"
-                  cover
-                />
-                <span class="dc-team__body">
-                  <span class="dc-team__name">{doctor.data.name}</span>
-                  <span class="dc-team__spec">{doctor.data.speciality}</span>
-                  {doctor.data.experience && (
-                    <span class="dc-team__exp">
-                      {doctorPage.experience} {doctor.data.experience}
-                    </span>
-                  )}
-                  <span class="dc-team__note">{doctor.data.note}</span>
-                  <span class="dc-team__more" data-cms={cmsPage('team', doctor.data.staff ? 'moreStaff' : 'more')}>
-                    {doctor.data.staff ? page.moreStaff : page.more}
-                    <Icon name="arrow-right" size={16} />
-                  </span>
-                </span>
-              </a>
+              <DoctorCard doctor={doctor} />
             </Reveal>
           ))
         }
@@ -135,65 +112,6 @@ const names = doctors.map((d) => d.data.name).join(', ');
     .dc-team > :global(li) {
       flex-basis: calc((100% - 2 * var(--space-5)) / 3);
     }
-  }
-
-  .dc-team__card {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    height: 100%;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    background: var(--surface-card);
-    border: 1px solid var(--line-hairline);
-    box-shadow: var(--shadow-sm);
-    text-decoration: none;
-    color: inherit;
-    transition:
-      box-shadow var(--dur-mid) var(--ease-out),
-      border-color var(--dur-mid) var(--ease-out);
-  }
-  .dc-team__card:hover {
-    box-shadow: var(--shadow-lg);
-    border-color: var(--line-strong);
-  }
-  .dc-team__body {
-    display: grid;
-    gap: var(--space-2);
-    align-content: start;
-    padding: var(--space-5);
-  }
-  /* Заголовок карточки — ФИО: к врачу записываются по имени, а специальность
-     повторяется у нескольких врачей и заголовком их не различает. */
-  .dc-team__name {
-    font-family: var(--font-display);
-    font-size: var(--type-h4);
-    font-weight: var(--fw-black);
-    line-height: var(--lh-tight);
-    color: var(--text-strong);
-    text-wrap: balance;
-  }
-  .dc-team__spec {
-    font-size: var(--type-small);
-    font-weight: var(--fw-medium);
-    color: var(--text-muted);
-  }
-  .dc-team__exp {
-    font-size: var(--type-small);
-    font-weight: var(--fw-bold);
-    color: var(--text-accent);
-  }
-  .dc-team__note {
-    font-size: var(--type-small);
-    color: var(--text-muted);
-  }
-  .dc-team__more {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: var(--space-2);
-    font-size: var(--type-small);
-    font-weight: var(--fw-bold);
-    color: var(--text-accent);
   }
 
   .dc-actions {

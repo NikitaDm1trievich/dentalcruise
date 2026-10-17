@@ -55,7 +55,6 @@
     catalog: 'services',
     brands: 'brands',
     comparison: 'why',
-    chart: 'why',
     trust: 'trust',
     faq: 'faq',
   };
@@ -857,7 +856,6 @@
     'problems',
     'brands',
     'comparison',
-    'chart',
     'trust',
     'faq',
     // «Страницы сайта»

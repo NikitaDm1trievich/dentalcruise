@@ -55,6 +55,9 @@ const doctors = defineCollection({
     note: z.string(),
     extra: text(),
     photo: text(),
+    /** Кадр фото на карточке главной по вертикали, % (как object-position).
+        Пусто — от верхнего края (DoctorFlipCard) */
+    photoY: percent(),
     photoLabel: textOr('Здесь фото врача'),
     featured: flag(),
     /** Не врач (зубной техник, ассистент): нет в фиде врачей Яндекса,

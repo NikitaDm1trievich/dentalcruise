@@ -5,6 +5,8 @@
  * странице врача — фото интерьеров и окно лицензии общие с остальным
  * сайтом. Тексты — в редакторе, «Страницы сайта» → «О клинике».
  */
+import { getCollection } from 'astro:content';
+
 import PageLayout from '../layouts/PageLayout.astro';
 import Reveal from '../components/core/Reveal.astro';
 import Button from '../components/core/Button.astro';
@@ -12,6 +14,7 @@ import Icon from '../components/core/Icon.astro';
 import SectionHeading from '../components/core/SectionHeading.astro';
 import PhotoGallery from '../components/media/PhotoGallery.astro';
 import MetroStations from '../components/core/MetroStations.astro';
+import DoctorCard from '../components/content/DoctorCard.astro';
 import { clinic } from '../data/site';
 import { aboutPage as page } from '../data/pages';
 import { pageHref } from '../lib/asset';
@@ -19,6 +22,10 @@ import { cmsPage, cmsSite } from '../lib/cms-ref';
 import { clampText } from '../lib/seo';
 
 const doctorsHref = pageHref('doctors');
+
+/* Врачи под фразой «Познакомьтесь с врачами…» — все и в том же порядке,
+   что на странице «Врачи» (src/pages/doctors.astro). */
+const doctors = (await getCollection('doctors')).sort((a, b) => a.data.order - b.data.order);
 
 /**
  * Интерьеры клиники — тот же список, что в тизере «О клинике» на главной
@@ -129,6 +136,15 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
       <Reveal>
         <div class="dc-foot">
           <p>{page.foot.text}</p>
+          <ul class="dc-foot__team" role="list">
+            {
+              doctors.map((doctor) => (
+                <li>
+                  <DoctorCard doctor={doctor} compact />
+                </li>
+              ))
+            }
+          </ul>
           <div class="dc-actions">
             <Button variant="primary" size="md" href={doctorsHref}>{page.foot.doctors}</Button>
             <Button variant="ghost" size="md" data-open="dc-book">{page.foot.book}</Button>
@@ -180,8 +196,11 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     color: var(--text-body);
   }
 
+  /* Колонка по ширине контейнера, а не по содержимому: иначе ряд карточек
+     врачей раздвигал её шире экрана на 320px. */
   .dc-foot {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-5);
     justify-items: start;
   }
@@ -193,6 +212,27 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     color: var(--text-strong);
     text-wrap: balance;
     margin: 0;
+  }
+  /* Ряд компактных карточек: на телефоне по две, с 720px — колонки от
+     12rem, и ряд не шире 62rem, чтобы карточки не раздувались на всю
+     ширину экрана. */
+  .dc-foot__team {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+    width: 100%;
+    max-width: 62rem;
+  }
+  .dc-foot__team > li {
+    min-width: 0;
+  }
+  @media (min-width: 720px) {
+    .dc-foot__team {
+      grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    }
   }
 
   .dc-bg-white {

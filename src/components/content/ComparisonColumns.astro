@@ -2,8 +2,13 @@
 /**
  * «Обычная клиника» vs «Дентал Круиз». Из Ds2_2d9e23.ComparisonColumns.
  * Заголовки колонок на главной приходят из редактора («8. Почему мы»).
+ *
+ * Пары стоят по строкам друг напротив друга: N-й пункт левой колонки
+ * против N-го правой (обе отсортированы по «Порядку в колонке»). Так блок
+ * и на телефоне остаётся в две колонки и помещается в один экран.
+ * Настоящая <table>: скринридер читает строку парой с заголовками колонок.
+ * Наша колонка — одна карточка в бирюзовой рамке за ячейками.
  */
-import Icon from '../core/Icon.astro';
 
 interface Props {
   theirTitle?: string;
@@ -20,79 +25,136 @@ const {
   ourItems,
 } = Astro.props;
 
-const columns = [
-  { title: theirTitle, items: theirItems, ours: false },
-  { title: ourTitle, items: ourItems, ours: true },
-];
+/* Пунктов в колонках может оказаться не поровну — лишним достаётся пустая
+   соседняя ячейка. */
+const rows = Array.from({ length: Math.max(theirItems.length, ourItems.length) }, (_, i) => ({
+  them: theirItems[i],
+  us: ourItems[i],
+}));
 ---
 
 <div class="dc-compare">
-  {
-    columns.map((col) => (
-      <div class:list={['dc-compare__col', col.ours && 'dc-compare__col--ours']}>
-        <h3>{col.title}</h3>
-        <ul>
-          {col.items.map((item) => (
-            <li data-cms={item.cms}>
-              <Icon
-                name={col.ours ? 'check' : 'minus'}
-                size={22}
-                strokeWidth={2.4}
-                color={col.ours ? 'var(--dc-turquoise-ink)' : 'var(--text-muted)'}
-              />
-              <span>{item.text}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    ))
-  }
+  <div class="dc-compare__ours" aria-hidden="true"></div>
+  <table class="dc-compare__table">
+    <caption class="dc-compare__caption">{theirTitle} и {ourTitle}</caption>
+    <thead>
+      <tr>
+        <th scope="col">{theirTitle}</th>
+        <th scope="col" class="dc-compare__head-ours">{ourTitle}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            <td class="dc-compare__them" data-cms={row.them?.cms}>
+              {row.them?.text}
+            </td>
+            <td class="dc-compare__us" data-cms={row.us?.cms}>
+              {row.us?.text}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
 </div>
 
 <style>
   .dc-compare {
-    display: grid;
-    gap: var(--space-5);
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  }
-  .dc-compare__col {
-    display: grid;
-    gap: var(--space-5);
-    align-content: start;
-    padding: var(--space-6);
-    border-radius: var(--radius-lg);
+    /* половина промежутка между колонками: слева от рамки и внутри неё */
+    --dc-compare-half-gap: var(--space-1);
+    position: relative;
     min-width: 0;
-    /* Колонка «обычная клиника» — на белом (правка макета) */
-    background: var(--surface-card);
-    border: 1px solid var(--line-hairline);
-    color: var(--text-body);
   }
-  .dc-compare__col--ours {
+  .dc-compare__ours {
+    position: absolute;
+    inset: 0 0 0 calc(50% + var(--dc-compare-half-gap));
     border: 2px solid var(--dc-turquoise);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
     box-shadow: var(--shadow-lg);
   }
-  .dc-compare__col h3 {
-    font-size: var(--type-h3);
-
-    letter-spacing: var(--ls-display);
+  .dc-compare__table {
+    /* поверх рамки: иначе её фон закроет текст правой колонки */
+    position: relative;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+  .dc-compare__caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .dc-compare__table th,
+  .dc-compare__table td {
+    width: 50%;
+    padding: 10px var(--space-3);
+    text-align: left;
+    vertical-align: top;
+    font-size: var(--type-small);
+    line-height: 1.35;
+  }
+  .dc-compare__table th:first-child,
+  .dc-compare__table td:first-child {
+    padding-right: calc(var(--space-3) + var(--dc-compare-half-gap));
+  }
+  .dc-compare__table th:last-child,
+  .dc-compare__table td:last-child {
+    padding-left: calc(var(--space-3) + var(--dc-compare-half-gap));
+  }
+  .dc-compare__table th {
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-1);
+    font-weight: var(--fw-bold);
+    line-height: 1.2;
+    color: var(--text-muted);
+  }
+  .dc-compare__table .dc-compare__head-ours {
+    color: var(--text-accent);
+  }
+  .dc-compare__table td {
+    hyphens: auto;
+    /* переносим только длинные слова: «бы-стрые» в узкой колонке читается хуже;
+       хвост от 3 букв — иначе «стоматологические» рвалась без дефиса */
+    hyphenate-limit-chars: 12 5 3;
+    overflow-wrap: anywhere;
+  }
+  .dc-compare__table tbody tr + tr td {
+    border-top: 1px solid var(--line-hairline);
+  }
+  .dc-compare__table tbody tr:last-child td {
+    padding-bottom: var(--space-3);
+  }
+  .dc-compare__them {
+    color: var(--text-muted);
+  }
+  .dc-compare__us {
     color: var(--text-strong);
+    font-weight: var(--fw-semibold);
   }
-  .dc-compare__col ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-4);
-  }
-  .dc-compare__col li {
-    display: flex;
-    gap: var(--space-3);
-    align-items: flex-start;
-    font-size: var(--type-body);
-    line-height: var(--lh-body);
-    color: var(--text-body);
-  }
-  .dc-compare__col :global(.dc-icon) {
-    margin-top: 2px;
+  @media (min-width: 900px) {
+    .dc-compare__table th,
+    .dc-compare__table td {
+      padding: var(--space-4) var(--space-6);
+      font-size: var(--type-body);
+    }
+    .dc-compare__table th:first-child,
+    .dc-compare__table td:first-child {
+      padding-right: calc(var(--space-6) + var(--dc-compare-half-gap));
+    }
+    .dc-compare__table th:last-child,
+    .dc-compare__table td:last-child {
+      padding-left: calc(var(--space-6) + var(--dc-compare-half-gap));
+    }
+    .dc-compare__table th {
+      padding-top: var(--space-5);
+      padding-bottom: var(--space-2);
+      font-size: var(--type-h4);
+    }
   }
 </style>

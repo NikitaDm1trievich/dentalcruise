@@ -1,0 +1,143 @@
+---
+/**
+ * Карточка врача со ссылкой на его страницу /doctors/<файл>: фото, ФИО,
+ * специальность, стаж и короткий факт. Стоит на странице «Врачи»; на
+ * «О клинике» — компактная (compact): только фото, ФИО и специальность.
+ * Подписи ссылки — «Страницы сайта» → «Врачи — страница списка».
+ */
+import type { CollectionEntry } from 'astro:content';
+
+import Icon from '../core/Icon.astro';
+import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+import { doctorPage, teamPage as page } from '../../data/pages';
+import { pageHref } from '../../lib/asset';
+import { cmsPage } from '../../lib/cms-ref';
+
+interface Props {
+  doctor: CollectionEntry<'doctors'>;
+  /** Без стажа, факта и подписи ссылки — для ряда врачей на других страницах */
+  compact?: boolean;
+}
+
+const { doctor, compact = false } = Astro.props;
+const { data } = doctor;
+---
+
+<a
+  href={pageHref(`doctors/${doctor.id}`)}
+  class:list={['dc-team__card', compact && 'dc-team__card--compact']}
+  data-cms={`doctors/${doctor.id}`}>
+  <PhotoPlaceholder
+    label={data.photoLabel}
+    src={data.photo}
+    alt={`${data.name}, ${data.speciality}`}
+    ratio="3 / 4"
+    radius="0"
+    cover
+  />
+  <span class="dc-team__body">
+    <span class="dc-team__name">{data.name}</span>
+    <span class="dc-team__spec">{data.speciality}</span>
+    {
+      !compact && data.experience && (
+        <span class="dc-team__exp">
+          {doctorPage.experience} {data.experience}
+        </span>
+      )
+    }
+    {!compact && <span class="dc-team__note">{data.note}</span>}
+    {
+      !compact && (
+        <span class="dc-team__more" data-cms={cmsPage('team', data.staff ? 'moreStaff' : 'more')}>
+          {data.staff ? page.moreStaff : page.more}
+          <Icon name="arrow-right" size={16} />
+        </span>
+      )
+    }
+  </span>
+</a>
+
+<style>
+  .dc-team__card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: inherit;
+    transition:
+      box-shadow var(--dur-mid) var(--ease-out),
+      border-color var(--dur-mid) var(--ease-out);
+  }
+  .dc-team__card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--line-strong);
+  }
+  .dc-team__body {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+    padding: var(--space-5);
+  }
+  /* Заголовок карточки — ФИО: к врачу записываются по имени, а специальность
+     повторяется у нескольких врачей и заголовком их не различает. */
+  .dc-team__name {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: var(--fw-black);
+    line-height: var(--lh-tight);
+    color: var(--text-strong);
+    text-wrap: balance;
+  }
+  .dc-team__spec {
+    font-size: var(--type-small);
+    font-weight: var(--fw-medium);
+    color: var(--text-muted);
+  }
+  .dc-team__exp {
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+  }
+  .dc-team__note {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-team__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: var(--space-2);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-accent);
+  }
+
+  /* Компактная: узкая карточка в ряду из нескольких, текст мельче. Окно
+     под фото всегда 3:4 — и у заглушки без фото, которая своей высоты не
+     имеет, иначе карточки в ряду выходили разной высоты фото. */
+  .dc-team__card--compact :global(.dc-photo) {
+    height: auto;
+    aspect-ratio: 3 / 4;
+  }
+  /* Кегль ФИО — от ширины карточки: на 320px в две колонки «Александрович»
+     иначе не влезало в строку и вылезало за край. */
+  .dc-team__card--compact {
+    container-type: inline-size;
+  }
+  .dc-team__card--compact .dc-team__body {
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-3) var(--space-4);
+  }
+  .dc-team__card--compact .dc-team__name {
+    font-size: min(var(--type-body), 10cqw);
+    overflow-wrap: anywhere;
+  }
+  .dc-team__card--compact .dc-team__spec {
+    font-size: min(var(--type-small), 9.5cqw);
+  }
+</style>

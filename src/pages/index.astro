@@ -20,7 +20,6 @@ import ProblemPicker from '../components/content/ProblemPicker.astro';
 import BrandsMarquee from '../components/content/BrandsMarquee.astro';
 import OfferStrip from '../components/content/OfferStrip.astro';
 import ComparisonColumns from '../components/content/ComparisonColumns.astro';
-import PriceChart from '../components/content/PriceChart.astro';
 import DoctorFlipCard from '../components/content/DoctorFlipCard.astro';
 import FaqAccordion from '../components/content/FaqAccordion.astro';
 import ReviewsCard from '../components/content/ReviewsCard.astro';
@@ -308,6 +307,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
                 note={doctor.data.note}
                 extra={doctor.data.extra}
                 photo={doctor.data.photo}
+                photoY={doctor.data.photoY}
                 photoLabel={doctor.data.photoLabel}
                 href={pageHref(`doctors/${doctor.id}`)}
                 staff={doctor.data.staff}
@@ -328,9 +328,9 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
 
   <!-- Почему мы -->
   <section id="why" class="dc-section dc-bg-warm" data-cms={cmsText('why')}>
-    <div class="dc-container">
+    <div class="dc-container dc-why">
       <Reveal>
-        <SectionHeading eyebrow={copy.why.eyebrow} title={copy.why.title} lead={copy.why.lead} />
+        <SectionHeading class="dc-why__head" eyebrow={copy.why.eyebrow} title={copy.why.title} lead={copy.why.lead} />
       </Reveal>
       <Reveal delay={90}>
         <ComparisonColumns
@@ -340,9 +340,8 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
           ourItems={us}
         />
       </Reveal>
-      <Reveal delay={140}>
-        <PriceChart />
-      </Reveal>
+      {/* На телефоне текст под заголовком переезжает под таблицу (см. стили .dc-why) */}
+      <p class="dc-why__lead-after">{copy.why.lead}</p>
     </div>
   </section>
 
@@ -373,6 +372,11 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
             title={copy.about.title}
             lead={copy.about.lead}
           />
+          {(copy.about.paragraphs ?? []).filter(Boolean).length > 0 && (
+            <div class="dc-about__text">
+              {(copy.about.paragraphs ?? []).filter(Boolean).map((paragraph) => <p>{paragraph}</p>)}
+            </div>
+          )}
           <Badge tone="quiet">{copy.about.badge}</Badge>
           <Button variant="secondary" size="md" href={pageHref('about')}>{copy.about.cta}</Button>
         </div>
@@ -540,6 +544,45 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     gap: var(--space-6);
     justify-items: start;
     min-width: 0;
+  }
+  .dc-about__text {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 60ch;
+  }
+  .dc-about__text p {
+    margin: 0;
+    font-size: var(--type-body);
+    line-height: var(--lh-body);
+    color: var(--text-body);
+  }
+
+  /* «Почему мы»: на телефоне весь блок сравнения — в один экран между
+     шапкой и нижней панелью. Заголовок на ступень мельче, а текст под ним
+     уходит под таблицу; на ПК он остаётся под заголовком. */
+  .dc-why__lead-after {
+    display: none;
+  }
+  @media (max-width: 559px) {
+    .dc-why {
+      gap: var(--space-5);
+    }
+    :global(.dc-why__head) {
+      gap: var(--space-2);
+    }
+    :global(.dc-why__head .dc-heading__lead) {
+      display: none;
+    }
+    :global(.dc-why__head .dc-heading__title) {
+      font-size: var(--type-h2);
+    }
+    .dc-why__lead-after {
+      display: block;
+      margin: 0;
+      font-size: var(--type-body);
+      line-height: var(--lh-body);
+      color: var(--text-body);
+    }
   }
 
   /* Направления с ценами в каталоге услуг */

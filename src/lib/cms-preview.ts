@@ -176,7 +176,7 @@ function bindScoped(text: string, path: string, entry: string | null): Binding[]
 /**
  * Элементы, чей текст — поле `path` записи `entry` с метками. Вёрстка
  * помечает их data-cms с точным путём поля и data-cms-vars со значениями
- * меток (PageLayout, SectionHeading, PriceChart).
+ * меток (PageLayout, SectionHeading, TrustBar).
  */
 function templatesFor(entry: string | null, path: string): Element[] {
   if (!entry) return [];

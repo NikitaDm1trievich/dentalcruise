@@ -24,12 +24,18 @@ interface Props {
   href?: string;
   /** Не врач (зубной техник): своя подпись ссылки на страницу */
   staff?: boolean;
+  /**
+   * Кадр по вертикали, как второе число object-position: 0 — верх снимка,
+   * 100 — низ. Пусто — по верхнему краю (см. стили .dc-doc__photo).
+   */
+  photoY?: number;
   /** Запись врача в редакторе для выбора блока в предпросмотре (lib/cms-ref) */
   cms?: string;
 }
 
-const { name, speciality, experience, note, extra, photo, photoLabel, href, staff, cms } = Astro.props;
+const { name, speciality, experience, note, extra, photo, photoLabel, href, staff, photoY, cms } = Astro.props;
 const facts = [experience && `${doctorPage.experience} ${experience}`, note, extra].filter(Boolean) as string[];
+const photoStyle = photoY === undefined ? undefined : `--dc-doc-photo-y:${photoY}%`;
 ---
 
 <div class="dc-doc" data-flip data-cms={cms}>
@@ -41,7 +47,7 @@ const facts = [experience && `${doctorPage.experience} ${experience}`, note, ext
 
   <div class="dc-doc__inner" data-flip-inner>
     <article class="dc-doc__face dc-doc__face--front">
-      <div class="dc-doc__photo">
+      <div class="dc-doc__photo" style={photoStyle}>
         <PhotoPlaceholder label={photoLabel} src={photo} alt={name} ratio="3 / 4" radius="0" cover />
       </div>
       <div class="dc-doc__body">
@@ -89,11 +95,13 @@ const facts = [experience && `${doctorPage.experience} ${experience}`, note, ext
 </div>
 
 <style>
+  /* Ширина карточки — контейнер: от неё считается высота окна под фото
+     (cqw в .dc-doc__inner и .dc-doc__photo). */
   .dc-doc {
     position: relative;
     width: 100%;
-    height: 440px;
     min-width: 0;
+    container-type: inline-size;
   }
   /* 3D-контекст только на время переворота — см. src/lib/flip.ts */
   .dc-doc.is-3d {
@@ -114,10 +122,14 @@ const facts = [experience && `${doctorPage.experience} ${experience}`, note, ext
     inset: 0 0 calc(var(--tap-min) * 2 + var(--space-2)) 0;
   }
 
+  /* Высота карточки растёт с шириной: окно под фото (всё, что над текстом,
+     ~12rem) держится около 4:3. При фиксированных 440px на широкой
+     карточке окно становилось почти вдвое шире своей высоты, и в него
+     не помещалась голова целиком — от макушки до подбородка. */
   .dc-doc__inner {
     position: relative;
     width: 100%;
-    height: 100%;
+    height: max(440px, calc(75cqw + 12rem));
     transform-style: flat;
     transition: transform 560ms cubic-bezier(0.77, 0, 0.175, 1);
   }
@@ -165,11 +177,13 @@ const facts = [experience && `${doctorPage.experience} ${experience}`, note, ext
     position: relative;
     overflow: hidden;
   }
-  /* Окно под фото на карточке шире портрета 3:4, и по центру кадра в него
-     попадали подбородок и грудь, а лицо уходило за верхний край. Держимся
-     верха снимка: голова на портретах всегда в верхней трети. */
+  /* Окно под фото шире портрета 3:4 и показывает примерно верхние 56%
+     снимка. Кадр по умолчанию — от верхнего края: так макушку не срежет
+     ни на одном снимке, а голова на портретах всегда в верхней половине.
+     Если над головой на снимке много пустого места, кадр сдвигают полем
+     врача «Положение фото по вертикали, %» (photoY). */
   .dc-doc__photo :global(.dc-photo__img) {
-    object-position: 50% 12%;
+    object-position: 50% var(--dc-doc-photo-y, 0%);
   }
   .dc-doc__body {
     display: grid;
@@ -307,16 +321,14 @@ const facts = [experience && `${doctorPage.experience} ${experience}`, note, ext
   }
 
   /* ── Телефон: карточка в одну колонку, компактнее ──
-     Высоту карточки задаёт содержимое, а не 440px: обе стороны лежат в
-     одной ячейке грида, и карточка ровно по более высокой из них — обычно
-     изнанке с фактами и двумя кнопками. Так изнанку не обрезает на 320px,
-     а лицо не стоит с пустым низом. Фото занимает всё, что осталось над
-     текстом, но не ниже 210px; на портретах 3:4 при такой высоте окна
-     голова и подбородок остаются в кадре целиком. */
+     Высоту карточки задаёт содержимое, а не формула выше: обе стороны
+     лежат в одной ячейке грида, и карточка ровно по более высокой из них.
+     Так изнанку не обрезает на 320px, а лицо не стоит с пустым низом.
+     Фото занимает всё, что осталось над текстом, но не ниже 4:3 от ширины
+     (и не ниже 210px): при прежних 210px на карточке шириной 335–500px
+     окно было в 1,6–2,4 раза шире своей высоты и срезало то макушку, то
+     подбородок. */
   @media (max-width: 559px) {
-    .dc-doc {
-      height: auto;
-    }
     .dc-doc__inner {
       display: grid;
       height: auto;
@@ -327,12 +339,7 @@ const facts = [experience && `${doctorPage.experience} ${experience}`, note, ext
       grid-area: 1 / 1;
     }
     .dc-doc__photo {
-      min-height: 210px;
-    }
-    /* Окно ниже, чем на компьютере: чуть ниже и точка кадра, иначе у
-       снимков, где голова ниже середины верхней трети, срезало подбородок */
-    .dc-doc__photo :global(.dc-photo__img) {
-      object-position: 50% 15%;
+      min-height: max(210px, 75cqw);
     }
     /* Снимок не должен раздвигать карточку своей высотой: он только
        заполняет окно, размер которого задают текст и изнанка. */
