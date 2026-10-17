@@ -11,7 +11,8 @@
 
   --reveal-shift:26px;/* @kind spacing */   /* section reveal travel: 20-30px, from below */
   --reveal-stagger:90ms;/* @kind other */
+  --parallax-shift:1;/* @kind other */   /* scroll parallax amplitude multiplier: hero waves, section wave bands */
 }
 @media (prefers-reduced-motion:reduce){
-  :root{--dur-slow:1ms/* @kind other */;--dur-crossfade:1ms/* @kind other */;--reveal-shift:0px}
+  :root{--dur-slow:1ms/* @kind other */;--dur-crossfade:1ms/* @kind other */;--reveal-shift:0px;--parallax-shift:0}
 }

@@ -11,6 +11,7 @@ import Icon from '../components/core/Icon.astro';
 import CountUp from '../components/core/CountUp.astro';
 
 import OceanHero from '../components/media/OceanHero.astro';
+import WaveField from '../components/media/WaveField.astro';
 import PhotoGallery from '../components/media/PhotoGallery.astro';
 
 import PromoBoard from '../components/content/PromoBoard.astro';
@@ -259,6 +260,15 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     </div>
   </section>
 
+  {/* Волновая перебивка «Прилив»: на стыке мятного с мятным держится на сером
+      и мятном слоях. Декоративная, в CMS её нет. */}
+  <WaveField
+    height={56}
+    scrollDrift
+    background="var(--dc-aqua-tint)"
+    colors={['rgba(143,162,172,.45)', 'var(--dc-turquoise-soft)', 'var(--dc-aqua-tint)']}
+  />
+
   <!-- Полублок-перебивка между каталогом и врачами: поставщики -->
   <section id="brands" class="dc-section--tight dc-bg-fade-aqua" data-cms={cmsText('brands')}>
     <div class="dc-container">
@@ -327,6 +337,14 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
       </Reveal>
     </div>
   </section>
+
+  {/* Волновая перебивка «Прилив»: тёплый фон «Почему мы» переходит в холодный доверия */}
+  <WaveField
+    height={56}
+    scrollDrift
+    background="var(--surface-warm)"
+    colors={['rgba(143,162,172,.42)', 'var(--dc-breeze)', 'var(--surface-cool)']}
+  />
 
   <!-- Полоса доверия: полублок между аргументом о цене и рассказом о клинике -->
   <section id="trust" class="dc-section--tight dc-bg-cool" data-cms={cmsList('trust')}>

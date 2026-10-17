@@ -51,7 +51,7 @@ const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, post
 
   <WaveField
     height={92}
-    colors={['rgba(255,255,255,.28)', 'rgba(255,255,255,.5)', 'var(--dc-white)']}
+    colors={['rgba(255,255,255,.28)', 'rgba(255,255,255,.5)', 'var(--surface-cool)']}
     class="dc-hero__waves"
   />
 </section>
@@ -120,6 +120,59 @@ const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, post
     right: 0;
     bottom: -1px;
     z-index: 3;
+  }
+
+  /* «Прилив»: пока первый экран уходит вверх, кадр океана отстаёт на 7%,
+     а задние полупрозрачные слои волн поднимаются на 40 и 20px за передним.
+     Передний слой стоит: он цвета верха следующей секции, и стык с ней
+     остаётся чистым. При прогрессе 0 ничего не сдвинуто — poster на месте
+     и LCP не страдает. Без поддержки animation-timeline экран статичен. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .dc-hero {
+        view-timeline: --dc-hero block;
+      }
+      .dc-hero__video,
+      .dc-hero :global(.dc-hero__waves .dc-waves__layer:not(:last-child)) {
+        animation-timing-function: var(--ease-swell);
+        animation-fill-mode: both;
+        animation-duration: auto;
+        animation-timeline: --dc-hero;
+        animation-range: exit 0% exit 100%;
+      }
+      /* will-change только на волнах: держать полноэкранное видео
+         отдельным слоем постоянно слишком дорого */
+      .dc-hero :global(.dc-hero__waves .dc-waves__layer:not(:last-child)) {
+        will-change: transform;
+      }
+      .dc-hero__video {
+        animation-name: dc-hero-lag;
+      }
+      .dc-hero :global(.dc-hero__waves .dc-waves__layer:nth-child(1)) {
+        --wave-rise: -40px;
+        animation-name: dc-hero-rise;
+      }
+      .dc-hero :global(.dc-hero__waves .dc-waves__layer:nth-child(2)) {
+        --wave-rise: -20px;
+        animation-name: dc-hero-rise;
+      }
+    }
+  }
+  @keyframes dc-hero-lag {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(0, calc(7% * var(--parallax-shift)), 0);
+    }
+  }
+  @keyframes dc-hero-rise {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(0, calc(var(--wave-rise) * var(--parallax-shift)), 0);
+    }
   }
 </style>
 
