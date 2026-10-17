@@ -17,8 +17,8 @@
     },
     {
       "id": "rating",
-      "title": "Рейтинг 4,9 на Яндекс Картах",
-      "text": "Более 120 отзывов пациентов",
+      "title": "Рейтинг {rating} на Яндекс Картах",
+      "text": "{count} пациентов",
       "icon": "star",
       "href": "https://yandex.ru/maps/org/dental_kruiz/154025048590/",
       "order": 30

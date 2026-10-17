@@ -144,18 +144,30 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   >
     <p class="dc-hero__lead">{copy.hero.lead}</p>
     <div class="dc-hero__actions">
-      <Button variant="primary" size="lg" data-open="dc-book">
+      <Button variant="primary" size="md" data-open="dc-book">
         <Icon slot="icon" name="calendar" size={20} />
         {copy.hero.book}
       </Button>
-      <Button variant="onDark" size="lg" href={clinic.phoneHref}>
+      <Button variant="onDark" size="md" href={clinic.phoneHref}>
         <Icon slot="icon" name="phone" size={20} />
         {copy.hero.call}
       </Button>
     </div>
   </OceanHero>
 
-  <!-- Условия: сразу после hero, до акций -->
+  {/* Подбор по проблеме — первым после hero: с телефона посетитель сразу
+      видит «Что беспокоит?», а не листает условия и акции. Фон — холодный
+      тон переднего слоя волн hero, стык без шва. Подписи блока лежат в
+      редакторе по-прежнему в группе «Услуги» (services.problems). */}
+  <section id="problems" class="dc-section dc-bg-cool" data-cms={cmsText('services.problems')}>
+    <div class="dc-container">
+      <Reveal>
+        <ProblemPicker problems={problemCards} copy={copy.services.problems} level={2} />
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Условия: после подбора по проблеме, до акций -->
   <section id="terms" class="dc-section--tight dc-bg-fade" data-cms={cmsText('terms')}>
     <div class="dc-container">
       <Reveal>
@@ -194,10 +206,6 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
           title={copy.services.title}
           lead={copy.services.lead}
         />
-      </Reveal>
-
-      <Reveal>
-        <ProblemPicker problems={problemCards} copy={copy.services.problems} />
       </Reveal>
 
       <div class="dc-dirs">
@@ -251,7 +259,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
         </div>
 
         <div class="dc-dirs__all">
-          <Button variant="secondary" size="lg" href={pageHref('pricelist')} data-cms={cmsText('services.all')}>
+          <Button variant="secondary" size="md" href={pageHref('pricelist')} data-cms={cmsText('services.all')}>
             {copy.services.all}
             <Icon slot="icon-right" name="arrow-right" size={20} />
           </Button>
@@ -312,7 +320,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
 
       <Reveal delay={320}>
         <div class="dc-actions">
-          <Button variant="secondary" size="lg" href={pageHref('doctors')}>{copy.doctors.cta}</Button>
+          <Button variant="secondary" size="md" href={pageHref('doctors')}>{copy.doctors.cta}</Button>
         </div>
       </Reveal>
     </div>
@@ -366,7 +374,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
             lead={copy.about.lead}
           />
           <Badge tone="quiet">{copy.about.badge}</Badge>
-          <Button variant="secondary" size="lg" href={pageHref('about')}>{copy.about.cta}</Button>
+          <Button variant="secondary" size="md" href={pageHref('about')}>{copy.about.cta}</Button>
         </div>
       </Reveal>
       <Reveal delay={120}>
@@ -460,14 +468,14 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   .dc-bg-aqua {
     background: var(--grad-aqua);
   }
-  /* Лента поставщиков: сверху подхватывает холодный тон под hero и
-     растворяется в белом к акциям — иначе полоса читалась как чужой
-     прямоугольник, вставленный между двумя белыми блоками. */
+  /* Полоса условий: сверху подхватывает холодный тон подбора по проблеме
+     и растворяется в белом к акциям — иначе полоса читалась как чужой
+     прямоугольник, вставленный между двумя блоками. */
   .dc-bg-fade {
     background: linear-gradient(180deg, var(--surface-cool) 0%, var(--dc-white) 100%);
   }
-  /* Полоса условий: подхватывает мятный низ каталога и уходит в белое
-     к врачам — та же логика, что у ленты поставщиков. */
+  /* Лента поставщиков: подхватывает мятный низ каталога и уходит в белое
+     к врачам — та же логика, что у полосы условий. */
   .dc-bg-fade-aqua {
     background: linear-gradient(180deg, var(--dc-aqua-tint) 0%, var(--dc-white) 100%);
   }
@@ -534,7 +542,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     min-width: 0;
   }
 
-  /* Направления под подбором по проблеме */
+  /* Направления с ценами в каталоге услуг */
   .dc-dirs {
     display: grid;
     gap: var(--space-4);

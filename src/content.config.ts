@@ -329,7 +329,7 @@ const serviceCategories = defineCollection({
 /**
  * Подбор услуг по проблеме на главной: «Что беспокоит?» → жалоба →
  * позиции с ценами, врачи, запись. Жалобы и позиции под ними клиника
- * правит в редакторе («Главная» → «4. Услуги — подбор по проблеме»).
+ * правит в редакторе («Главная» → «2. Подбор по проблеме»).
  */
 const problems = defineCollection({
   loader: file('./src/content/problems/problems.json', { parser: unwrap }),

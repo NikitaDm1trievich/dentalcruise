@@ -20,7 +20,10 @@ import { MONTH_IN, priceChart } from '../../data/price-chart';
 import { cmsChart } from '../../lib/cms-ref';
 import { fillParts } from '../../lib/format';
 
-const { data, title, marketLabel, clinicLabel, note, year } = priceChart;
+/* Сноску-пояснение (note) под графиком больше не выводим — решение
+   владельца 2026-10: длинный абзац под графиком на телефоне занимал
+   пол-экрана. Текст остаётся в редакторе как обоснование цифр. */
+const { data, title, marketLabel, clinicLabel, year } = priceChart;
 
 /**
  * Мобильный ряд: с июня по сентябрь. Прогнозные месяцы отброшены — на
@@ -92,8 +95,6 @@ const gapParts = fillParts(priceChart.gap, gapVars);
       </p>
     )
   }
-
-  <p class="dc-chart__note">{note}</p>
 </figure>
 
 <script>

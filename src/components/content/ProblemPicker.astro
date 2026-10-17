@@ -47,9 +47,16 @@ interface Props {
     more: string;
     close: string;
   };
+  /**
+   * Уровень вопроса «Что беспокоит?». Блок стоит сразу под hero со своим
+   * h1, поэтому на главной это h2; заголовок ответа — на уровень ниже.
+   */
+  level?: 2 | 3;
 }
 
-const { problems, copy } = Astro.props;
+const { problems, copy, level = 3 } = Astro.props;
+const Question = `h${level}` as 'h2' | 'h3';
+const PanelTitle = `h${level + 1}` as 'h3' | 'h4';
 
 /** «Шмидт Роберт Александрович» → «Шмидт Р. А.»: полное ФИО в чип не помещается */
 const shortName = (name: string) => {
@@ -67,7 +74,7 @@ const initials = (name: string) =>
 
 <div class="dc-pk" data-problem-picker data-cms={cmsList('problems')}>
   <div class="dc-pk__top">
-    <h3 class="dc-pk__q" id="dc-pk-q" data-cms={cmsText('services.problems.question')}>{copy.question}</h3>
+    <Question class="dc-pk__q" id="dc-pk-q" data-cms={cmsText('services.problems.question')}>{copy.question}</Question>
     <span class="dc-pk__free" data-cms={cmsText('services.problems.free')}>
       <Icon name="badge-check" size={18} strokeWidth={2} />
       {copy.free}
@@ -105,7 +112,7 @@ const initials = (name: string) =>
     <div class="dc-pk__sheet" id="dc-problem" data-state="closed" data-problem-sheet>
       <div class="dc-pk__scrim" data-close></div>
       <div class="dc-pk__dialog" aria-labelledby="dc-pk-q" data-problem-dialog>
-        <span class="dc-pk__grip" aria-hidden="true"></span>
+        <span class="dc-pk__grip" aria-hidden="true" data-swipe-grip></span>
         <IconButton label={copy.close} variant="bare" size={44} class="dc-pk__x" data-close>
           <Icon name="x" size={22} strokeWidth={2.2} />
         </IconButton>
@@ -121,7 +128,7 @@ const initials = (name: string) =>
               data-cms={problem.cms}
             >
               <div class="dc-pk-panel__main">
-                <h4 class="dc-pk-panel__title">{problem.title}</h4>
+                <PanelTitle class="dc-pk-panel__title">{problem.title}</PanelTitle>
                 <p class="dc-pk-panel__desc">{problem.description}</p>
                 <ul class="dc-pk-rows" role="list">
                   {problem.items.map((item) =>
@@ -351,12 +358,22 @@ const initials = (name: string) =>
     transform: none;
   }
   .dc-pk__grip {
+    position: relative;
     display: block;
     width: 40px;
     height: 5px;
     margin: var(--space-2) auto 0;
     border-radius: 3px;
     background: var(--line-strong);
+    /* Свайп вниз закрывает шторку (lib/sheet-swipe): жест целиком наш */
+    touch-action: none;
+    cursor: grab;
+  }
+  /* Зона касания шире полоски, но не до крестика справа */
+  .dc-pk__grip::before {
+    content: '';
+    position: absolute;
+    inset: -14px -56px -14px;
   }
   .dc-pk__dialog :global(.dc-pk__x) {
     position: absolute;
@@ -676,6 +693,7 @@ const initials = (name: string) =>
 
 <script>
   import { closeOverlay, openOverlay } from '../../lib/overlays';
+  import { initSheetSwipe } from '../../lib/sheet-swipe';
 
   const root = document.querySelector<HTMLElement>('[data-problem-picker]');
   const sheet = document.querySelector<HTMLElement>('[data-problem-sheet]');
@@ -710,6 +728,10 @@ const initials = (name: string) =>
     };
     syncMode();
     phone.addEventListener('change', syncMode);
+
+    // Ручка видна только в режиме шторки (до 700px), шире жест не начнётся
+    const grip = dialog.querySelector<HTMLElement>('[data-swipe-grip]');
+    if (grip) initSheetSwipe(grip, dialog);
 
     const select = (tab: HTMLButtonElement, focus = false) => {
       for (const t of tabs) {

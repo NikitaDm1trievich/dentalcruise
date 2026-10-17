@@ -5,14 +5,15 @@
 
   --dur-fast:160ms/* @kind other */;      /* hover, press */
   --dur-mid:320ms/* @kind other */;       /* menus, accordions, header shrink */
-  --dur-slow:640ms/* @kind other */;      /* section reveals */
+  --dur-slow:640ms/* @kind other */;      /* slow UI transitions */
+  --dur-reveal:380ms/* @kind other */;    /* section reveals (src/lib/reveal.ts): short — on a phone a block must show up as soon as its edge enters the screen */
   --dur-crossfade:900ms/* @kind other */; /* carousel image+text crossfade */
   --dur-wave-1:18s/* @kind other */;--dur-wave-2:26s/* @kind other */;--dur-wave-3:34s/* @kind other */;
 
-  --reveal-shift:26px;/* @kind spacing */   /* section reveal travel: 20-30px, from below */
-  --reveal-stagger:90ms;/* @kind other */
+  --reveal-shift:12px;/* @kind spacing */   /* section reveal travel: 10-14px, from below */
+  --reveal-stagger:45ms;/* @kind other */   /* reveal.ts halves data-reveal-delay and caps it at 180ms */
   --parallax-shift:1;/* @kind other */   /* scroll parallax amplitude multiplier: hero waves, section wave bands */
 }
 @media (prefers-reduced-motion:reduce){
-  :root{--dur-slow:1ms/* @kind other */;--dur-crossfade:1ms/* @kind other */;--reveal-shift:0px;--parallax-shift:0}
+  :root{--dur-slow:1ms/* @kind other */;--dur-reveal:1ms/* @kind other */;--dur-crossfade:1ms/* @kind other */;--reveal-shift:0px;--parallax-shift:0}
 }

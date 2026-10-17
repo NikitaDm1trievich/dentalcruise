@@ -132,7 +132,7 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
 
 {/* Тексты страницы — в редакторе, «Страницы сайта» → «Прайс-лист — тексты
     страницы». Позиции и цены — в «Прайс-листе», названия разделов — в
-    «Главная страница» → «4. Услуги — разделы и цены». */}
+    «Главная страница» → «5. Услуги — разделы и цены». */}
 <PageLayout
   title={page.seo.title}
   description={clampText(page.seo.description)}
@@ -322,11 +322,11 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
           <div class="dc-price-page__foot" data-cms={cmsPage('prices', 'foot')}>
             <p>{page.foot}</p>
             <div class="dc-actions">
-              <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('prices', 'book')}>
+              <Button variant="primary" size="md" data-open="dc-book" data-cms={cmsPage('prices', 'book')}>
                 <Icon slot="icon" name="calendar" size={20} />
                 {page.book}
               </Button>
-              <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+              <Button variant="secondary" size="md" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
                 <Icon slot="icon" name="phone" size={20} />
                 {clinic.phone}
               </Button>

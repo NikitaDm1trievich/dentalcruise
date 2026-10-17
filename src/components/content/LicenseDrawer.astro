@@ -33,12 +33,14 @@ const fileUrl = (path: string) => encodeURI(withBase(path));
 
   <section
     class="dc-drawer__sheet"
+    data-swipe-sheet
     role="dialog"
     aria-modal="true"
     aria-labelledby="dc-license-title"
     data-cms={cmsSite('blocks', 'license')}
   >
-    <div aria-hidden="true" class="dc-drawer__grip"></div>
+    {/* Ручка: свайп вниз за неё закрывает шторку (lib/sheet-swipe) */}
+    <div aria-hidden="true" class="dc-drawer__grip" data-swipe-grip></div>
 
     <div class="dc-drawer__head">
       <div class="dc-drawer__title-row">
@@ -199,11 +201,22 @@ const fileUrl = (path: string) => encodeURI(withBase(path));
   }
 
   .dc-drawer__grip {
+    position: relative;
     width: 56px;
     height: 5px;
     border-radius: var(--radius-pill);
     background: var(--dc-sea-glass);
     justify-self: center;
+    /* Жест целиком наш: иначе браузер начнёт прокрутку и отменит указатель */
+    touch-action: none;
+    cursor: grab;
+  }
+  /* Полоска 5px — не попасть пальцем. Зона касания шире и выше самой
+     полоски: сверху до края шторки, снизу в промежуток до заголовка. */
+  .dc-drawer__grip::before {
+    content: '';
+    position: absolute;
+    inset: -20px -72px -20px;
   }
 
   .dc-drawer__head,
@@ -369,6 +382,12 @@ const fileUrl = (path: string) => encodeURI(withBase(path));
 </style>
 
 <script>
+  import { initSheetSwipe } from '../../lib/sheet-swipe';
+
+  const licenseSheet = document.querySelector<HTMLElement>('#dc-license [data-swipe-sheet]');
+  const licenseGrip = licenseSheet?.querySelector<HTMLElement>('[data-swipe-grip]');
+  if (licenseSheet && licenseGrip) initSheetSwipe(licenseGrip, licenseSheet);
+
   document.querySelectorAll<HTMLElement>('[data-scans]').forEach((carousel) => {
     const slides = Array.from(carousel.querySelectorAll<HTMLAnchorElement>('.dc-scans__slide'));
     if (slides.length < 2) return;

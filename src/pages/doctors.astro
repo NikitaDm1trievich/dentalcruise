@@ -84,11 +84,11 @@ const names = doctors.map((d) => d.data.name).join(', ');
 
       <Reveal delay={320}>
         <div class="dc-actions">
-          <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('team', 'book')}>
+          <Button variant="primary" size="md" data-open="dc-book" data-cms={cmsPage('team', 'book')}>
             <Icon slot="icon" name="calendar" size={20} />
             {page.book}
           </Button>
-          <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+          <Button variant="secondary" size="md" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
             <Icon slot="icon" name="phone" size={20} />
             {clinic.phone}
           </Button>

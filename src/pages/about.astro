@@ -45,11 +45,11 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
   cms={cmsPage('about')}
 >
   <div slot="head-extra" class="dc-actions">
-    <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('about', 'book')}>
+    <Button variant="primary" size="md" data-open="dc-book" data-cms={cmsPage('about', 'book')}>
       <Icon slot="icon" name="calendar" size={20} />
       {page.book}
     </Button>
-    <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+    <Button variant="secondary" size="md" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
       <Icon slot="icon" name="phone" size={20} />
       {clinic.phone}
     </Button>
@@ -130,8 +130,8 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
         <div class="dc-foot">
           <p>{page.foot.text}</p>
           <div class="dc-actions">
-            <Button variant="primary" size="lg" href={doctorsHref}>{page.foot.doctors}</Button>
-            <Button variant="ghost" size="lg" data-open="dc-book">{page.foot.book}</Button>
+            <Button variant="primary" size="md" href={doctorsHref}>{page.foot.doctors}</Button>
+            <Button variant="ghost" size="md" data-open="dc-book">{page.foot.book}</Button>
           </div>
         </div>
       </Reveal>

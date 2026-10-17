@@ -137,12 +137,12 @@ if (years) {
   cms={`doctors/${doctor.id}`}
 >
   <div slot="head-extra" class="dc-doc-page__actions">
-    <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('doctor-page', 'book')}>
+    <Button variant="primary" size="md" data-open="dc-book" data-cms={cmsPage('doctor-page', 'book')}>
       <Icon slot="icon" name="calendar" size={20} />
       {/* К зубному технику не записываются — у него общая кнопка записи */}
       {d.staff ? copy.foot.book : copy.book}
     </Button>
-    <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+    <Button variant="secondary" size="md" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
       <Icon slot="icon" name="phone" size={20} />
       {clinic.phone}
     </Button>
@@ -306,8 +306,8 @@ if (years) {
             {' '}{clinic.address.street}.
           </p>
           <div class="dc-actions">
-            <Button variant="primary" size="lg" data-open="dc-book">{copy.foot.book}</Button>
-            <Button variant="ghost" size="lg" href={doctorsHref}>{copy.foot.all}</Button>
+            <Button variant="primary" size="md" data-open="dc-book">{copy.foot.book}</Button>
+            <Button variant="ghost" size="md" href={doctorsHref}>{copy.foot.all}</Button>
           </div>
         </div>
       </Reveal>

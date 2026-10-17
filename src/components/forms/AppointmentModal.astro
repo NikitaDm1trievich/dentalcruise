@@ -16,7 +16,11 @@ import { cmsSite } from '../../lib/cms-ref';
     aria-modal="true"
     aria-labelledby="dc-book-title"
     data-cms={cmsSite('form')}
+    data-swipe-sheet
   >
+    {/* Ручка на телефоне: свайп вниз за неё закрывает окно (lib/sheet-swipe) */}
+    <div class="dc-modal__grip" aria-hidden="true" data-swipe-grip></div>
+
     <div class="dc-modal__head">
       <div>
         <h2 id="dc-book-title">{form.title}</h2>
@@ -94,6 +98,11 @@ import { cmsSite } from '../../lib/cms-ref';
     transform: translateY(0) scale(1);
   }
 
+  /* Ручка — только на телефоне, где окно закрывают пальцем */
+  .dc-modal__grip {
+    display: none;
+  }
+
   .dc-modal__head {
     display: flex;
     justify-content: space-between;
@@ -133,9 +142,40 @@ import { cmsSite } from '../../lib/cms-ref';
       padding: var(--space-6);
     }
   }
+  @media (max-width: 699px) {
+    /* Место под ручку над заголовком: вся полоса до заголовка — зона касания */
+    .dc-modal__dialog {
+      padding-top: 44px;
+    }
+    .dc-modal__grip {
+      display: block;
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      width: 56px;
+      height: 5px;
+      margin-left: -28px;
+      border-radius: var(--radius-pill);
+      background: var(--dc-sea-glass);
+      /* Жест целиком наш: иначе браузер начнёт прокрутку и отменит указатель */
+      touch-action: none;
+      cursor: grab;
+    }
+    .dc-modal__grip::before {
+      content: '';
+      position: absolute;
+      inset: -16px -72px -23px;
+    }
+  }
 </style>
 
 <script>
+  import { initSheetSwipe } from '../../lib/sheet-swipe';
+
+  const bookSheet = document.querySelector<HTMLElement>('#dc-book [data-swipe-sheet]');
+  const bookGrip = bookSheet?.querySelector<HTMLElement>('[data-swipe-grip]');
+  if (bookSheet && bookGrip) initSheetSwipe(bookGrip, bookSheet);
+
   /**
    * Кнопка записи с `data-book-topic` (подбор по проблеме на главной)
    * открывает форму с выбранной жалобой строкой под заголовком — её видит

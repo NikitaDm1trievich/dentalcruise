@@ -13,6 +13,7 @@
   --tap-min:48px;              /* never smaller */
   /* Высота нижней панели действий на телефоне (StickyActions): по ней
      страница получает отступ снизу, а кнопка «наверх» поднимается выше.
-     env() — под «бровь» iPhone, чтобы панель не легла на системную полосу. */
-  --sticky-actions-h:calc(64px + env(safe-area-inset-bottom,0px));
+     env() — под «бровь» iPhone, чтобы панель не легла на системную полосу.
+     56px: кнопки в панели 44px — компактнее, но зона касания не меньше 44px. */
+  --sticky-actions-h:calc(56px + env(safe-area-inset-bottom,0px));
 }

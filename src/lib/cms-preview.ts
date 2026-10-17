@@ -321,7 +321,7 @@ function isNumber(segment: string) {
   return /^\d+$/.test(segment);
 }
 
-/** Подпись поля по пути: «3. Акции › Заголовок блока», «акция «Циркониевая коронка»». */
+/** Подпись поля по пути: «4. Акции › Заголовок блока», «акция «Циркониевая коронка»». */
 function describe(fields: LabelNode[], path: string, element: Element): string {
   const parts: string[] = [];
   const segments = path ? path.split('.') : [];

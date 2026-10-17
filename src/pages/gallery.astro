@@ -56,11 +56,11 @@ const hasCases = cases.length > 0;
   {
     !hasCases && (
       <div slot="head-extra" class="dc-actions">
-        <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('gallery', 'book')}>
+        <Button variant="primary" size="md" data-open="dc-book" data-cms={cmsPage('gallery', 'book')}>
           <Icon slot="icon" name="calendar" size={20} />
           {page.book}
         </Button>
-        <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+        <Button variant="secondary" size="md" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
           <Icon slot="icon" name="phone" size={20} />
           {clinic.phone}
         </Button>
@@ -115,11 +115,11 @@ const hasCases = cases.length > 0;
             <div class="dc-foot">
               <p>{page.foot.text}</p>
               <div class="dc-actions">
-                <Button variant="primary" size="lg" data-open="dc-book">
+                <Button variant="primary" size="md" data-open="dc-book">
                   <Icon slot="icon" name="calendar" size={20} />
                   {page.foot.book}
                 </Button>
-                <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+                <Button variant="secondary" size="md" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
                   <Icon slot="icon" name="phone" size={20} />
                   {clinic.phone}
                 </Button>

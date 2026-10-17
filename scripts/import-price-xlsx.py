@@ -10,7 +10,7 @@
     python scripts/import-price-xlsx.py "<путь к .xlsx>"
 
 Нужен пакет openpyxl. Порядок разделов и их названия на сайте задаются в
-src/content/service-categories/categories.json («Главная» → «4. Услуги —
+src/content/service-categories/categories.json («Главная» → «5. Услуги —
 разделы и цены» в редакторе), здесь только слаги файлов.
 """
 import json

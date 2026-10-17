@@ -5,10 +5,12 @@ import Button from '../core/Button.astro';
 import CountUp from '../core/CountUp.astro';
 import { clinic } from '../../data/site';
 import { cmsText } from '../../lib/cms-ref';
-/* Рейтинг и число отзывов владелец правит в редакторе (раздел «Главная
-   страница» → «Отзывы») — это единственное место, где они хранятся.
-   Цифры должны совпадать с виджетом Яндекс Карт на той же странице:
-   расхождение читается как приукрашивание. */
+import { reviewsWord, yandexRating } from '../../lib/yandex-rating';
+/* Рейтинг и число отзывов сайт берёт с Яндекс Карт при сборке
+   (lib/yandex-rating); если Яндекс не ответил — запасные цифры из
+   редактора («Главная страница» → «Отзывы»). Тот же источник у плашки
+   рейтинга в полосе доверия, так что цифры на сайте везде одни и
+   совпадают с виджетом Яндекс Карт на той же странице. */
 import copy from '../../data/home.json';
 
 interface Props {
@@ -16,8 +18,7 @@ interface Props {
 }
 const { note = copy.reviews.cardNote } = Astro.props;
 
-const value = copy.reviews.rating.value;
-const count = copy.reviews.count.value;
+const { value, count } = await yandexRating();
 const filled = Math.round(value);
 ---
 
@@ -39,7 +40,7 @@ const filled = Math.round(value);
         ))
       }
     </span>
-    <span class="dc-reviews__count" data-cms={cmsText('reviews.count')}><CountUp value={count} /> {copy.reviews.countLabel}</span>
+    <span class="dc-reviews__count" data-cms={cmsText('reviews.count')}><CountUp value={count} /> {reviewsWord(count)}</span>
   </div>
 
   <p class="dc-reviews__note" data-cms={cmsText('reviews.cardNote')}>{note}</p>

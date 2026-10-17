@@ -4,7 +4,7 @@ import Icon from '../core/Icon.astro';
 import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
 import { doctorPage } from '../../data/pages';
 import { cmsText } from '../../lib/cms-ref';
-/* Подписи карточки правит владелец: «Главная страница» → «6. Врачи»;
+/* Подписи карточки правит владелец: «Главная страница» → «7. Врачи»;
    слово «Стаж» — общее со страницами врачей («Страницы сайта»). */
 import copy from '../../data/home.json';
 
@@ -304,5 +304,64 @@ const facts = [experience && `${doctorPage.experience} ${experience}`, note, ext
   }
   .dc-doc__cta:active {
     transform: scale(0.975);
+  }
+
+  /* ── Телефон: карточка в одну колонку, компактнее ──
+     Высоту карточки задаёт содержимое, а не 440px: обе стороны лежат в
+     одной ячейке грида, и карточка ровно по более высокой из них — обычно
+     изнанке с фактами и двумя кнопками. Так изнанку не обрезает на 320px,
+     а лицо не стоит с пустым низом. Фото занимает всё, что осталось над
+     текстом, но не ниже 210px; на портретах 3:4 при такой высоте окна
+     голова и подбородок остаются в кадре целиком. */
+  @media (max-width: 559px) {
+    .dc-doc {
+      height: auto;
+    }
+    .dc-doc__inner {
+      display: grid;
+      height: auto;
+    }
+    .dc-doc__face {
+      position: relative;
+      inset: auto;
+      grid-area: 1 / 1;
+    }
+    .dc-doc__photo {
+      min-height: 210px;
+    }
+    /* Окно ниже, чем на компьютере: чуть ниже и точка кадра, иначе у
+       снимков, где голова ниже середины верхней трети, срезало подбородок */
+    .dc-doc__photo :global(.dc-photo__img) {
+      object-position: 50% 15%;
+    }
+    /* Снимок не должен раздвигать карточку своей высотой: он только
+       заполняет окно, размер которого задают текст и изнанка. */
+    .dc-doc__photo :global(.dc-photo) {
+      position: absolute;
+      inset: 0;
+    }
+    .dc-doc__body {
+      gap: var(--space-1);
+      padding: var(--space-3) var(--space-4) var(--space-4);
+    }
+    .dc-doc__body h3,
+    .dc-doc__backhead h3 {
+      font-size: var(--type-body);
+    }
+    .dc-doc__hint {
+      margin-top: var(--space-1);
+      padding: 5px 12px;
+      font-size: var(--type-small);
+    }
+    .dc-doc__face--back {
+      gap: var(--space-3);
+      padding: var(--space-4);
+    }
+    .dc-doc__backhead {
+      gap: var(--space-1);
+    }
+    .dc-doc__facts {
+      gap: var(--space-2);
+    }
   }
 </style>

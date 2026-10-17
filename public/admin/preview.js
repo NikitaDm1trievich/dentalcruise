@@ -50,9 +50,9 @@
   /* Файлы-списки главной открываются сразу на своём блоке: id секций
      главной (src/pages/index.astro). Тексты блоков — с верха страницы. */
   var HOME_ANCHORS = {
+    problems: 'problems',
     promos: 'promo',
     catalog: 'services',
-    problems: 'services',
     brands: 'brands',
     comparison: 'why',
     chart: 'why',

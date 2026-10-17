@@ -43,15 +43,15 @@ const { yandexPin, yandexOrg, vk, max, instagram } = clinic.links;
   </p>
 
   <div slot="head-extra" class="dc-actions">
-    <Button variant="primary" size="lg" data-open="dc-book" data-cms={cmsPage('contacts', 'book')}>
+    <Button variant="primary" size="md" data-open="dc-book" data-cms={cmsPage('contacts', 'book')}>
       <Icon slot="icon" name="calendar" size={20} />
       {page.book}
     </Button>
-    <Button variant="secondary" size="lg" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+    <Button variant="secondary" size="md" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
       <Icon slot="icon" name="phone" size={20} />
       {clinic.phone}
     </Button>
-    <Button variant="ghost" size="lg" href={yandexPin} data-cms={cmsPage('contacts', 'route')}>
+    <Button variant="ghost" size="md" href={yandexPin} data-cms={cmsPage('contacts', 'route')}>
       <Icon slot="icon" name="navigation" size={20} />
       {page.route}
     </Button>
