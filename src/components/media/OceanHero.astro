@@ -72,6 +72,13 @@ const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, post
     height: 100%;
     object-fit: cover;
   }
+  /* На телефонах виден только poster: на вертикальном экране cover режет кадр
+     по центру и обрезал бы лицо (оно правее середины), поэтому смещаем фокус. */
+  @media (max-width: 1023px) {
+    .dc-hero__video {
+      object-position: 59% 50%;
+    }
+  }
   .dc-hero__scrim {
     position: absolute;
     inset: 0;
