@@ -1308,6 +1308,14 @@ collections:
             fields:
               - { name: title, label: Заголовок блока, widget: string }
               - { name: all, label: Кнопка в прайс-лист, widget: string }
+          - name: about
+            label: Описание материала — кнопка
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: кнопка, которая на телефоне разворачивает разделы описания.'
+            fields:
+              - { name: more, label: Развернуть, widget: string }
+              - { name: less, label: Свернуть, widget: string }
           - name: preview
             label: 'Служебное: услуга для предпросмотра'
             widget: relation
@@ -1907,6 +1915,25 @@ collections:
         fields:
           - { name: q, label: Вопрос, widget: string }
           - { name: a, label: Ответ, widget: text }
+      - name: description
+        label: Описание материала
+        widget: relation
+        collection: service-descriptions
+        value_field: '{{slug}}'
+        search_fields: [title]
+        display_fields: [title]
+        required: false
+        hint: >-
+          Необязательно. Общий подробный текст из раздела «Описания для страниц
+          услуг» — блок после этапов работы. Если пусто, блока нет.
+      - name: descriptionLayered
+        label: Коронка с нанесением керамической массы
+        widget: boolean
+        default: false
+        required: false
+        hint: >-
+          Отметьте, если коронка облицована керамикой: в карточках описания
+          покажется «Текст для коронок с керамической массой».
       - name: seoTitle
         label: Заголовок для поиска
         widget: string
@@ -1937,6 +1964,114 @@ collections:
         hint: >-
           Заполнять, только если такое название есть в нескольких группах
           прайса: укажите группу этой страницы.
+
+  # ── Описания для страниц услуг ───────────────────────────────────────
+  # Один текст на несколько страниц: страница услуги выбирает его в поле
+  # «Описание материала». Правка здесь попадает на все такие страницы.
+  - name: service-descriptions
+    label: Описания для страниц услуг
+    icon: description
+    folder: src/content/service-descriptions
+    extension: json
+    format: json
+    create: true
+    identifier_field: title
+    summary: '{{title}}'
+    description: >-
+      Подробные описания материалов — например, о циркониевых коронках. Одно
+      описание показывается на всех страницах услуг, где оно выбрано в поле
+      «Описание материала».
+    fields:
+      - name: title
+        label: Заголовок блока
+        widget: string
+        hint: 'Где на сайте: заголовок блока на странице услуги, например «О циркониевых коронках».'
+      - name: intro
+        label: Вводные абзацы
+        label_singular: абзац
+        widget: list
+        required: false
+        hint: Видны сразу, до карточек и разделов — и на телефоне без раскрытия.
+        field: { name: text, label: Абзац, widget: text }
+      - name: benefitsTitle
+        label: Заголовок над карточками
+        widget: string
+        required: false
+        hint: Например, «Почему цирконий?». Если пусто, карточки идут без заголовка.
+      - name: benefits
+        label: Карточки преимуществ
+        label_singular: карточка
+        widget: list
+        required: false
+        summary: '{{fields.title}}'
+        hint: Лучше четыре — на компьютере они встают сеткой 2×2, на телефоне друг под другом.
+        fields:
+          - name: icon
+            label: Иконка
+            widget: select
+            default: check
+            options:
+              - { label: Сияние, value: sparkles }
+              - { label: Щит с галочкой, value: shield-check }
+              - { label: Лист, value: leaf }
+              - { label: Песочные часы, value: hourglass }
+              - { label: Кристалл, value: gem }
+              - { label: Сердце с пульсом, value: heart-pulse }
+              - { label: Галочка, value: check }
+          - { name: title, label: Заголовок карточки, widget: string }
+          - { name: text, label: Текст карточки, widget: text }
+          - name: layeredText
+            label: Текст для коронок с керамической массой
+            widget: text
+            required: false
+            hint: >-
+              Показывается вместо основного на страницах, где отмечено «Коронка с
+              нанесением керамической массы». Если пусто — основной текст.
+      - name: sections
+        label: Разделы
+        label_singular: раздел
+        widget: list
+        required: false
+        summary: '{{fields.title}}'
+        hint: >-
+          На телефоне разделы свёрнуты под кнопкой «Читать полностью», на
+          компьютере открыты. Раздел без заголовка продолжает предыдущий —
+          так в одном разделе можно сделать два списка.
+        fields:
+          - { name: title, label: Заголовок раздела, widget: string, required: false }
+          - name: sub
+            label: Подраздел
+            widget: boolean
+            default: false
+            required: false
+            hint: Заголовок помельче — часть предыдущего раздела (например, виды операции).
+          - name: paragraphs
+            label: Абзацы перед списком
+            label_singular: абзац
+            widget: list
+            required: false
+            field: { name: text, label: Абзац, widget: text }
+          - name: items
+            label: Список с маркерами
+            label_singular: пункт
+            widget: list
+            required: false
+            field: { name: item, label: Пункт, widget: text }
+          - name: afterItems
+            label: Абзацы после списка
+            label_singular: абзац
+            widget: list
+            required: false
+            field: { name: text, label: Абзац, widget: text }
+      - name: preview
+        label: 'Служебное: услуга для предпросмотра'
+        widget: relation
+        collection: service-pages
+        value_field: '{{slug}}'
+        search_fields: [title]
+        display_fields: [title]
+        required: false
+        hint: На сайт не влияет. На странице этой услуги справа показывается предпросмотр.
 
   # ── Врачи ────────────────────────────────────────────────────────────
   - name: doctors
@@ -2770,6 +2905,17 @@ collections:
               - { name: mapButton, label: Кнопка карты, widget: string }
               - { name: reviewsText, label: Текст на месте отзывов, widget: text }
               - { name: reviewsButton, label: Кнопка отзывов, widget: string }
+          - name: medical
+            label: Предупреждение о противопоказаниях
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: у цены на каждой странице услуги, над таблицей
+              прайс-листа и в блоке акций на главной. Фразу требует закон о
+              рекламе медицинских услуг (ч. 7 ст. 24 38-ФЗ) — не удаляйте и не
+              сокращайте её без согласования с юристом.
+            fields:
+              - { name: warning, label: Текст предупреждения, widget: string }
 
       - name: form
         label: Форма записи

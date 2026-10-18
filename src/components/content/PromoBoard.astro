@@ -6,6 +6,7 @@
  */
 import Icon from '../core/Icon.astro';
 import Button from '../core/Button.astro';
+import MedicalWarning from './MedicalWarning.astro';
 
 interface Props {
   eyebrow?: string;
@@ -77,6 +78,8 @@ const {
 
   <div class="dc-promo__foot">
     {note && <p class="dc-promo__text">{note}</p>}
+    {/* Акции — реклама медицинских услуг: предупреждение о противопоказаниях (ч. 7 ст. 24 38-ФЗ) */}
+    <MedicalWarning compact />
     <Button variant="primary" size="md" data-open="dc-book">
       <Icon slot="icon" name="phone" size={20} />
       {ctaLabel}

@@ -1,0 +1,66 @@
+---
+/**
+ * Предупреждение «Имеются противопоказания, необходима консультация
+ * специалиста» — ч. 7 ст. 24 38-ФЗ «О рекламе» для рекламы медицинских
+ * услуг. Стоит у цены на странице услуги, над прайсом и в блоке акций.
+ * Текст один на весь сайт: blocks.json → medical.warning (редактор:
+ * «Шапка, подвал и контакты» → «Общие блоки»).
+ *
+ * Заметно по требованию закона: полужирное, тёмное, с иконкой и полосой —
+ * не мелкий серый шрифт. `compact` — где тесно (плашка акций).
+ */
+import Icon from '../core/Icon.astro';
+import { blocks } from '../../data/ui';
+import { cmsSite } from '../../lib/cms-ref';
+
+interface Props {
+  compact?: boolean;
+  class?: string;
+}
+
+const { compact = false, class: className } = Astro.props;
+
+// Фраза обязательна по закону: пустое поле в редакторе не должно убрать её с сайта.
+const text =
+  blocks.medical.warning?.trim() || 'Имеются противопоказания, необходима консультация специалиста.';
+---
+
+{
+  text && (
+    <p
+      class:list={['dc-warning', compact && 'dc-warning--compact', className]}
+      data-cms={cmsSite('blocks', 'medical.warning')}
+    >
+      <Icon name="circle-alert" size={compact ? 20 : 22} strokeWidth={2} />
+      <span>{text}</span>
+    </p>
+  )
+}
+
+<style>
+  .dc-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    max-width: 70ch;
+    margin: 0;
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--line-strong);
+    border-left: 4px solid var(--text-accent);
+    background: var(--surface-card);
+    color: var(--text-strong);
+    font-size: var(--type-body-lg);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-heading);
+  }
+  .dc-warning--compact {
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--type-body);
+  }
+  .dc-warning :global(svg) {
+    flex: 0 0 auto;
+    color: var(--text-accent);
+  }
+</style>

@@ -98,6 +98,9 @@
         return slug ? 'doctors/' + slug + '/' : 'doctors/';
       case 'service-pages':
         return slug ? 'uslugi/' + slug + '/' : 'pricelist/';
+      // Описание стоит на нескольких страницах — показываем выбранную в записи.
+      case 'service-descriptions':
+        return data && data.preview ? 'uslugi/' + data.preview + '/' : 'pricelist/';
       case 'price-list':
         return 'pricelist/' + (data && data.slug ? '#' + data.slug : '');
       // Страница работы есть только у опубликованной (оба фото): новая
@@ -878,6 +881,7 @@
     'form',
     'price-list',
     'service-pages',
+    'service-descriptions',
     'doctors',
     'cases',
   ].forEach(function (name) {

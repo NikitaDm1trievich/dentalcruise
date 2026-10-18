@@ -34,6 +34,8 @@ export const blocks: {
   };
   /** Заглушки виджетов Яндекс Карт до нажатия кнопки */
   embed: { mapText: string; mapButton: string; reviewsText: string; reviewsButton: string };
+  /** Предупреждение о противопоказаниях (ч. 7 ст. 24 38-ФЗ «О рекламе»): страницы услуг, прайс, акции */
+  medical: { warning: string };
 } = blocksRaw;
 
 export type FormCopy = {

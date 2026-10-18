@@ -211,6 +211,8 @@ export const servicePage: {
   /** В заголовке `{услуга}` заменяется названием услуги строчными буквами */
   faq: { eyebrow: string; title: string; lead: string };
   related: { title: string; all: string };
+  /** Кнопка, которая разворачивает разделы описания на телефоне */
+  about: { more: string; less: string };
   /** Услуга, на странице которой редактор показывает предпросмотр */
   preview: string;
 } = service;

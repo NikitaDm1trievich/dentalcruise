@@ -8,7 +8,7 @@
  * Шаблон для заполнения — src/content/service-pages/_template.json.
  */
 import type { GetStaticPaths } from 'astro';
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 
 import PageLayout from '../../layouts/PageLayout.astro';
 import Reveal from '../../components/core/Reveal.astro';
@@ -18,6 +18,7 @@ import SectionHeading from '../../components/core/SectionHeading.astro';
 import PriceTable from '../../components/content/PriceTable.astro';
 import FaqAccordion from '../../components/content/FaqAccordion.astro';
 import TrustBar from '../../components/content/TrustBar.astro';
+import MedicalWarning from '../../components/content/MedicalWarning.astro';
 import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
 import { clinic } from '../../data/site';
 import { pricesPage, servicePage as copy } from '../../data/pages';
@@ -50,6 +51,17 @@ const siblings = (await getCollection('service-pages'))
   .sort((a, b) => a.data.order - b.data.order);
 
 const pricelistHref = pageHref('pricelist');
+
+/**
+ * Общее описание материала (service-descriptions): один текст на несколько
+ * услуг. Ссылка на несуществующий файл — ошибка сборки, а не пустая секция.
+ */
+const description = s.description ? await getEntry('service-descriptions', s.description) : undefined;
+if (s.description && !description) {
+  throw new Error(`uslugi/${page.id}: описание «${s.description}» не найдено в src/content/service-descriptions`);
+}
+const about = description?.data;
+const aboutEntry = description && `service-descriptions/${description.id}`;
 
 /** Короткие факты в шапке — показываем только заполненные */
 const facts = [
@@ -158,10 +170,15 @@ if (amount) {
     </Button>
   </div>
 
-  {
-    facts.length > 0 && (
-      <section class="dc-section--tight dc-bg-white" data-cms={entry}>
-        <div class="dc-container">
+  {/*
+    Цена и предупреждение о противопоказаниях (ч. 7 ст. 24 38-ФЗ) — рядом,
+    один раз на странице. Секция есть всегда: предупреждение нужно и
+    услуге без заполненных фактов.
+  */}
+  <section class="dc-section--tight dc-bg-white" data-cms={entry}>
+    <div class="dc-container">
+      {
+        facts.length > 0 && (
           <Reveal>
             <ul class="dc-facts-row" role="list">
               {facts.map((fact) => (
@@ -180,10 +197,13 @@ if (amount) {
               ))}
             </ul>
           </Reveal>
-        </div>
-      </section>
-    )
-  }
+        )
+      }
+      <Reveal>
+        <MedicalWarning />
+      </Reveal>
+    </div>
+  </section>
 
   {
     (s.includes.length > 0 || s.indications.length > 0) && (
@@ -249,6 +269,112 @@ if (amount) {
           </ol>
         </div>
       </section>
+    )
+  }
+
+  {/*
+    Описание материала — после этапов: сначала что и как делают, затем
+    подробно о самом материале, потом цены. Разделы в <details>: на телефоне
+    свёрнуты (страница и так длинная), на ПК их раскрывает скрипт ниже до
+    первой отрисовки. Текст в HTML в любом случае — поисковик его видит.
+  */}
+  {
+    about && (
+      <section class="dc-section dc-bg-cool" data-cms={aboutEntry}>
+        <div class="dc-container dc-container--aside">
+          <Reveal class="dc-about__aside">
+            <SectionHeading class="dc-aside-heading" title={about.title} cms={`${aboutEntry}:title`} />
+          </Reveal>
+          <div class="dc-about">
+            {about.intro.length > 0 && (
+              <Reveal delay={90}>
+                <div class="dc-about__intro" data-cms={`${aboutEntry}:intro`}>
+                  {about.intro.map((text) => (
+                    <p>{text}</p>
+                  ))}
+                </div>
+              </Reveal>
+            )}
+
+            {about.benefits.length > 0 && (
+              <Reveal delay={90}>
+                <div class="dc-about__benefits" data-cms={`${aboutEntry}:benefits`}>
+                  {about.benefitsTitle && (
+                    <h3 class="dc-about__subtitle" data-cms={`${aboutEntry}:benefitsTitle`}>
+                      {about.benefitsTitle}
+                    </h3>
+                  )}
+                  <ul class="dc-about__grid" role="list">
+                    {about.benefits.map((benefit, i) => (
+                      <li class="dc-about__card" data-cms={`${aboutEntry}:benefits.${i}`}>
+                        <span class="dc-facts-row__icon">
+                          <Icon name={benefit.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
+                        </span>
+                        <h4>{benefit.title}</h4>
+                        <p>{(s.descriptionLayered && benefit.layeredText) || benefit.text}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+            )}
+
+            {about.sections.length > 0 && (
+              <details class="dc-about__more" data-about-more>
+                <summary class="dc-about__toggle" data-cms={cmsPage('service-page', 'about')}>
+                  <span class="dc-about__toggle-more">{copy.about.more}</span>
+                  <span class="dc-about__toggle-less">{copy.about.less}</span>
+                  <Icon name="chevron-down" size={18} />
+                </summary>
+                <div class="dc-about__sections">
+                  {about.sections.map((section, i) => (
+                    <div
+                      class:list={[
+                        'dc-about__section',
+                        section.sub && 'dc-about__section--sub',
+                        !section.title && i > 0 && 'dc-about__section--cont',
+                      ]}
+                      data-cms={`${aboutEntry}:sections.${i}`}
+                    >
+                      {section.title &&
+                        (section.sub ? (
+                          <h4 class="dc-about__minor">{section.title}</h4>
+                        ) : (
+                          <h3 class="dc-about__subtitle">{section.title}</h3>
+                        ))}
+                      {section.paragraphs.map((text) => (
+                        <p>{text}</p>
+                      ))}
+                      {section.items.length > 0 && (
+                        <ul class="dc-about__list">
+                          {section.items.map((item) => (
+                            <li>{item}</li>
+                          ))}
+                        </ul>
+                      )}
+                      {section.afterItems.map((text) => (
+                        <p>{text}</p>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+
+          </div>
+        </div>
+      </section>
+    )
+  }
+  {
+    about && (
+      <script is:inline>
+        if (window.matchMedia('(min-width: 900px)').matches) {
+          document.querySelectorAll('[data-about-more]').forEach(function (d) {
+            d.open = true;
+          });
+        }
+      </script>
     )
   }
 
@@ -371,6 +497,25 @@ if (amount) {
 </PageLayout>
 
 <style>
+  /*
+   * Плотный ритм только для страниц услуг: правила scoped, поэтому
+   * общие .dc-section и .dc-container на главной, «О клинике» и «Врачах»
+   * не меняются. Соседние белые секции (факты → «Что входит») не
+   * складывают отступы: у второй верхний снимаем, хватает нижнего у первой.
+   */
+  .dc-section {
+    padding-block: var(--section-y-compact);
+  }
+  .dc-section--tight {
+    padding-block: var(--section-y-compact-tight);
+  }
+  .dc-bg-white + .dc-bg-white {
+    padding-top: 0;
+  }
+  .dc-container {
+    gap: var(--space-6);
+  }
+
   .dc-service__actions {
     display: flex;
     flex-wrap: wrap;
@@ -429,7 +574,7 @@ if (amount) {
     display: grid;
     gap: var(--space-4);
     align-content: start;
-    padding: var(--space-8);
+    padding: clamp(var(--space-6), 3vw, var(--space-8));
     border-radius: var(--radius-xl);
     background: var(--surface-card);
     border: 1px solid var(--line-hairline);
@@ -512,7 +657,6 @@ if (amount) {
     align-items: flex-end;
     justify-content: space-between;
     gap: var(--space-5);
-    margin-bottom: var(--space-8);
   }
   .dc-related__grid {
     list-style: none;
@@ -547,6 +691,143 @@ if (amount) {
   .dc-related__price {
     font-family: var(--font-display);
     font-weight: var(--fw-black);
+    color: var(--text-accent);
+  }
+
+  /* Описание материала: карточки преимуществ 2×2, разделы — текст шириной ~70ch */
+  .dc-about {
+    display: grid;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+  /* Раздел длинный: заголовок слева едет вместе с текстом, а не оставляет пустую колонку */
+  @media (min-width: 900px) {
+    :global(.dc-about__aside) {
+      position: sticky;
+      top: calc(var(--header-h) + var(--space-6));
+    }
+  }
+  .dc-about__benefits {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .dc-about__subtitle {
+    font-size: var(--type-h3);
+  }
+  .dc-about__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-4);
+  }
+  @media (min-width: 640px) {
+    .dc-about__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .dc-about__card {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-about__card h4 {
+    font-size: var(--type-h4);
+  }
+  .dc-about__card p {
+    color: var(--text-body);
+    font-size: var(--type-small);
+  }
+
+  .dc-about__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap-min);
+    padding: 0 var(--space-5);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line-strong);
+    background: var(--surface-card);
+    color: var(--text-strong);
+    font-weight: var(--fw-semibold);
+    cursor: pointer;
+    list-style: none;
+  }
+  .dc-about__toggle::-webkit-details-marker {
+    display: none;
+  }
+  .dc-about__toggle:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .dc-about__toggle-less,
+  .dc-about__more[open] .dc-about__toggle-more {
+    display: none;
+  }
+  .dc-about__more[open] .dc-about__toggle-less {
+    display: inline;
+  }
+  .dc-about__toggle :global(svg) {
+    transition: transform var(--dur-mid) var(--ease-out);
+  }
+  .dc-about__more[open] .dc-about__toggle :global(svg) {
+    transform: rotate(180deg);
+  }
+  /* На ПК разделы раскрыты сразу (скрипт под секцией) — кнопка не нужна */
+  @media (min-width: 900px) {
+    .dc-about__more[open] > .dc-about__toggle {
+      display: none;
+    }
+  }
+  .dc-about__sections {
+    display: grid;
+    gap: var(--space-8);
+    max-width: 70ch;
+  }
+  .dc-about__more[open] .dc-about__sections {
+    margin-top: var(--space-6);
+  }
+  @media (min-width: 900px) {
+    .dc-about__more[open] .dc-about__sections {
+      margin-top: var(--space-2);
+    }
+  }
+  .dc-about__section {
+    display: grid;
+    gap: var(--space-3);
+    color: var(--text-body);
+  }
+  /* Подраздел (### в тексте) и продолжение раздела без заголовка ближе к
+     предыдущему блоку: общий промежуток между разделами — 32px */
+  .dc-about__section--sub {
+    margin-top: calc(var(--space-4) - var(--space-8));
+  }
+  .dc-about__section--cont {
+    margin-top: calc(var(--space-3) - var(--space-8));
+  }
+  .dc-about__minor {
+    font-size: var(--type-h4);
+  }
+  .dc-about__intro {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 70ch;
+    font-size: var(--type-body-lg);
+    color: var(--text-body);
+  }
+  .dc-about__list {
+    margin: 0;
+    padding-left: 1.25em;
+    list-style: disc;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-about__list li::marker {
     color: var(--text-accent);
   }
 

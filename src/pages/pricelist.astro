@@ -21,6 +21,7 @@ import Reveal from '../components/core/Reveal.astro';
 import Button from '../components/core/Button.astro';
 import Icon from '../components/core/Icon.astro';
 import OfferStrip from '../components/content/OfferStrip.astro';
+import MedicalWarning from '../components/content/MedicalWarning.astro';
 import { clinic } from '../data/site';
 import { pricesPage as page } from '../data/pages';
 import { pageHref } from '../lib/asset';
@@ -180,6 +181,11 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
         <OfferStrip
           items={page.terms.map((term, i) => ({ ...term, cms: cmsPage('prices', `terms.${i}`) }))}
         />
+      </Reveal>
+
+      {/* Предупреждение о противопоказаниях (ч. 7 ст. 24 38-ФЗ) — над таблицей цен */}
+      <Reveal>
+        <MedicalWarning />
       </Reveal>
 
       <div class="dc-pl">

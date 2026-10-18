@@ -246,6 +246,49 @@ const priceList = defineCollection({
 });
 
 /**
+ * Описания материалов и видов работ — длинный текст для нескольких
+ * страниц услуг сразу (циркониевые коронки: обычная, с керамической
+ * массой, на импланте). Хранится один раз, страница услуги ссылается на
+ * него полем `description` — правка текста попадает на все страницы.
+ */
+const serviceDescriptions = defineCollection({
+  loader: glob({ pattern: '**/*.json', base: './src/content/service-descriptions' }),
+  schema: z.object({
+    /** Заголовок секции на странице услуги */
+    title: z.string(),
+    /** Вводные абзацы — видны сразу, до карточек и разделов */
+    intro: list(z.string()),
+    benefitsTitle: text(),
+    /** Карточки преимуществ. `layeredText` — текст для страниц с
+        `descriptionLayered` (коронки с керамической облицовкой); пусто — основной */
+    benefits: list(
+      z.object({
+        icon: textOr('check'),
+        title: z.string(),
+        text: z.string(),
+        layeredText: text(),
+      }),
+    ),
+    /**
+     * Разделы: абзацы, затем маркированный список, затем абзацы после него.
+     * Раздел без заголовка продолжает предыдущий (второй список в том же
+     * разделе), `sub` — подраздел (### в исходном тексте).
+     */
+    sections: list(
+      z.object({
+        title: text(),
+        sub: flag(),
+        paragraphs: list(z.string()),
+        items: list(z.string()),
+        afterItems: list(z.string()),
+      }),
+    ),
+    /** Страница услуги для предпросмотра в редакторе; на сайт не влияет */
+    preview: text(),
+  }),
+});
+
+/**
  * Страницы отдельных услуг (/uslugi/<slug>).
  *
  * Шаблон для заполнения — src/content/service-pages/_template.json;
@@ -291,6 +334,10 @@ const servicePages = defineCollection({
     prices: list(priceItem),
     /** Вопросы конкретно по этой услуге */
     faq: list(z.object({ q: z.string(), a: z.string() })),
+    /** Описание из service-descriptions (имя файла без .json); пусто — секции нет */
+    description: text(),
+    /** Коронка с керамической облицовкой: в карточках описания — `layeredText` */
+    descriptionLayered: flag(),
     seoTitle: text(),
     seoDescription: text(),
     ...orderable,
@@ -396,6 +443,7 @@ export const collections = {
   'price-list': priceList,
   'service-categories': serviceCategories,
   'service-pages': servicePages,
+  'service-descriptions': serviceDescriptions,
   problems,
   trust,
   comparison,

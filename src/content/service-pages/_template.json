@@ -37,6 +37,9 @@
     { "q": "Вопрос, который задают на приёме?", "a": "Короткий честный ответ." }
   ],
 
+  "description": "Необязательно: имя файла из src/content/service-descriptions без .json — общее описание материала (cirkonievye-koronki)",
+  "descriptionLayered": false,
+
   "seoTitle": "Необязательно: свой <title>. Без него собирается из названия услуги.",
   "seoDescription": "Необязательно: своё описание для выдачи.",
   "order": 10
