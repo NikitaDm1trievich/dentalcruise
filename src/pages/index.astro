@@ -688,10 +688,13 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     }
   }
 
-  /* Три колонки, как на странице врачей, а неполный ряд — по центру: на
-     главной двое врачей, и в сетке из четырёх колонок полряда стояло
-     пустым. Flex, а не grid: grid не умеет центрировать последний ряд.
-     Ширина карточки — доля ряда за вычетом промежутков, как в сетке. */
+  /* Телефон — одна колонка, с 560px — две, и на ПК тоже две (2×2): в три
+     колонки четвёртая карточка висела одна посреди второго ряда. На ПК
+     карточка в две колонки горизонтальная (фото слева) — см.
+     DoctorFlipCard. Нечётная последняя карточка встаёт по центру ряда
+     шириной в одну колонку, как и все. Grid, а не flex: ячейки ряда
+     одной высоты, и карточки в ряду ровные. Нечётную считаем по
+     nth-of-type: первым ребёнком списка Astro ставит <script> фото. */
   .dc-doctors {
     list-style: none;
     margin: 0;
@@ -707,13 +710,14 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
     min-width: 0;
   }
   @media (min-width: 560px) {
-    .dc-doctors > :global(li) {
-      flex-basis: calc((100% - var(--space-5)) / 2);
+    .dc-doctors {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-  }
-  @media (min-width: 1040px) {
-    .dc-doctors > :global(li) {
-      flex-basis: calc((100% - 2 * var(--space-5)) / 3);
+    .dc-doctors > :global(li:last-of-type:nth-of-type(odd)) {
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: calc((100% - var(--space-5)) / 2);
     }
   }
 

@@ -84,11 +84,12 @@ const names = doctors.map((d) => d.data.name).join(', ');
 </PageLayout>
 
 <style>
-  /* Три колонки, а не четыре: врачей трое, и четвёртый слот стоял пустым.
-     Flex вместо grid, чтобы неполный ряд (если врачей станет четверо)
-     вставал по центру, а не оставлял дыру справа. Ширина карточки —
-     доля ряда за вычетом промежутков, как в трёхколоночной сетке.
-     Планшет — две колонки, телефон — одна. */
+  /* Телефон — одна колонка, с 560px — две, и на ПК тоже две (2×2): в три
+     колонки четвёртая карточка висела одна посреди второго ряда. На ПК
+     карточка горизонтальная (фото слева) — см. DoctorCard. Нечётная
+     последняя карточка встаёт по центру ряда шириной в одну колонку.
+     Нечётную считаем по nth-of-type: первым ребёнком списка Astro может
+     поставить <script> фото. */
   .dc-team {
     list-style: none;
     margin: 0;
@@ -102,15 +103,18 @@ const names = doctors.map((d) => d.data.name).join(', ');
   .dc-team > :global(li) {
     flex: 0 1 100%;
     min-width: 0;
+    /* По ширине ячейки карточка решает, стать ли горизонтальной */
+    container: dc-team-cell / inline-size;
   }
   @media (min-width: 560px) {
-    .dc-team > :global(li) {
-      flex-basis: calc((100% - var(--space-5)) / 2);
+    .dc-team {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-  }
-  @media (min-width: 1040px) {
-    .dc-team > :global(li) {
-      flex-basis: calc((100% - 2 * var(--space-5)) / 3);
+    .dc-team > :global(li:last-of-type:nth-of-type(odd)) {
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: calc((100% - var(--space-5)) / 2);
     }
   }
 
