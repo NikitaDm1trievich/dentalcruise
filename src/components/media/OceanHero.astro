@@ -72,21 +72,11 @@ const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, post
     height: 100%;
     object-fit: cover;
   }
-  /* На телефонах виден только poster. Растянутый cover на всю высоту экрана
-     превращал кадр 2:1 в гигантское размытое лицо, поэтому на узких экранах
-     кадр — верхняя полоса умеренной высоты (лицо правее середины, фокус 57%),
-     а низ плавно растворяется в тёмном фоне секции. */
+  /* На телефонах виден только poster: на вертикальном экране cover режет кадр
+     по центру и обрезал бы лицо (оно правее середины), поэтому смещаем фокус. */
   @media (max-width: 1023px) {
-    .dc-hero {
-      align-items: end;
-      padding-bottom: 112px;
-    }
     .dc-hero__video {
-      bottom: auto;
-      height: clamp(340px, 46svh, 480px);
-      object-position: 57% 40%;
-      -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
-      mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+      object-position: 59% 50%;
     }
   }
   .dc-hero__scrim {
