@@ -800,9 +800,16 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
     .dc-pl__aside {
       position: sticky;
       top: calc(60px + var(--space-5));
+      /* Не выше окна: на невысоком экране нижние разделы иначе уходят
+         за край, а у липкого блока нет прокрутки страницы. Листается
+         само оглавление, поиск остаётся наверху. */
+      max-height: calc(100dvh - 60px - var(--space-5) * 2);
+      grid-template-rows: auto auto minmax(0, 1fr);
     }
     .dc-pl__toc {
       display: block;
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
     .dc-pl-sec {
       scroll-margin-top: 0;
@@ -850,6 +857,16 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
       link.setAttribute('aria-current', String(link.dataset.priceLink === slug));
     }
     if (current && found) current.textContent = found.dataset.title ?? '';
+    // В длинном оглавлении на низком окне активный раздел может оказаться
+    // за краем его прокрутки — подводим к нему список (страницу не двигаем).
+    const toc = document.querySelector<HTMLElement>('.dc-pl__toc');
+    const on = toc?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (toc && on && toc.scrollHeight > toc.clientHeight) {
+      const top = on.offsetTop - toc.offsetTop;
+      if (top < toc.scrollTop || top + on.offsetHeight > toc.scrollTop + toc.clientHeight) {
+        toc.scrollTop = top - (toc.clientHeight - on.offsetHeight) / 2;
+      }
+    }
   };
   // Прямо в обработчике, без requestAnimationFrame: девять замеров — копейки,
   // а rAF замирает на фоновой вкладке, и подпись осталась бы старой.
