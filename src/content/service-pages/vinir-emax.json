@@ -95,5 +95,31 @@
   "seoDescription": "",
   "order": 10,
   "matchTitle": "",
-  "matchGroup": ""
+  "matchGroup": "",
+  "works": [
+    {
+      "image": "/images/services/viniry-rabota-1-do.webp",
+      "alt": "Виниры, первая работа: до лечения",
+      "caption": "До",
+      "ratio": "1000 / 562"
+    },
+    {
+      "image": "/images/services/viniry-rabota-1-posle.webp",
+      "alt": "Виниры, первая работа: после лечения",
+      "caption": "После",
+      "ratio": "1000 / 562"
+    },
+    {
+      "image": "/images/services/viniry-rabota-2-do.webp",
+      "alt": "Виниры, вторая работа: до лечения",
+      "caption": "До",
+      "ratio": "1000 / 562"
+    },
+    {
+      "image": "/images/services/viniry-rabota-2-posle.webp",
+      "alt": "Виниры, вторая работа: после лечения",
+      "caption": "После",
+      "ratio": "1000 / 562"
+    }
+  ]
 }

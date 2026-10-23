@@ -113,5 +113,13 @@
       "afterItems": []
     }
   ],
-  "preview": "kostnaya-plastika-otkrytyy-sinus-lifting"
+  "preview": "kostnaya-plastika-otkrytyy-sinus-lifting",
+  "images": [
+    {
+      "image": "/images/services/sinus-lifting.webp",
+      "alt": "Иллюстрация синус-лифтинга: наращивание кости верхней челюсти под имплант",
+      "caption": "",
+      "ratio": "522 / 294"
+    }
+  ]
 }

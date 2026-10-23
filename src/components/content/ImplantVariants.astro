@@ -14,6 +14,7 @@
  * Переключатель — вкладки: стрелки, Home/End, роли tablist/tab/tabpanel.
  */
 import { priceRows } from '../../lib/price-rows';
+import Carousel from '../core/Carousel.astro';
 import SectionHeading from '../core/SectionHeading.astro';
 import Icon from '../core/Icon.astro';
 import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
@@ -102,15 +103,8 @@ const cms = (path: string) => cmsPage('implant-variants', path);
           )}
         </figure>
 
-        <div
-          class="dc-iv__carousel"
-          role="group"
-          aria-roledescription="carousel"
-          aria-label={copy.carousel.label}
-          data-iv-carousel
-        >
-          <div class="dc-iv__steps" data-iv-track>
-          <article class="dc-iv__card dc-iv__slide" role="group" aria-roledescription="slide" aria-label={`${copy.operation.step}: ${copy.operation.title}`}>
+        <Carousel label={copy.carousel.label} dots={[copy.operation.step, copy.prosthesis.step]} prev={copy.carousel.prev} next={copy.carousel.next}>
+          <article class="dc-iv__card" data-slide role="group" aria-roledescription="slide" aria-label={`${copy.operation.step}: ${copy.operation.title}`}>
             <header class="dc-iv__card-head">
               <span class="dc-iv__step">{copy.operation.step}</span>
               <h4>{copy.operation.title}</h4>
@@ -137,12 +131,10 @@ const cms = (path: string) => cmsPage('implant-variants', path);
               ))}
             </ul>
           </article>
-
           <span class="dc-iv__plus" aria-hidden="true">
             <Icon name="plus" size={22} strokeWidth={2.4} />
           </span>
-
-          <article class="dc-iv__card dc-iv__card--next dc-iv__slide" role="group" aria-roledescription="slide" aria-label={`${copy.prosthesis.step}: ${copy.prosthesis.title}`}>
+          <article class="dc-iv__card dc-iv__card--next" data-slide role="group" aria-roledescription="slide" aria-label={`${copy.prosthesis.step}: ${copy.prosthesis.title}`}>
             <header class="dc-iv__card-head">
               <span class="dc-iv__step">{copy.prosthesis.step}</span>
               <h4>{copy.prosthesis.title}</h4>
@@ -154,28 +146,8 @@ const cms = (path: string) => cmsPage('implant-variants', path);
               <Icon name="arrow-down" size={18} strokeWidth={2.2} />
             </a>
           </article>
-        </div>
-          <div class="dc-iv__nav" hidden data-iv-nav>
-            <button type="button" class="dc-iv__arrow" aria-label={copy.carousel.prev} data-iv-prev>
-              <Icon name="chevron-left" size={20} strokeWidth={2.4} />
-            </button>
-            <div class="dc-iv__dots">
-              {[copy.operation, copy.prosthesis].map((st, i) => (
-                <button
-                  type="button"
-                  class="dc-iv__dot"
-                  aria-label={copy.carousel.dot.replace('{n}', String(i + 1))}
-                  data-iv-dot={i}
-                >
-                  <span>{st.step}</span>
-                </button>
-              ))}
-            </div>
-            <button type="button" class="dc-iv__arrow" aria-label={copy.carousel.next} data-iv-next>
-              <Icon name="chevron-right" size={20} strokeWidth={2.4} />
-            </button>
-          </div>
-        </div>
+        </Carousel>
+
         <p class="dc-iv__total">
           <Icon name="info" size={20} strokeWidth={2} color="var(--text-accent)" />
           <span><b>{copy.total.title}.</b> {copy.total.text}</span>
@@ -262,11 +234,6 @@ const cms = (path: string) => cmsPage('implant-variants', path);
     width: 100%;
     height: auto;
     object-fit: contain;
-  }
-  .dc-iv__steps {
-    display: grid;
-    gap: var(--space-4);
-    min-width: 0;
   }
   .dc-iv__card {
     display: grid;
@@ -437,90 +404,6 @@ const cms = (path: string) => cmsPage('implant-variants', path);
   }
 
 
-  /* ── Карусель этапов: включает скрипт (класс is-carousel), без него этапы друг под другом ── */
-  .dc-iv__carousel {
-    display: grid;
-    gap: var(--space-3);
-    min-width: 0;
-  }
-  .is-carousel .dc-iv__steps {
-    display: flex;
-    gap: var(--space-3);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    align-items: flex-start;
-    scrollbar-width: none;
-    border-radius: var(--radius-lg);
-  }
-  .is-carousel .dc-iv__steps::-webkit-scrollbar {
-    display: none;
-  }
-  .is-carousel .dc-iv__steps:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
-  .is-carousel .dc-iv__slide {
-    flex: 0 0 100%;
-    scroll-snap-align: start;
-    box-sizing: border-box;
-  }
-  .is-carousel .dc-iv__plus {
-    display: none;
-  }
-  .dc-iv__nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-  }
-  .dc-iv__nav[hidden] {
-    display: none;
-  }
-  .dc-iv__dots {
-    display: flex;
-    gap: var(--space-2);
-  }
-  .dc-iv__dot {
-    min-height: 44px;
-    padding: 0 clamp(var(--space-3), 3vw, var(--space-4));
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-pill);
-    background: transparent;
-    color: var(--text-strong);
-    font: inherit;
-    font-size: var(--type-small);
-    font-weight: var(--fw-semibold);
-    cursor: pointer;
-    transition: background-color var(--dur-fast) var(--ease-out);
-  }
-  .dc-iv__dot[aria-current='true'] {
-    background: var(--surface-card);
-    border-color: var(--dc-turquoise-ink);
-    color: var(--text-accent);
-    font-weight: var(--fw-bold);
-  }
-  .dc-iv__arrow {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-pill);
-    background: var(--surface-card);
-    color: var(--text-strong);
-    cursor: pointer;
-  }
-  .dc-iv__arrow:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-  .dc-iv__dot:focus-visible,
-  .dc-iv__arrow:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
-
   @media (min-width: 900px) {
     .dc-iv__panel {
       grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -537,8 +420,7 @@ const cms = (path: string) => cmsPage('implant-variants', path);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .dc-iv__tab,
-    .dc-iv__dot {
+    .dc-iv__tab {
       transition: none;
     }
   }
@@ -562,43 +444,6 @@ const cms = (path: string) => cmsPage('implant-variants', path);
       for (const panel of panels) panel.hidden = panel.dataset.panel !== id;
     };
 
-
-    // Карусель этапов внутри каждой панели
-    panels.forEach((panel) => {
-      const car = panel.querySelector<HTMLElement>('[data-iv-carousel]');
-      const track = panel.querySelector<HTMLElement>('[data-iv-track]');
-      const nav = panel.querySelector<HTMLElement>('[data-iv-nav]');
-      const prev = panel.querySelector<HTMLButtonElement>('[data-iv-prev]');
-      const next = panel.querySelector<HTMLButtonElement>('[data-iv-next]');
-      const dots = Array.from(panel.querySelectorAll<HTMLButtonElement>('[data-iv-dot]'));
-      if (!car || !track || !nav || !prev || !next) return;
-      const slides = Array.from(track.querySelectorAll<HTMLElement>('.dc-iv__slide'));
-      car.classList.add('is-carousel');
-      nav.hidden = false;
-      track.tabIndex = 0;
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-      const current = () => Math.min(slides.length - 1, Math.round(track.scrollLeft / Math.max(1, slides[0].offsetWidth)));
-      const sync = () => {
-        const i = current();
-        prev.disabled = i === 0;
-        next.disabled = i === slides.length - 1;
-        dots.forEach((d, n) => (n === i ? d.setAttribute('aria-current', 'true') : d.removeAttribute('aria-current')));
-      };
-      const go = (i: number) => {
-        const k = Math.max(0, Math.min(slides.length - 1, i));
-        track.scrollTo({ left: slides[k].offsetLeft - slides[0].offsetLeft, behavior: reduce.matches ? 'auto' : 'smooth' });
-      };
-      prev.addEventListener('click', () => go(current() - 1));
-      next.addEventListener('click', () => go(current() + 1));
-      dots.forEach((d, n) => d.addEventListener('click', () => go(n)));
-      track.addEventListener('scroll', sync, { passive: true });
-      track.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowRight') { e.preventDefault(); go(current() + 1); }
-        if (e.key === 'ArrowLeft') { e.preventDefault(); go(current() - 1); }
-      });
-      sync();
-    });
 
     tabs.forEach((tab, i) => {
       tab.addEventListener('click', () => select(tab.dataset.variant!));

@@ -210,8 +210,14 @@ export const servicePage: {
   /** В заголовке `{услуга}` заменяется названием услуги строчными буквами */
   faq: { eyebrow: string; title: string; lead: string };
   related: { title: string; all: string };
-  /** Кнопка, которая разворачивает разделы описания на телефоне */
-  about: { more: string; less: string };
+  /** Карусели страниц услуг: подписи стрелок */
+  carousel: { prev: string; next: string };
+  /** Описание материала: подпись первого слайда («Коротко») */
+  about: { summary: string };
+  /** Карусель «Наши работы» (до/после) */
+  works: { eyebrow: string; title: string; lead: string };
+  /** Баннер «Запишитесь на бесплатный осмотр» над контактами */
+  banner: { title: string; text: string; book: string; phone: string };
   /** Услуга, на странице которой редактор показывает предпросмотр */
   preview: string;
 } = service;

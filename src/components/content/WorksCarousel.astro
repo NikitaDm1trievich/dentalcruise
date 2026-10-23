@@ -1,0 +1,46 @@
+---
+/**
+ * «Наши работы»: фото до/после каруселью. По два кадра в ряду на экране
+ * шире 700 px, на телефоне по одному. Без JS кадры идут друг под другом.
+ */
+import Carousel from '../core/Carousel.astro';
+import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+
+interface Props {
+  label: string;
+  works: { image: string; alt: string; caption?: string; ratio?: string }[];
+  /** Адрес поля в редакторе (`service-pages/<слаг>:works`) */
+  entry: string;
+}
+const { label, works, entry } = Astro.props;
+---
+
+<Carousel label={label} perView={2} adaptHeight={false} class="dc-works" dotStyle="number">
+  {
+    works.map((w, i) => (
+      <figure
+        class="dc-works__item"
+        data-slide
+        role="group"
+        aria-roledescription="slide"
+        aria-label={`${i + 1} из ${works.length}${w.caption ? `: ${w.caption}` : ''}`}
+        data-cms={`${entry}:works.${i}`}
+      >
+        <PhotoPlaceholder src={w.image} alt={w.alt} ratio={w.ratio || '16 / 9'} radius="var(--radius-lg)" />
+        {w.caption && <figcaption>{w.caption}</figcaption>}
+      </figure>
+    ))
+  }
+</Carousel>
+
+<style>
+  .dc-works__item {
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-works__item figcaption {
+    font-weight: var(--fw-bold);
+    color: var(--text-strong);
+  }
+</style>

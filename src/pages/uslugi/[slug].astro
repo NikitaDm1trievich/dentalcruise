@@ -17,6 +17,8 @@ import Icon from '../../components/core/Icon.astro';
 import SectionHeading from '../../components/core/SectionHeading.astro';
 import ImplantProsthesis from '../../components/content/ImplantProsthesis.astro';
 import ImplantVariants from '../../components/content/ImplantVariants.astro';
+import AboutCarousel from '../../components/content/AboutCarousel.astro';
+import WorksCarousel from '../../components/content/WorksCarousel.astro';
 import PriceTable from '../../components/content/PriceTable.astro';
 import FaqAccordion from '../../components/content/FaqAccordion.astro';
 import TrustBar from '../../components/content/TrustBar.astro';
@@ -24,7 +26,7 @@ import MedicalWarning from '../../components/content/MedicalWarning.astro';
 import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
 import { clinic } from '../../data/site';
 import { pricesPage, servicePage as copy } from '../../data/pages';
-import { pageHref } from '../../lib/asset';
+import { pageHref, withBase } from '../../lib/asset';
 import { cmsItem, cmsList, cmsPage, cmsSite } from '../../lib/cms-ref';
 import { fill } from '../../lib/format';
 import { absolute, clampText, clinicRef, isFromPrice, priceValue } from '../../lib/seo';
@@ -303,9 +305,8 @@ if (amount) {
 
   {/*
     Описание материала — после этапов: сначала что и как делают, затем
-    подробно о самом материале, потом цены. Разделы в <details>: на телефоне
-    свёрнуты (страница и так длинная), на ПК их раскрывает скрипт ниже до
-    первой отрисовки. Текст в HTML в любом случае — поисковик его видит.
+    подробно о самом материале, потом цены. Каруселью: «Коротко» и по слайду
+    на раздел. Текст в HTML весь, поисковик его видит; без JS — подряд.
   */}
   {
     about && (
@@ -314,96 +315,31 @@ if (amount) {
           <Reveal class="dc-about__aside">
             <SectionHeading class="dc-aside-heading" title={about.title} cms={`${aboutEntry}:title`} />
           </Reveal>
-          <div class="dc-about">
-            {about.intro.length > 0 && (
-              <Reveal delay={90}>
-                <div class="dc-about__intro" data-cms={`${aboutEntry}:intro`}>
-                  {about.intro.map((text) => (
-                    <p>{text}</p>
-                  ))}
-                </div>
-              </Reveal>
-            )}
-
-            {about.benefits.length > 0 && (
-              <Reveal delay={90}>
-                <div class="dc-about__benefits" data-cms={`${aboutEntry}:benefits`}>
-                  {about.benefitsTitle && (
-                    <h3 class="dc-about__subtitle" data-cms={`${aboutEntry}:benefitsTitle`}>
-                      {about.benefitsTitle}
-                    </h3>
-                  )}
-                  <ul class="dc-about__grid" role="list">
-                    {about.benefits.map((benefit, i) => (
-                      <li class="dc-about__card" data-cms={`${aboutEntry}:benefits.${i}`}>
-                        <span class="dc-facts-row__icon">
-                          <Icon name={benefit.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
-                        </span>
-                        <h4>{benefit.title}</h4>
-                        <p>{(s.descriptionLayered && benefit.layeredText) || benefit.text}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
-            )}
-
-            {about.sections.length > 0 && (
-              <details class="dc-about__more" data-about-more>
-                <summary class="dc-about__toggle" data-cms={cmsPage('service-page', 'about')}>
-                  <span class="dc-about__toggle-more">{copy.about.more}</span>
-                  <span class="dc-about__toggle-less">{copy.about.less}</span>
-                  <Icon name="chevron-down" size={18} />
-                </summary>
-                <div class="dc-about__sections">
-                  {about.sections.map((section, i) => (
-                    <div
-                      class:list={[
-                        'dc-about__section',
-                        section.sub && 'dc-about__section--sub',
-                        !section.title && i > 0 && 'dc-about__section--cont',
-                      ]}
-                      data-cms={`${aboutEntry}:sections.${i}`}
-                    >
-                      {section.title &&
-                        (section.sub ? (
-                          <h4 class="dc-about__minor">{section.title}</h4>
-                        ) : (
-                          <h3 class="dc-about__subtitle">{section.title}</h3>
-                        ))}
-                      {section.paragraphs.map((text) => (
-                        <p>{text}</p>
-                      ))}
-                      {section.items.length > 0 && (
-                        <ul class="dc-about__list">
-                          {section.items.map((item) => (
-                            <li>{item}</li>
-                          ))}
-                        </ul>
-                      )}
-                      {section.afterItems.map((text) => (
-                        <p>{text}</p>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </details>
-            )}
-
-          </div>
+          <Reveal delay={90}>
+            <AboutCarousel about={about} entry={aboutEntry!} layered={s.descriptionLayered} />
+          </Reveal>
         </div>
       </section>
     )
   }
+  {/* Наши работы: фото до/после, только у услуг с заполненным полем works (виниры) */}
   {
-    about && (
-      <script is:inline>
-        if (window.matchMedia('(min-width: 900px)').matches) {
-          document.querySelectorAll('[data-about-more]').forEach(function (d) {
-            d.open = true;
-          });
-        }
-      </script>
+    s.works.length > 0 && (
+      <section class="dc-section dc-bg-white" data-cms={`${entry}:works`}>
+        <div class="dc-container">
+          <Reveal>
+            <SectionHeading
+              eyebrow={copy.works.eyebrow}
+              title={copy.works.title}
+              lead={copy.works.lead}
+              cms={cmsPage('service-page', 'works')}
+            />
+          </Reveal>
+          <Reveal delay={90}>
+            <WorksCarousel label={copy.works.title} works={s.works} entry={entry} />
+          </Reveal>
+        </div>
+      </section>
     )
   }
 
@@ -517,6 +453,35 @@ if (amount) {
   }
 
   {/*
+    Запишитесь на бесплатный осмотр: тёмная панель на снимке-панораме,
+    на всех страницах услуг, прямо над полосой доверия и контактами. На сайте
+    другого такого блока нет: «Приезжайте или позвоните» (ContactsCta) — это
+    контакты и карта, а не призыв к записи на осмотр.
+  */}
+  <section class="dc-section--tight dc-bg-white dc-service__banner-wrap" data-cms={cmsPage('service-page', 'banner')}>
+    <div class="dc-container">
+      <Reveal>
+        <div class="dc-banner" style={`--banner-bg:url(${withBase('/images/services/notation-bg.webp')})`}>
+          <div class="dc-banner__panel">
+            <h2 class="dc-banner__title">{copy.banner.title}</h2>
+            <p class="dc-banner__text">{copy.banner.text}</p>
+            <div class="dc-banner__actions">
+              <Button variant="primary" size="md" data-open="dc-book">
+                <Icon slot="icon" name="calendar" size={20} />
+                {copy.banner.book}
+              </Button>
+              <Button variant="onDark" size="md" href={clinic.phoneHref} data-cms={cmsSite('clinic', 'phone')}>
+                <Icon slot="icon" name="phone" size={20} />
+                {copy.banner.phone}: {clinic.phone}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  {/*
     Снизу без отступа: фон «Контактов» начинается белым, и нижний отступ
     полосы складывался с верхним отступом «Контактов» в один большой разрыв.
   */}
@@ -547,6 +512,38 @@ if (amount) {
   }
   .dc-container {
     gap: var(--space-6);
+  }
+
+  .dc-banner {
+    border-radius: var(--radius-xl);
+    background: var(--surface-dark) var(--banner-bg) center / cover no-repeat;
+    padding: clamp(var(--space-4), 4vw, var(--space-12));
+  }
+  /* Панель плотная (0.92): текст читается на любом участке снимка, контраст белого на лагуне > 7:1 */
+  .dc-banner__panel {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 560px;
+    padding: clamp(var(--space-5), 3vw, var(--space-8));
+    border-radius: var(--radius-lg);
+    background: rgba(7, 59, 75, 0.92);
+    color: var(--text-on-dark);
+  }
+  .dc-banner__title {
+    color: var(--text-on-dark);
+    font-size: var(--type-h3);
+  }
+  .dc-banner__text {
+    margin: 0;
+    color: var(--text-on-dark-muted);
+  }
+  .dc-banner__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .dc-service__banner-wrap {
+    padding-bottom: 0;
   }
 
   .dc-service__anchor {
@@ -735,141 +732,12 @@ if (amount) {
     color: var(--text-accent);
   }
 
-  /* Описание материала: карточки преимуществ 2×2, разделы — текст шириной ~70ch */
-  .dc-about {
-    display: grid;
-    gap: var(--space-6);
-    min-width: 0;
-  }
-  /* Раздел длинный: заголовок слева едет вместе с текстом, а не оставляет пустую колонку */
+  /* Заголовок описания слева едет вместе с текстом, а не оставляет пустую колонку */
   @media (min-width: 900px) {
     :global(.dc-about__aside) {
       position: sticky;
       top: calc(var(--header-h) + var(--space-6));
     }
-  }
-  .dc-about__benefits {
-    display: grid;
-    gap: var(--space-4);
-  }
-  .dc-about__subtitle {
-    font-size: var(--type-h3);
-  }
-  .dc-about__grid {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-4);
-  }
-  @media (min-width: 640px) {
-    .dc-about__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  .dc-about__card {
-    display: grid;
-    gap: var(--space-3);
-    align-content: start;
-    padding: var(--space-6);
-    border-radius: var(--radius-lg);
-    background: var(--surface-card);
-    border: 1px solid var(--line-hairline);
-    box-shadow: var(--shadow-sm);
-  }
-  .dc-about__card h4 {
-    font-size: var(--type-h4);
-  }
-  .dc-about__card p {
-    color: var(--text-body);
-    font-size: var(--type-small);
-  }
-
-  .dc-about__toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: var(--tap-min);
-    padding: 0 var(--space-5);
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--line-strong);
-    background: var(--surface-card);
-    color: var(--text-strong);
-    font-weight: var(--fw-semibold);
-    cursor: pointer;
-    list-style: none;
-  }
-  .dc-about__toggle::-webkit-details-marker {
-    display: none;
-  }
-  .dc-about__toggle:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
-  .dc-about__toggle-less,
-  .dc-about__more[open] .dc-about__toggle-more {
-    display: none;
-  }
-  .dc-about__more[open] .dc-about__toggle-less {
-    display: inline;
-  }
-  .dc-about__toggle :global(svg) {
-    transition: transform var(--dur-mid) var(--ease-out);
-  }
-  .dc-about__more[open] .dc-about__toggle :global(svg) {
-    transform: rotate(180deg);
-  }
-  /* На ПК разделы раскрыты сразу (скрипт под секцией) — кнопка не нужна */
-  @media (min-width: 900px) {
-    .dc-about__more[open] > .dc-about__toggle {
-      display: none;
-    }
-  }
-  .dc-about__sections {
-    display: grid;
-    gap: var(--space-8);
-    max-width: 70ch;
-  }
-  .dc-about__more[open] .dc-about__sections {
-    margin-top: var(--space-6);
-  }
-  @media (min-width: 900px) {
-    .dc-about__more[open] .dc-about__sections {
-      margin-top: var(--space-2);
-    }
-  }
-  .dc-about__section {
-    display: grid;
-    gap: var(--space-3);
-    color: var(--text-body);
-  }
-  /* Подраздел (### в тексте) и продолжение раздела без заголовка ближе к
-     предыдущему блоку: общий промежуток между разделами — 32px */
-  .dc-about__section--sub {
-    margin-top: calc(var(--space-4) - var(--space-8));
-  }
-  .dc-about__section--cont {
-    margin-top: calc(var(--space-3) - var(--space-8));
-  }
-  .dc-about__minor {
-    font-size: var(--type-h4);
-  }
-  .dc-about__intro {
-    display: grid;
-    gap: var(--space-3);
-    max-width: 70ch;
-    font-size: var(--type-body-lg);
-    color: var(--text-body);
-  }
-  .dc-about__list {
-    margin: 0;
-    padding-left: 1.25em;
-    list-style: disc;
-    display: grid;
-    gap: var(--space-2);
-  }
-  .dc-about__list li::marker {
-    color: var(--text-accent);
   }
 
   .dc-two-col {

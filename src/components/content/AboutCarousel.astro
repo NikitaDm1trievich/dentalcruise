@@ -1,0 +1,246 @@
+---
+/**
+ * Описание материала («О циркониевых коронках») каруселью: первый слайд
+ * «Коротко» (вводные абзацы, карточки, иллюстрации), дальше по слайду на
+ * раздел. Подраздел и раздел без заголовка остаются в слайде своего раздела.
+ * Без JS всё идёт подряд, как обычная статья.
+ *
+ * `data-cms` у каждого куска ведёт в поле описания (service-descriptions) —
+ * предпросмотр редактора по нему открывает нужное место. Слайд, которого
+ * сейчас не видно, в предпросмотре выбирается кликом по точке.
+ */
+import Carousel from '../core/Carousel.astro';
+import Icon from '../core/Icon.astro';
+import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+import { servicePage as copy } from '../../data/pages';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  about: CollectionEntry<'service-descriptions'>['data'];
+  /** `service-descriptions/<имя>` — адрес записи в редакторе */
+  entry: string;
+  /** Коронка с керамической облицовкой: в карточках `layeredText` */
+  layered?: boolean;
+}
+
+const { about, entry, layered = false } = Astro.props;
+
+interface Group {
+  label: string;
+  /** Номера разделов в файле: адрес поля в редакторе */
+  parts: number[];
+}
+const groups: Group[] = [];
+about.sections.forEach((section, i) => {
+  if (section.title && !section.sub) groups.push({ label: section.title, parts: [i] });
+  else if (groups.length === 0) groups.push({ label: copy.about.summary, parts: [i] });
+  else groups[groups.length - 1].parts.push(i);
+});
+
+const hasSummary = about.intro.length > 0 || about.benefits.length > 0 || about.images.length > 0;
+const dots = [...(hasSummary ? [copy.about.summary] : []), ...groups.map((g) => g.label)];
+const slideLabel = (label: string, n: number) => `${n} из ${dots.length}: ${label}`;
+---
+
+<Carousel label={about.title} dots={dots} dotStyle="number" class="dc-about-car">
+  {
+    hasSummary && (
+      <div
+        class="dc-about__slide"
+        data-slide
+        role="group"
+        aria-roledescription="slide"
+        aria-label={slideLabel(copy.about.summary, 1)}
+      >
+        {about.intro.length > 0 && (
+          <div class="dc-about__intro" data-cms={`${entry}:intro`}>
+            {about.intro.map((text) => (
+              <p>{text}</p>
+            ))}
+          </div>
+        )}
+
+        {about.images.length > 0 && (
+          <div class="dc-about__photos" data-cms={`${entry}:images`}>
+            {about.images.map((img, i) => (
+              <figure data-cms={`${entry}:images.${i}`}>
+                <PhotoPlaceholder
+                  src={img.image}
+                  alt={img.alt}
+                  ratio={img.ratio || '4 / 3'}
+                  radius="var(--radius-lg)"
+                />
+                {img.caption && <figcaption>{img.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        )}
+
+        {about.benefits.length > 0 && (
+          <div class="dc-about__benefits" data-cms={`${entry}:benefits`}>
+            {about.benefitsTitle && (
+              <h3 class="dc-about__subtitle" data-cms={`${entry}:benefitsTitle`}>
+                {about.benefitsTitle}
+              </h3>
+            )}
+            <ul class="dc-about__grid" role="list">
+              {about.benefits.map((benefit, i) => (
+                <li class="dc-about__card" data-cms={`${entry}:benefits.${i}`}>
+                  <span class="dc-about__icon">
+                    <Icon name={benefit.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
+                  </span>
+                  <h4>{benefit.title}</h4>
+                  <p>{(layered && benefit.layeredText) || benefit.text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  {
+    groups.map((group, g) => (
+      <div
+        class="dc-about__slide dc-about__sections"
+        data-slide
+        role="group"
+        aria-roledescription="slide"
+        aria-label={slideLabel(group.label, g + (hasSummary ? 2 : 1))}
+      >
+        {group.parts.map((i, n) => {
+          const section = about.sections[i];
+          return (
+            <div
+              class:list={['dc-about__section', section.sub && 'dc-about__section--sub']}
+              data-cms={`${entry}:sections.${i}`}
+            >
+              {section.title &&
+                (section.sub ? (
+                  <h4 class="dc-about__minor">{section.title}</h4>
+                ) : (
+                  <h3 class="dc-about__subtitle">{section.title}</h3>
+                ))}
+              {section.paragraphs.map((text) => (
+                <p>{text}</p>
+              ))}
+              {section.items.length > 0 && (
+                <ul class="dc-about__list">
+                  {section.items.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              )}
+              {section.afterItems.map((text) => (
+                <p>{text}</p>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    ))
+  }
+</Carousel>
+
+<style>
+  .dc-about__slide {
+    display: grid;
+    gap: var(--space-6);
+    align-content: start;
+    min-width: 0;
+  }
+  .dc-about__sections {
+    max-width: 70ch;
+  }
+  .dc-about__intro {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 70ch;
+    font-size: var(--type-body-lg);
+    color: var(--text-body);
+  }
+  .dc-about__photos {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .dc-about__photos figure {
+    margin: 0;
+    max-width: 560px;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-about__photos figcaption {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-about__benefits {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .dc-about__subtitle {
+    font-size: var(--type-h3);
+  }
+  .dc-about__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-4);
+  }
+  @media (min-width: 640px) {
+    .dc-about__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .dc-about__card {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-about__icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-about__card h4 {
+    font-size: var(--type-h4);
+  }
+  .dc-about__card p {
+    margin: 0;
+    color: var(--text-body);
+    font-size: var(--type-small);
+  }
+  .dc-about__section {
+    display: grid;
+    gap: var(--space-3);
+    color: var(--text-body);
+  }
+  /* Подраздел (### в тексте) ближе к предыдущему блоку слайда */
+  .dc-about__section--sub {
+    margin-top: calc(var(--space-3) - var(--space-6));
+  }
+  .dc-about__minor {
+    font-size: var(--type-h4);
+  }
+  .dc-about__list {
+    margin: 0;
+    padding-left: 1.25em;
+    list-style: disc;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dc-about__list li::marker {
+    color: var(--text-accent);
+  }
+</style>

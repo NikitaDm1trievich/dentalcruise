@@ -105,5 +105,19 @@
       ]
     }
   ],
-  "preview": ""
+  "preview": "",
+  "images": [
+    {
+      "image": "/images/services/odnoetapnaya-implantatsiya-render.webp",
+      "alt": "Имплант с установленной коронкой, трёхмерная модель",
+      "caption": "",
+      "ratio": "1000 / 563"
+    },
+    {
+      "image": "/images/services/odnoetapnaya-implantatsiya-scheme.webp",
+      "alt": "Схема в три шага: установка импланта, временный абатмент, временная коронка",
+      "caption": "Три шага: имплант, временный абатмент, временная коронка",
+      "ratio": "1024 / 469"
+    }
+  ]
 }

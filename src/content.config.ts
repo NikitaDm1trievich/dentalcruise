@@ -202,6 +202,15 @@ const brands = defineCollection({
   }),
 });
 
+/** Фото на странице услуги: путь, описание для чтения с экрана, подпись и пропорции кадра. */
+const photoItem = z.object({
+  image: z.string(),
+  alt: z.string(),
+  caption: text(),
+  /** Ширина / высота, например «16 / 9»; не задано — «4 / 3» */
+  ratio: text(),
+});
+
 /** Позиция прайса: название, цена и, если есть, старая цена и сноска. */
 const priceItem = z.object({
   title: z.string(),
@@ -283,6 +292,8 @@ const serviceDescriptions = defineCollection({
         afterItems: list(z.string()),
       }),
     ),
+    /** Иллюстрации к описанию: показываются на первом слайде («Коротко») */
+    images: list(photoItem),
     /** Страница услуги для предпросмотра в редакторе; на сайт не влияет */
     preview: text(),
   }),
@@ -338,6 +349,8 @@ const servicePages = defineCollection({
     description: text(),
     /** Коронка с керамической облицовкой: в карточках описания — `layeredText` */
     descriptionLayered: flag(),
+    /** «Наши работы»: фото до/после каруселью; пусто — блока нет */
+    works: list(photoItem),
     /**
      * Блок «Операция и протез» с переключателем 4 / 6 имплантов после шапки.
      * Значение — какой вариант открыт по умолчанию; пусто — блока нет.

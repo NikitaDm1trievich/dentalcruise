@@ -1298,13 +1298,38 @@ collections:
               - { name: title, label: Заголовок блока, widget: string }
               - { name: all, label: Кнопка в прайс-лист, widget: string }
           - name: about
-            label: Описание материала — кнопка
+            label: Описание материала — карусель
             widget: object
             collapsed: true
-            hint: 'Где на сайте: кнопка, которая на телефоне разворачивает разделы описания.'
+            hint: 'Где на сайте: блок «О …» на странице услуги. Первый слайд — вводный текст и карточки, дальше по слайду на раздел.'
             fields:
-              - { name: more, label: Развернуть, widget: string }
-              - { name: less, label: Свернуть, widget: string }
+              - { name: summary, label: Подпись первого слайда, widget: string }
+          - name: carousel
+            label: Карусели — подписи стрелок
+            widget: object
+            collapsed: true
+            fields:
+              - { name: prev, label: Стрелка «назад» (для чтения с экрана), widget: string }
+              - { name: next, label: Стрелка «вперёд» (для чтения с экрана), widget: string }
+          - name: works
+            label: Наши работы (до / после) — заголовок
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: страницы винирных услуг, если заполнено «Фото работ».'
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - { name: lead, label: Текст под заголовком, widget: text }
+          - name: banner
+            label: Баннер «Запишитесь на бесплатный осмотр»
+            widget: object
+            collapsed: true
+            hint: 'Где на сайте: тёмная полоса над блоком контактов на страницах всех услуг.'
+            fields:
+              - { name: title, label: Заголовок, widget: string }
+              - { name: text, label: Текст, widget: text }
+              - { name: book, label: Кнопка записи, widget: string }
+              - { name: phone, label: Подпись у телефона, widget: string }
           - name: preview
             label: 'Служебное: услуга для предпросмотра'
             widget: relation
@@ -2040,6 +2065,21 @@ collections:
         hint: >-
           Отметьте, если коронка облицована керамикой: в карточках описания
           покажется «Текст для коронок с керамической массой».
+      - name: works
+        label: Наши работы (фото до / после)
+        label_singular: фото
+        widget: list
+        required: false
+        summary: '{{fields.caption}} {{fields.alt}}'
+        hint: >-
+          Только для винирных услуг. Фото листаются каруселью под этапами
+          работы; чётные и нечётные подписи «До» и «После» чередуйте сами.
+          Пусто — блока нет.
+        fields:
+          - { name: image, label: Картинка, widget: image }
+          - { name: alt, label: Описание для чтения с экрана, widget: string }
+          - { name: caption, label: Подпись под картинкой, widget: string, required: false }
+          - { name: ratio, label: 'Пропорции кадра', widget: string, required: false, hint: 'Ширина / высота, например «16 / 9». Пусто: «4 / 3».' }
       - name: implantVariants
         label: Блок «Операция и протез» и «Варианты протезирования» (4 / 6 имплантов)
         widget: select
@@ -2183,6 +2223,20 @@ collections:
             widget: list
             required: false
             field: { name: text, label: Абзац, widget: text }
+      - name: images
+        label: Иллюстрации
+        label_singular: картинка
+        widget: list
+        required: false
+        summary: '{{fields.alt}}'
+        hint: >-
+          Необязательно. Показываются на первом слайде «Коротко» рядом с
+          вводным текстом. Пусто — слайд без картинок.
+        fields:
+          - { name: image, label: Картинка, widget: image }
+          - { name: alt, label: Описание для чтения с экрана, widget: string }
+          - { name: caption, label: Подпись под картинкой, widget: string, required: false }
+          - { name: ratio, label: 'Пропорции кадра', widget: string, required: false, hint: 'Ширина / высота, например «16 / 9». Пусто: «4 / 3».' }
       - name: preview
         label: 'Служебное: услуга для предпросмотра'
         widget: relation
