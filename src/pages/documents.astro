@@ -16,7 +16,7 @@ import { pageHref, withBase } from '../lib/asset';
 import { cmsPage, cmsSite } from '../lib/cms-ref';
 import { renderDocText } from '../lib/doc-text';
 import { fill } from '../lib/format';
-import { clampText, metrikaId, siteRoot } from '../lib/seo';
+import { clampText, hasMetrikaCounter, siteRoot } from '../lib/seo';
 
 const { legal, license } = clinic;
 const { labels } = page.org;
@@ -196,7 +196,7 @@ const docs = [
             }
             {/* Кнопки нет, пока Метрика не подключена: соглашаться не на что */}
             {
-              metrikaId && (
+              hasMetrikaCounter && (
                 <li>
                   <Icon name="cookie" size={20} color="var(--text-accent)" />
                   <button

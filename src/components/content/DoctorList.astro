@@ -1,0 +1,62 @@
+---
+/**
+ * Сетка карточек врачей — одна для главной и страницы «Врачи», чтобы
+ * раскладка не расходилась. Сами карточки — DoctorCard.
+ *
+ * Телефон — одна колонка, с 560px — две, и на ПК тоже две (2×2): в три
+ * колонки четвёртая карточка висела одна посреди второго ряда. На ПК
+ * карточка в две колонки горизонтальная (фото слева). Нечётная последняя
+ * карточка встаёт по центру ряда шириной в одну колонку, как и все. Grid,
+ * а не flex: ячейки ряда одной высоты, и карточки в ряду ровные. Нечётную
+ * считаем по nth-of-type: первым ребёнком списка Astro может поставить
+ * <script> фото.
+ */
+import type { CollectionEntry } from 'astro:content';
+
+import Reveal from '../core/Reveal.astro';
+import DoctorCard from './DoctorCard.astro';
+
+interface Props {
+  doctors: CollectionEntry<'doctors'>[];
+}
+
+const { doctors } = Astro.props;
+---
+
+<ul class="dc-doctors" role="list">
+  {
+    doctors.map((doctor, i) => (
+      <Reveal as="li" delay={i * 80}>
+        <DoctorCard doctor={doctor} />
+      </Reveal>
+    ))
+  }
+</ul>
+
+<style>
+  .dc-doctors {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 var(--space-4);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-5);
+  }
+  /* li рисует Reveal — у него своя область видимости стилей */
+  .dc-doctors > :global(li) {
+    flex: 0 1 100%;
+    min-width: 0;
+  }
+  @media (min-width: 560px) {
+    .dc-doctors {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .dc-doctors > :global(li:last-of-type:nth-of-type(odd)) {
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: calc((100% - var(--space-5)) / 2);
+    }
+  }
+</style>

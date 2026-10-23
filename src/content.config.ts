@@ -56,7 +56,7 @@ const doctors = defineCollection({
     extra: text(),
     photo: text(),
     /** Кадр фото на карточке главной по вертикали, % (как object-position).
-        Пусто — от верхнего края (DoctorFlipCard) */
+        Пусто — от верхнего края (DoctorCard) */
     photoY: percent(),
     photoLabel: textOr('Здесь фото врача'),
     featured: flag(),

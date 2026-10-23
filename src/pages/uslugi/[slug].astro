@@ -160,6 +160,7 @@ if (amount) {
   schema={[serviceSchema]}
   faq={s.faq}
   cms={entry}
+  compactContacts
 >
   <div slot="head-extra" class="dc-service__actions">
     <Button variant="primary" size="md" data-open="dc-book" data-cms={cmsPage('service-page', 'book')}>
@@ -515,10 +516,14 @@ if (amount) {
     )
   }
 
-  <section class="dc-section--tight dc-bg-white" data-cms={cmsList('trust')}>
+  {/*
+    Снизу без отступа: фон «Контактов» начинается белым, и нижний отступ
+    полосы складывался с верхним отступом «Контактов» в один большой разрыв.
+  */}
+  <section class="dc-section--tight dc-bg-white dc-service__trust" data-cms={cmsList('trust')}>
     <div class="dc-container">
       <Reveal>
-        <TrustBar items={trust.map((t) => t.data)} />
+        <TrustBar items={trust.map((t) => t.data)} compact />
       </Reveal>
     </div>
   </section>
@@ -546,6 +551,10 @@ if (amount) {
 
   .dc-service__anchor {
     scroll-margin-top: calc(var(--header-h) + var(--space-4));
+  }
+
+  .dc-service__trust {
+    padding-bottom: 0;
   }
 
   .dc-service__actions {

@@ -560,6 +560,11 @@ const initials = (name: string) =>
   @media (min-width: 700px) {
     .dc-pk__sheet {
       position: static;
+      /* Слой 90 нужен только телефонной шторке поверх страницы. На широком
+         экране панель идёт в потоке (от 1040px — sticky, а у sticky z-index
+         работает): без сброса она ложилась поверх карточки cookie (60) и
+         кнопки «наверх» (50) и закрывала их текст. */
+      z-index: auto;
       display: block;
       visibility: visible;
       transition: none;

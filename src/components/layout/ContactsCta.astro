@@ -23,6 +23,8 @@ interface Props {
   title?: string;
   lead?: string;
   cta?: string;
+  /** Плотный ритм, как у секций страницы услуги (--section-y-compact) */
+  compact?: boolean;
 }
 
 const {
@@ -30,10 +32,15 @@ const {
   title = copy.contacts.title,
   lead = copy.contacts.lead,
   cta = copy.contacts.cta,
+  compact = false,
 } = Astro.props;
 ---
 
-<section id="contacts" class="dc-section dc-contacts-cta" data-cms={cmsText('contacts')}>
+<section
+  id="contacts"
+  class:list={['dc-section dc-contacts-cta', compact && 'dc-contacts-cta--compact']}
+  data-cms={cmsText('contacts')}
+>
   <div class="dc-container">
     <Reveal>
       <SectionHeading eyebrow={eyebrow} title={title} lead={lead} />
@@ -69,6 +76,9 @@ const {
 <style>
   .dc-contacts-cta {
     background: var(--grad-aqua);
+  }
+  .dc-contacts-cta--compact {
+    padding-block: var(--section-y-compact);
   }
   .dc-contacts-cta__actions {
     display: flex;

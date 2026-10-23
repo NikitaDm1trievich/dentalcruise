@@ -42,15 +42,19 @@ export function isIndexable(site: URL | undefined): boolean {
  * сайте нет вовсе: ни счётчика, ни уведомления о cookie, ни кнопки
  * «Настройки cookie» (см. components/layout/CookieBanner).
  *
- * На закрытой от индекса сборке (staging на github.io) счётчика тоже нет:
- * визиты тестового адреса смешались бы с боевой статистикой, а политика
- * cookie описывает только dentalcruise.ru.
+ * На закрытой от индекса сборке (staging, new.dentalcruise.ru) счётчика
+ * тоже нет: визиты тестового адреса смешались бы с боевой статистикой, а
+ * политика cookie описывает только dentalcruise.ru. Поэтому `metrikaId`
+ * (номер, который уходит в браузер и запускает Метрику) на тесте пуст, а
+ * `hasMetrikaCounter` — нет: он решает только, показывать ли уведомление
+ * о cookie и кнопку «Настройки cookie», чтобы владелец мог проверить их
+ * на тестовом адресе. Номер при этом в страницу теста не попадает.
  */
 const rawMetrikaId = (seoSettings.metrikaId ?? '').trim();
+const validMetrikaId = /^\d{5,12}$/.test(rawMetrikaId);
+export const hasMetrikaCounter: boolean = validMetrikaId;
 export const metrikaId: string =
-  /^\d{5,12}$/.test(rawMetrikaId) && isIndexable(import.meta.env.SITE ? new URL(import.meta.env.SITE) : undefined)
-    ? rawMetrikaId
-    : '';
+  validMetrikaId && isIndexable(import.meta.env.SITE ? new URL(import.meta.env.SITE) : undefined) ? rawMetrikaId : '';
 
 /**
  * Абсолютный адрес страницы или файла: базовый путь сборки плюс домен.

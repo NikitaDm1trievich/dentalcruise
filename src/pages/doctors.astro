@@ -1,6 +1,6 @@
 ---
 /**
- * Список врачей. Карточка (components/content/DoctorCard) ведёт на
+ * Список врачей. Карточки (components/content/DoctorList и DoctorCard) ведут на
  * персональную страницу /doctors/<файл>, которую собирает
  * src/pages/doctors/[slug].astro из того же JSON.
  */
@@ -10,7 +10,7 @@ import PageLayout from '../layouts/PageLayout.astro';
 import Reveal from '../components/core/Reveal.astro';
 import Button from '../components/core/Button.astro';
 import Icon from '../components/core/Icon.astro';
-import DoctorCard from '../components/content/DoctorCard.astro';
+import DoctorList from '../components/content/DoctorList.astro';
 import TrustBar from '../components/content/TrustBar.astro';
 import { clinic } from '../data/site';
 import { teamPage as page } from '../data/pages';
@@ -49,15 +49,7 @@ const names = doctors.map((d) => d.data.name).join(', ');
 >
   <section class="dc-section dc-bg-white">
     <div class="dc-container">
-      <ul class="dc-team" role="list">
-        {
-          doctors.map((doctor, i) => (
-            <Reveal as="li" delay={i * 70}>
-              <DoctorCard doctor={doctor} />
-            </Reveal>
-          ))
-        }
-      </ul>
+      <DoctorList doctors={doctors} />
 
       <Reveal delay={320}>
         <div class="dc-actions">
@@ -84,40 +76,6 @@ const names = doctors.map((d) => d.data.name).join(', ');
 </PageLayout>
 
 <style>
-  /* Телефон — одна колонка, с 560px — две, и на ПК тоже две (2×2): в три
-     колонки четвёртая карточка висела одна посреди второго ряда. На ПК
-     карточка горизонтальная (фото слева) — см. DoctorCard. Нечётная
-     последняя карточка встаёт по центру ряда шириной в одну колонку.
-     Нечётную считаем по nth-of-type: первым ребёнком списка Astro может
-     поставить <script> фото. */
-  .dc-team {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-5);
-  }
-  /* li рисует Reveal — у него своя область видимости стилей */
-  .dc-team > :global(li) {
-    flex: 0 1 100%;
-    min-width: 0;
-    /* По ширине ячейки карточка решает, стать ли горизонтальной */
-    container: dc-team-cell / inline-size;
-  }
-  @media (min-width: 560px) {
-    .dc-team {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .dc-team > :global(li:last-of-type:nth-of-type(odd)) {
-      grid-column: 1 / -1;
-      justify-self: center;
-      width: calc((100% - var(--space-5)) / 2);
-    }
-  }
-
   .dc-actions {
     display: flex;
     flex-wrap: wrap;

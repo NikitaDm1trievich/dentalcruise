@@ -178,9 +178,6 @@ export const teamPage: {
   eyebrow: string;
   heading: string;
   lead: string;
-  more: string;
-  /** Та же ссылка у сотрудника с галочкой «Не врач» */
-  moreStaff: string;
   book: string;
   breadcrumb: string;
   /** Пустые поля — заголовок и описание собираются из списка врачей */

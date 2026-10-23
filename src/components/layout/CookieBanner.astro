@@ -10,16 +10,24 @@
  * включена / выключена» и фокусом на первой кнопке. Esc в этом режиме
  * просто прячет уведомление, выбор не меняется.
  *
- * Не модальное окно, а полоса внизу: сайтом можно пользоваться, пока она
- * открыта, фокус при автопоказе не перехватывается. В разметке стоит
- * сразу за ссылкой «Перейти к содержимому» — с клавиатуры до неё два
- * нажатия Tab. На телефоне полоса стоит над нижней панелью действий, а не
- * на ней; окно записи (z-index выше) её накрывает. Пока полоса открыта,
- * у страницы снизу отступ её высоты — подвал не прячется под ней.
+ * Всплывающая карточка в правом нижнем углу, а не полоса и не модальное
+ * окно: сайтом можно пользоваться, пока она открыта, фокус при автопоказе
+ * не перехватывается. В разметке стоит сразу за ссылкой «Перейти к
+ * содержимому» — с клавиатуры до неё два нажатия Tab. На телефоне карточка
+ * стоит над нижней панелью действий, а не на ней; окно записи, меню и
+ * шторка подбора (z-index выше) её накрывают. Кнопка «наверх» поднимается
+ * над карточкой (ScrollToTop читает её высоту из `--dc-cookie-h`). На
+ * телефоне, где карточка занимает ширину экрана, у страницы снизу отступ
+ * её высоты — подвал не прячется под ней.
  *
  * Кнопки одного размера и вида: «Отказаться» не должна быть мельче или
  * бледнее «Принять» (требование юриста, ui-texts).
  *
+ * Показ и запуск Метрики разделены (lib/seo): карточка рисуется, если в
+ * редакторе есть номер счётчика (`hasMetrikaCounter`), — в том числе на
+ * тестовой сборке, чтобы владелец мог её посмотреть, а выбор сохранялся.
+ * А `data-metrika` (номер для запуска) заполнен только на боевом домене:
+ * на тесте пустой номер значит «Метрику не грузить ни при каком выборе».
  * Номера счётчика в редакторе нет — компонента на странице нет: соглашаться
  * не на что, а текст «Мы используем Яндекс Метрику» был бы неправдой.
  */
@@ -28,14 +36,14 @@ import { blocks } from '../../data/ui';
 import { pageHref } from '../../lib/asset';
 import { cmsSite } from '../../lib/cms-ref';
 import { fillParts } from '../../lib/format';
-import { metrikaId } from '../../lib/seo';
+import { hasMetrikaCounter, metrikaId } from '../../lib/seo';
 
 const copy = blocks.cookie;
 const parts = fillParts(copy.text, { ссылка: copy.link });
 ---
 
 {
-  metrikaId && (
+  hasMetrikaCounter && (
     <section
       class="dc-cookie"
       aria-label={copy.label}
@@ -74,48 +82,52 @@ const parts = fillParts(copy.text, { ссылка: copy.link });
 }
 
 <style>
+  /* Карточка в правом нижнем углу. Над кнопкой «наверх» (50), под нижней
+     панелью (65), меню (70), шторкой подбора (90) и окном записи (100):
+     форму и панель действий она не закрывает. */
   .dc-cookie {
     position: fixed;
-    inset: auto 0 0 0;
-    /* Над кнопкой «наверх» (50), под нижней панелью (65), меню (70) и
-       окном записи (100): форму и панель действий полоса не закрывает */
+    right: var(--space-5);
+    bottom: var(--space-5);
     z-index: 60;
-    padding: var(--space-4) var(--gutter) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+    width: min(26rem, calc(100% - 2 * var(--space-5)));
+    padding: var(--space-5);
     background: var(--surface-card);
-    border-top: 1px solid var(--line-hairline);
-    box-shadow: 0 -8px 24px rgba(4, 48, 65, 0.1);
+    border: 1px solid var(--line-hairline);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
   }
   .dc-cookie[hidden] {
     display: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .dc-cookie:not([hidden]) {
+      animation: dc-cookie-in var(--dur-mid) var(--ease-out);
+    }
+  }
+  @keyframes dc-cookie-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  /* Пока на экране нижняя панель действий (до 900px), карточка над ней */
+  :global(html.has-sticky-actions) .dc-cookie {
+    bottom: calc(var(--sticky-actions-h) + var(--space-3));
   }
   /* Фокус после выбора уходит на <main> (см. hide) — рамка вокруг всей страницы не нужна */
   :global(#main[tabindex='-1']:focus) {
     outline: none;
   }
-  /* На телефоне — над нижней панелью «Позвонить · Записаться · Max» */
-  :global(html.has-sticky-actions) .dc-cookie {
-    bottom: var(--sticky-actions-h);
-    padding-bottom: var(--space-4);
-  }
-  :global(html.has-cookie-banner body) {
-    padding-bottom: var(--dc-cookie-h, 0px);
-  }
-  :global(html.has-cookie-banner.has-sticky-actions body) {
-    padding-bottom: calc(var(--sticky-actions-h) + var(--dc-cookie-h, 0px));
-  }
 
   .dc-cookie__inner {
-    max-width: var(--container);
-    margin-inline: auto;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-3) var(--space-6);
+    display: grid;
+    gap: var(--space-4);
   }
   .dc-cookie__copy {
-    flex: 1 1 28rem;
     display: grid;
-    gap: var(--space-1);
+    gap: var(--space-2);
     font-size: var(--type-small);
     line-height: var(--lh-body);
     color: var(--text-body);
@@ -131,29 +143,34 @@ const parts = fillParts(copy.text, { ссылка: copy.link });
     font-weight: var(--fw-bold);
     color: var(--text-strong);
   }
-  /* Кнопки равной ширины: на узком экране — пополам строки */
+  /* Кнопки равной ширины — пополам строки */
   .dc-cookie__actions {
-    flex: 0 1 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-3);
-    min-width: min(100%, 18rem);
   }
-  /* На телефоне полоса и так занимает заметную часть экрана над нижней
-     панелью — поля и промежутки плотнее, кнопки той же высоты (tap-min) */
+
+  /* Телефон: карточка по ширине экрана над нижней панелью «Позвонить ·
+     Записаться · Max», поля плотнее. Страница получает отступ снизу на
+     высоту карточки — подвал не прячется под ней. */
   @media (max-width: 559.98px) {
     .dc-cookie {
-      padding-top: var(--space-3);
-    }
-    :global(html.has-sticky-actions) .dc-cookie {
-      padding-bottom: var(--space-3);
+      right: var(--space-3);
+      left: var(--space-3);
+      width: auto;
+      padding: var(--space-4);
     }
     .dc-cookie__inner {
-      gap: var(--space-2);
+      gap: var(--space-3);
     }
     .dc-cookie__actions {
-      flex-basis: 100%;
       gap: var(--space-2);
+    }
+    :global(html.has-cookie-banner body) {
+      padding-bottom: calc(var(--dc-cookie-h, 0px) + var(--space-3));
+    }
+    :global(html.has-cookie-banner.has-sticky-actions body) {
+      padding-bottom: calc(var(--sticky-actions-h) + var(--dc-cookie-h, 0px) + var(--space-3));
     }
   }
 </style>
@@ -162,9 +179,11 @@ const parts = fillParts(copy.text, { ссылка: copy.link });
   import { readConsent, saveConsent, startMetrika, stopMetrika, trackContactClicks } from '../../lib/analytics';
 
   const banner = document.querySelector<HTMLElement>('[data-cookie-banner]');
+  // Пустой номер — тестовая сборка: уведомление и выбор работают, Метрика
+  // не запускается и не гасится (гасить нечего).
   const id = banner?.dataset.metrika ?? '';
 
-  if (banner && id) {
+  if (banner) {
     const root = document.documentElement;
     const state = banner.querySelector<HTMLElement>('[data-cookie-state]');
     const stateOn = banner.querySelector<HTMLElement>('[data-cookie-on]');
@@ -173,7 +192,7 @@ const parts = fillParts(copy.text, { ссылка: copy.link });
     const decline = banner.querySelector<HTMLButtonElement>('[data-cookie-decline]');
     let opener: HTMLElement | null = null;
 
-    // Высота полосы — в отступ страницы снизу, пока полоса открыта
+    // Высота карточки — в отступ страницы снизу (телефон) и в положение кнопки «наверх»
     const syncHeight = () => root.style.setProperty('--dc-cookie-h', `${banner.offsetHeight}px`);
     const resize = 'ResizeObserver' in window ? new ResizeObserver(syncHeight) : null;
 
@@ -213,12 +232,12 @@ const parts = fillParts(copy.text, { ссылка: copy.link });
     accept?.addEventListener('click', () => {
       saveConsent(true);
       hide();
-      startMetrika(id);
+      if (id) startMetrika(id);
     });
     decline?.addEventListener('click', () => {
       saveConsent(false);
       hide();
-      stopMetrika(id);
+      if (id) stopMetrika(id);
     });
 
     document.addEventListener('click', (event) => {
@@ -233,7 +252,7 @@ const parts = fillParts(copy.text, { ссылка: copy.link });
 
     const choice = readConsent();
     if (choice === null) show(false);
-    else if (choice) {
+    else if (choice && id) {
       // Согласие уже дано: счётчик — когда браузер освободится, первый
       // экран из-за него не ждёт
       const start = () => startMetrika(id);

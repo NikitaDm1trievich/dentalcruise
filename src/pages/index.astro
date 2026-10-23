@@ -20,7 +20,7 @@ import ProblemPicker from '../components/content/ProblemPicker.astro';
 import BrandsMarquee from '../components/content/BrandsMarquee.astro';
 import OfferStrip from '../components/content/OfferStrip.astro';
 import ComparisonColumns from '../components/content/ComparisonColumns.astro';
-import DoctorFlipCard from '../components/content/DoctorFlipCard.astro';
+import DoctorList from '../components/content/DoctorList.astro';
 import FaqAccordion from '../components/content/FaqAccordion.astro';
 import ReviewsCard from '../components/content/ReviewsCard.astro';
 import TrustBar from '../components/content/TrustBar.astro';
@@ -296,27 +296,7 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
         />
       </Reveal>
 
-      <ul class="dc-doctors" role="list">
-        {
-          doctors.map((doctor, i) => (
-            <Reveal as="li" delay={i * 90}>
-              <DoctorFlipCard
-                name={doctor.data.name}
-                speciality={doctor.data.speciality}
-                experience={doctor.data.experience}
-                note={doctor.data.note}
-                extra={doctor.data.extra}
-                photo={doctor.data.photo}
-                photoY={doctor.data.photoY}
-                photoLabel={doctor.data.photoLabel}
-                href={pageHref(`doctors/${doctor.id}`)}
-                staff={doctor.data.staff}
-                cms={`doctors/${doctor.id}`}
-              />
-            </Reveal>
-          ))
-        }
-      </ul>
+      <DoctorList doctors={doctors} />
 
       <Reveal delay={320}>
         <div class="dc-actions">
@@ -685,39 +665,6 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
       align-items: stretch;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       grid-auto-rows: 1fr;
-    }
-  }
-
-  /* Телефон — одна колонка, с 560px — две, и на ПК тоже две (2×2): в три
-     колонки четвёртая карточка висела одна посреди второго ряда. На ПК
-     карточка в две колонки горизонтальная (фото слева) — см.
-     DoctorFlipCard. Нечётная последняя карточка встаёт по центру ряда
-     шириной в одну колонку, как и все. Grid, а не flex: ячейки ряда
-     одной высоты, и карточки в ряду ровные. Нечётную считаем по
-     nth-of-type: первым ребёнком списка Astro ставит <script> фото. */
-  .dc-doctors {
-    list-style: none;
-    margin: 0;
-    padding: 0 0 var(--space-4);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-5);
-  }
-  /* li рисует Reveal — у него своя область видимости стилей */
-  .dc-doctors > :global(li) {
-    flex: 0 1 100%;
-    min-width: 0;
-  }
-  @media (min-width: 560px) {
-    .dc-doctors {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .dc-doctors > :global(li:last-of-type:nth-of-type(odd)) {
-      grid-column: 1 / -1;
-      justify-self: center;
-      width: calc((100% - var(--space-5)) / 2);
     }
   }
 

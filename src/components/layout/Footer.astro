@@ -10,7 +10,7 @@ import { clinic, menu } from '../../data/site';
 import { blocks } from '../../data/ui';
 import { pageHref, withBase } from '../../lib/asset';
 import { cmsSite } from '../../lib/cms-ref';
-import { metrikaId } from '../../lib/seo';
+import { hasMetrikaCounter } from '../../lib/seo';
 
 const year = new Date().getFullYear();
 const { footer } = menu;
@@ -82,7 +82,7 @@ const socials = [
             cookie (components/layout/CookieBanner). Без счётчика Метрики
             уведомления нет — нет и кнопки. */}
         {
-          metrikaId && footer.cookieSettings && (
+          hasMetrikaCounter && footer.cookieSettings && (
             <li>
               <button
                 type="button"

@@ -1,177 +1,359 @@
 ---
 /**
- * Карточка врача со ссылкой на его страницу /doctors/<файл>: фото, ФИО,
- * специальность, стаж и короткий факт. Стоит на странице «Врачи»; на
- * «О клинике» — компактная (compact): только фото, ФИО и специальность.
- * Подписи ссылки — «Страницы сайта» → «Врачи — страница списка».
+ * Карточка врача — единая для главной и страницы «Врачи» (список — в
+ * DoctorList). Фото, имя, специальность, факты (стаж, `note`, `extra`),
+ * ссылка на страницу /doctors/<файл> и кнопка записи. Вся карточка кликабельна
+ * (растянутая ссылка), кнопка записи лежит поверх неё.
+ *
+ * `compact` — ряд врачей на «О клинике»: только фото, ФИО и специальность,
+ * вся карточка — одна ссылка. Вид и поведение при наведении, фокусе и нажатии
+ * у обоих вариантов общие (блок «Вид и состояния» ниже).
+ *
+ * Подписи: ссылка и кнопка — «Главная страница» → «7. Врачи»; слово «Стаж» —
+ * общее со страницами врачей («Страницы сайта»). Раньше у страницы «Врачи»
+ * были свои подписи ссылки (`team.more`), теперь они общие.
  */
 import type { CollectionEntry } from 'astro:content';
 
 import Icon from '../core/Icon.astro';
 import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
-import { doctorPage, teamPage as page } from '../../data/pages';
+import { doctorPage } from '../../data/pages';
 import { pageHref } from '../../lib/asset';
-import { cmsPage } from '../../lib/cms-ref';
+import { cmsText } from '../../lib/cms-ref';
+import copy from '../../data/home.json';
 
 interface Props {
   doctor: CollectionEntry<'doctors'>;
-  /** Без стажа, факта и подписи ссылки — для ряда врачей на других страницах */
+  /** Без фактов, ссылки и кнопки записи — для ряда врачей на других страницах */
   compact?: boolean;
 }
 
 const { doctor, compact = false } = Astro.props;
-const { data } = doctor;
+const { name, speciality, experience, note, extra, photo, photoLabel, photoY, staff } = doctor.data;
+const href = pageHref(`doctors/${doctor.id}`);
+const cms = `doctors/${doctor.id}`;
+const facts = [experience && `${doctorPage.experience} ${experience}`, note, extra].filter(Boolean) as string[];
+/* Кадр по вертикали, как второе число object-position: пусто — по верхнему краю */
+const photoStyle = photoY === undefined ? undefined : `--dc-doc-photo-y:${photoY}%`;
+const alt = `${name}, ${speciality}`;
 ---
 
-<a
-  href={pageHref(`doctors/${doctor.id}`)}
-  class:list={['dc-team__card', compact && 'dc-team__card--compact']}
-  data-cms={`doctors/${doctor.id}`}>
-  <PhotoPlaceholder
-    label={data.photoLabel}
-    src={data.photo}
-    alt={`${data.name}, ${data.speciality}`}
-    ratio="3 / 4"
-    radius="0"
-    cover
-  />
-  <span class="dc-team__body">
-    <span class="dc-team__name">{data.name}</span>
-    <span class="dc-team__spec">{data.speciality}</span>
-    {
-      !compact && data.experience && (
-        <span class="dc-team__exp">
-          {doctorPage.experience} {data.experience}
-        </span>
-      )
-    }
-    {!compact && <span class="dc-team__note">{data.note}</span>}
-    {
-      !compact && (
-        <span class="dc-team__more" data-cms={cmsPage('team', data.staff ? 'moreStaff' : 'more')}>
-          {data.staff ? page.moreStaff : page.more}
-          <Icon name="arrow-right" size={16} />
-        </span>
-      )
-    }
-  </span>
-</a>
+{
+  compact ? (
+    <a href={href} class="dc-doc dc-doc--compact" data-cms={cms}>
+      <div class="dc-doc__photo" style={photoStyle}>
+        <PhotoPlaceholder label={photoLabel} src={photo} alt={alt} ratio="3 / 4" radius="0" cover />
+      </div>
+      <span class="dc-doc__body">
+        <span class="dc-doc__name">{name}</span>
+        <span class="dc-doc__spec">{speciality}</span>
+      </span>
+    </a>
+  ) : (
+    <div class="dc-doc-cell" data-cms={cms}>
+      <article class="dc-doc">
+        <div class="dc-doc__photo" style={photoStyle}>
+          <PhotoPlaceholder label={photoLabel} src={photo} alt={alt} ratio="3 / 4" radius="0" cover />
+        </div>
+
+        <div class="dc-doc__body">
+          <header class="dc-doc__head">
+            <h3 class="dc-doc__name">{name}</h3>
+            <p class="dc-doc__spec">{speciality}</p>
+          </header>
+          {facts.length > 0 && (
+            <ul class="dc-doc__facts">
+              {facts.map((fact) => (
+                <li>
+                  <Icon name="check" size={16} strokeWidth={2.6} color="var(--text-accent)" />
+                  <span>{fact}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div class="dc-doc__actions">
+            <a href={href} class="dc-doc__more" data-cms={cmsText(staff ? 'doctors.cardPageStaff' : 'doctors.cardPage')}>
+              {staff ? copy.doctors.cardPageStaff : copy.doctors.cardPage}
+              <Icon name="arrow-right" size={16} strokeWidth={2.2} />
+            </a>
+            <button type="button" class="dc-doc__cta" data-open="dc-book" data-cms={cmsText('doctors.cardBook')}>
+              {copy.doctors.cardBook}
+              <Icon name="arrow-right" size={20} />
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  )
+}
 
 <style>
-  .dc-team__card {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    height: 100%;
+  /* ── Вид и состояния (общие для полной и компактной карточки) ──
+     Покой: тонкая рамка и лёгкая тень. Наведение, клавиатурный фокус и
+     нажатие: тень крупнее, рамка заметнее. Наведение — только там, где
+     оно есть (мышь): на сенсорном экране :hover «залипает» после касания,
+     там остаются фокус и :active на время нажатия. */
+  .dc-doc {
+    position: relative;
     overflow: hidden;
     border-radius: var(--radius-lg);
     background: var(--surface-card);
     border: 1px solid var(--line-hairline);
     box-shadow: var(--shadow-sm);
-    text-decoration: none;
     color: inherit;
+    text-decoration: none;
     transition:
       box-shadow var(--dur-mid) var(--ease-out),
       border-color var(--dur-mid) var(--ease-out);
   }
-  .dc-team__card:hover {
+  @media (hover: hover) {
+    .dc-doc:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--line-strong);
+    }
+  }
+  .dc-doc:active,
+  .dc-doc:has(.dc-doc__more:focus-visible),
+  .dc-doc--compact:focus-visible {
     box-shadow: var(--shadow-lg);
     border-color: var(--line-strong);
   }
-  .dc-team__body {
-    display: grid;
-    gap: var(--space-2);
-    align-content: start;
-    padding: var(--space-5);
+  /* Фокус рисует сама карточка (она целиком — цель клика), а не ссылка
+     внутри: у ссылки обводка вышла бы вокруг одной строки. */
+  .dc-doc:has(.dc-doc__more:focus-visible),
+  .dc-doc--compact:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
   }
-  /* Заголовок карточки — ФИО: к врачу записываются по имени, а специальность
-     повторяется у нескольких врачей и заголовком их не различает. */
-  .dc-team__name {
+  .dc-doc__more:focus-visible {
+    outline: none;
+  }
+
+  /* ── Полная карточка ──
+     Ячейка тянется на высоту ряда сетки (li у Reveal — ячейка грида), а
+     кнопки действий прижаты к низу: в ряду они на одной линии, сколько бы
+     строк ни было в фактах. Ширина ячейки — контейнер для @container. */
+  .dc-doc-cell {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    container-type: inline-size;
+  }
+  .dc-doc-cell > .dc-doc {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* Окно под фото держит ~4:3 от ширины: голова помещается целиком. Сам
+     снимок заполняет окно (абсолютно), а не растягивает его своей высотой. */
+  .dc-doc-cell .dc-doc__photo {
+    position: relative;
+    overflow: hidden;
+    flex: none;
+    aspect-ratio: 4 / 3;
+    min-height: 210px;
+  }
+  .dc-doc-cell .dc-doc__photo :global(.dc-photo) {
+    position: absolute;
+    inset: 0;
+  }
+  /* Кадр по умолчанию — от верхнего края: макушку не срежет ни на одном
+     снимке. Если над головой много пустого места, кадр сдвигают полем
+     врача «Положение фото по вертикали, %» (photoY). */
+  .dc-doc__photo :global(.dc-photo__img) {
+    object-position: 50% var(--dc-doc-photo-y, 0%);
+  }
+
+  .dc-doc-cell .dc-doc__body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-4) var(--space-5);
+  }
+  .dc-doc__head {
+    display: grid;
+    gap: var(--space-1);
+  }
+  /* Имя — заголовок карточки: к врачу записываются по имени, а
+     специальность у нескольких врачей одинаковая. */
+  .dc-doc__name {
+    margin: 0;
     font-family: var(--font-display);
-    font-size: var(--type-h4);
     font-weight: var(--fw-black);
     line-height: var(--lh-tight);
     color: var(--text-strong);
+    text-transform: none;
+    letter-spacing: 0;
     text-wrap: balance;
   }
-  .dc-team__spec {
-    font-size: var(--type-small);
-    font-weight: var(--fw-medium);
-    color: var(--text-muted);
+  .dc-doc-cell .dc-doc__name {
+    font-size: var(--type-body);
   }
-  .dc-team__exp {
+  .dc-doc__spec {
+    margin: 0;
+    color: var(--text-body);
     font-size: var(--type-small);
-    font-weight: var(--fw-bold);
-    color: var(--text-accent);
+    font-weight: var(--fw-semibold);
   }
-  .dc-team__note {
+
+  .dc-doc__facts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+  .dc-doc__facts li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
     font-size: var(--type-small);
-    color: var(--text-muted);
+    color: var(--text-body);
   }
-  .dc-team__more {
+  .dc-doc__facts :global(.dc-icon) {
+    flex: none;
+    margin-top: 3px;
+  }
+
+  /* margin-top:auto — действия внизу карточки при любой длине фактов */
+  .dc-doc__actions {
+    margin-top: auto;
+    display: grid;
+    gap: var(--space-2);
+  }
+  /* Растянутая ссылка: клик в любом месте карточки открывает страницу врача */
+  .dc-doc__more {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-top: var(--space-2);
+    justify-self: start;
+    min-height: var(--tap-min);
     font-size: var(--type-small);
     font-weight: var(--fw-bold);
     color: var(--text-accent);
+    text-decoration: none;
+  }
+  .dc-doc__more::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .dc-doc:hover .dc-doc__more,
+  .dc-doc__more:focus-visible {
+    color: var(--dc-turquoise-press);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
-  /* Окно под фото всегда 3:4 — и у заглушки без фото, которая своей высоты
-     не имеет, иначе карточки в ряду выходили разной высоты фото (на
-     странице «Врачи» заглушка была полоской в 115px рядом с фото в 500px). */
-  .dc-team__card :global(.dc-photo) {
+  /* Кнопка записи — поверх растянутой ссылки */
+  .dc-doc__cta {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: var(--tap-min);
+    padding: 0 var(--space-5);
+    border: none;
+    border-radius: var(--radius-pill);
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+    font-family: var(--font-body);
+    font-size: var(--type-body);
+    font-weight: var(--fw-bold);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+  .dc-doc__cta:hover {
+    background: var(--cta-bg-hover);
+  }
+  .dc-doc__cta:active {
+    transform: scale(0.975);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-doc,
+    .dc-doc__cta {
+      transition: none;
+    }
+    .dc-doc__cta:active {
+      transform: none;
+    }
+  }
+
+  /* ── Не телефон: просторнее отступы и крупнее имя ── */
+  @media (min-width: 560px) {
+    .dc-doc-cell .dc-doc__body {
+      padding: var(--space-5) var(--space-5) var(--space-6);
+    }
+    .dc-doc-cell .dc-doc__name {
+      font-size: var(--type-h4);
+    }
+  }
+
+  /* ── Широкая карточка (сетка в две колонки на ПК): фото слева ──
+     Портретное окно на всю высоту карточки, текст справа. Высоту задаёт
+     текст (не ниже 360px), фото заполняет колонку. На узкой карточке
+     окно выходит уже 3:4 — снимок обрезается по бокам, голова по высоте
+     остаётся целиком. */
+  @container (min-width: 440px) {
+    .dc-doc-cell > .dc-doc {
+      display: grid;
+      grid-template-columns: 42% minmax(0, 1fr);
+      min-height: 360px;
+    }
+    .dc-doc-cell .dc-doc__photo {
+      aspect-ratio: auto;
+      min-height: 0;
+    }
+    .dc-doc-cell .dc-doc__body {
+      padding: var(--space-6);
+    }
+    /* Ссылка и запись в один ряд, если помещаются; иначе запись ниже
+       на всю ширину, как в вертикальной карточке. */
+    .dc-doc__actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-5);
+    }
+    .dc-doc__cta {
+      flex: 1 1 15rem;
+      width: auto;
+    }
+  }
+
+  /* ── Компактная карточка («О клинике») ──
+     Окно под фото всегда 3:4 — и у заглушки без фото, которая своей высоты
+     не имеет. От ширины карточки считается кегль ФИО: на 320px в две
+     колонки «Александрович» иначе не влезало в строку. */
+  .dc-doc--compact {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    container-type: inline-size;
+  }
+  .dc-doc--compact .dc-doc__photo :global(.dc-photo) {
     height: auto;
     aspect-ratio: 3 / 4;
   }
-  /* От ширины карточки считаются кегль ФИО у компактной и раскладка
-     широкой (ниже). */
-  .dc-team__card {
-    container-type: inline-size;
-  }
-
-  /* Широкая карточка (страница «Врачи», две колонки на ПК): фото слева на
-     всю высоту, текст справа. В вертикальной раскладке фото 3:4 на всю
-     ширину делало карточку шириной 600–700px выше 850px. Высота — не ниже
-     окна 3:4 у колонки фото (40% ширины) и не ниже 320px, дальше растёт по
-     тексту. Телефон (до 559px) и компактная карточка остаются как были.
-     Раскладку самой карточки запрос к её же ширине поменять не может —
-     ячейку-контейнер dc-team-cell даёт список (.dc-team в
-     pages/doctors.astro); без него карточка просто остаётся вертикальной.
-     Фото и текст сверяются с той же ячейкой, а не с самой карточкой:
-     у карточки рамка в 1px, и на границе порога они расходились. */
-  @media (min-width: 560px) {
-    @container dc-team-cell (min-width: 440px) {
-      .dc-team__card:not(.dc-team__card--compact) {
-        grid-template-columns: 40% minmax(0, 1fr);
-        grid-template-rows: none;
-        min-height: max(320px, 53cqw);
-      }
-      .dc-team__card:not(.dc-team__card--compact) :global(.dc-photo) {
-        aspect-ratio: auto;
-      }
-      /* Снимок только заполняет колонку, высоту задаёт текст */
-      .dc-team__card:not(.dc-team__card--compact) :global(.dc-photo__img) {
-        position: absolute;
-        inset: 0;
-      }
-      .dc-team__card:not(.dc-team__card--compact) .dc-team__body {
-        align-content: center;
-        padding: var(--space-6);
-      }
-    }
-  }
-  /* Кегль ФИО — от ширины карточки: на 320px в две колонки «Александрович»
-     иначе не влезало в строку и вылезало за край. */
-  .dc-team__card--compact .dc-team__body {
+  .dc-doc--compact .dc-doc__body {
+    display: grid;
     gap: var(--space-1);
+    align-content: start;
     padding: var(--space-3) var(--space-3) var(--space-4);
   }
-  .dc-team__card--compact .dc-team__name {
+  .dc-doc--compact .dc-doc__name {
     font-size: min(var(--type-body), 10cqw);
     overflow-wrap: anywhere;
   }
-  .dc-team__card--compact .dc-team__spec {
+  .dc-doc--compact .dc-doc__spec {
     font-size: min(var(--type-small), 9.5cqw);
+    font-weight: var(--fw-medium);
+    color: var(--text-muted);
   }
 </style>

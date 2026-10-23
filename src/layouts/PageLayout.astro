@@ -24,6 +24,8 @@ interface Props {
   breadcrumbs?: { label: string; href?: string; cms?: string }[];
   noindex?: boolean;
   hideContactsCta?: boolean;
+  /** Блок «Контакты» перед подвалом с плотным ритмом (страницы услуг) */
+  compactContacts?: boolean;
   /** Дополнительные блоки JSON-LD страницы: врач, услуга, галерея */
   schema?: Record<string, unknown>[];
   /** Вопросы страницы — уходят в схему FAQPage и в сниппет выдачи */
@@ -55,6 +57,7 @@ const {
   breadcrumbs = [],
   noindex = false,
   hideContactsCta = false,
+  compactContacts = false,
   schema,
   faq,
   cms,
@@ -70,6 +73,7 @@ const {
   path={path}
   noindex={noindex}
   hideContactsCta={hideContactsCta}
+  compactContacts={compactContacts}
   schema={schema}
   faq={faq}
   breadcrumbs={breadcrumbs.map((crumb) => ({ label: crumb.label, path: crumb.href }))}

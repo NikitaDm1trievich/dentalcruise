@@ -8,8 +8,10 @@ import { formatRating, reviewsWord, yandexRating } from '../../lib/yandex-rating
 interface Props {
   items: { id: string; title: string; text: string; icon: string; href?: string; opensLicense: boolean }[];
   tone?: 'light' | 'dark';
+  /** Плотная полоса (страницы услуг): иконка слева от текста, меньше отступы */
+  compact?: boolean;
 }
-const { items, tone = 'light' } = Astro.props;
+const { items, tone = 'light', compact = false } = Astro.props;
 
 /* Плашка рейтинга — шаблон из редактора: {rating} → «4,8», {count} →
    «63 отзыва». Цифры те же, что в карточке отзывов (lib/yandex-rating):
@@ -23,7 +25,7 @@ const field = (id: string, name: 'title' | 'text', text: string) =>
   hasLabel(text) ? { 'data-cms': cmsItem('trust', id, name), 'data-cms-vars': JSON.stringify(vars) } : {};
 ---
 
-<div class:list={['dc-trust', tone === 'dark' && 'dc-trust--dark']}>
+<div class:list={['dc-trust', tone === 'dark' && 'dc-trust--dark', compact && 'dc-trust--compact']}>
   <div class="dc-trust__grid">
     {
       items.map((item) => {
@@ -125,6 +127,35 @@ const field = (id: string, name: 'title' | 'text', text: string) =>
   }
   .dc-trust--dark .dc-trust__text {
     color: var(--text-on-dark-muted);
+  }
+
+  /* Плотный вариант на ширине от 560px: та же раскладка «иконка слева»,
+     что у телефона ниже, и меньше отступы подложки и карточек. */
+  @media (min-width: 560px) {
+    .dc-trust--compact {
+      padding: var(--space-5);
+    }
+    .dc-trust--compact .dc-trust__grid {
+      gap: var(--space-4);
+    }
+    .dc-trust--compact .dc-trust__card {
+      grid-template-columns: auto 1fr;
+      column-gap: var(--space-4);
+      row-gap: var(--space-1);
+      padding: var(--space-5);
+    }
+    .dc-trust--compact .dc-trust__card > :global(.dc-icon) {
+      grid-row: 1 / span 2;
+      align-self: start;
+      width: 28px;
+      height: 28px;
+    }
+    .dc-trust--compact .dc-trust__title {
+      line-height: var(--lh-heading);
+    }
+    .dc-trust--compact .dc-trust__text {
+      grid-column: 2;
+    }
   }
 
   /* На телефоне три карточки по 250px в столбик — слишком много для
