@@ -240,6 +240,9 @@ export const pricesPage: {
   promoLabel: string;
   foot: string;
   book: string;
+  breadcrumb: string;
+  seo: Seo;
+} = prices;
 
 /** Блок «Операция и протез» на страницах «Все на 4 / Все на 6 имплантах» */
 export const implantVariantsPage: {
@@ -284,6 +287,3 @@ export const implantProsthesisPage: {
     rows: { label: string; tag: string; note?: string; priceTitle: string; explain?: string }[];
   }[];
 } = implantProsthesis as never;
-  breadcrumb: string;
-  seo: Seo;
-} = prices;

@@ -1316,6 +1316,17 @@ collections:
             fields:
               - { name: more, label: Развернуть, widget: string }
               - { name: less, label: Свернуть, widget: string }
+          - name: preview
+            label: 'Служебное: услуга для предпросмотра'
+            widget: relation
+            collection: service-pages
+            value_field: '{{slug}}'
+            search_fields: [title]
+            display_fields: [title]
+            hint: >-
+              На сайт не влияет. На странице этой услуги справа показывается
+              предпросмотр — выбирайте услугу, где заполнены все блоки.
+
       - name: implant-variants
         label: 'Блок: операция и протез (4 / 6 имплантов)'
         file: src/data/pages/implant-variants.json
@@ -1432,17 +1443,6 @@ collections:
                     widget: text
                     required: false
                     hint: Необязательно. Пока пусто, под строкой только описание из прайса. Не пишите свойства материала, которых нет в договоре и прайсе.
-
-          - name: preview
-            label: 'Служебное: услуга для предпросмотра'
-            widget: relation
-            collection: service-pages
-            value_field: '{{slug}}'
-            search_fields: [title]
-            display_fields: [title]
-            hint: >-
-              На сайт не влияет. На странице этой услуги справа показывается
-              предпросмотр — выбирайте услугу, где заполнены все блоки.
 
       - name: gallery
         label: Галерея работ
@@ -2040,6 +2040,17 @@ collections:
         search_fields: [title]
         display_fields: [title]
         required: false
+        hint: >-
+          Необязательно. Общий подробный текст из раздела «Описания для страниц
+          услуг» — блок после этапов работы. Если пусто, блока нет.
+      - name: descriptionLayered
+        label: Коронка с нанесением керамической массы
+        widget: boolean
+        default: false
+        required: false
+        hint: >-
+          Отметьте, если коронка облицована керамикой: в карточках описания
+          покажется «Текст для коронок с керамической массой».
       - name: implantVariants
         label: Блок «Операция и протез» и «Варианты протезирования» (4 / 6 имплантов)
         widget: select
@@ -2054,17 +2065,6 @@ collections:
           «Операция и протез» (сразу после заголовка) и ниже «Варианты
           протезирования на имплантах». Тексты блока — в
           «Страницы сайта» → «Блок: операция и протез», цены берутся из прайса.
-        hint: >-
-          Необязательно. Общий подробный текст из раздела «Описания для страниц
-          услуг» — блок после этапов работы. Если пусто, блока нет.
-      - name: descriptionLayered
-        label: Коронка с нанесением керамической массы
-        widget: boolean
-        default: false
-        required: false
-        hint: >-
-          Отметьте, если коронка облицована керамикой: в карточках описания
-          покажется «Текст для коронок с керамической массой».
       - name: seoTitle
         label: Заголовок для поиска
         widget: string

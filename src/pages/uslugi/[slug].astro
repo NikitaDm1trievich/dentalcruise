@@ -172,7 +172,6 @@ if (amount) {
     </Button>
   </div>
 
-  {/*
   {/* Операция и протез отдельно, переключатель 4 / 6 имплантов — только у страниц с полем implantVariants */}
   {
     s.implantVariants && (
@@ -545,15 +544,15 @@ if (amount) {
     gap: var(--space-6);
   }
 
+  .dc-service__anchor {
+    scroll-margin-top: calc(var(--header-h) + var(--space-4));
+  }
+
   .dc-service__actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-4);
   }
-  .dc-service__anchor {
-    scroll-margin-top: calc(var(--header-h) + var(--space-4));
-  }
-
 
   .dc-facts-row {
     list-style: none;
