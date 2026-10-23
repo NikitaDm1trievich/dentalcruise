@@ -1320,6 +1320,19 @@ collections:
               - { name: eyebrow, label: Надпись над заголовком, widget: string }
               - { name: title, label: Заголовок блока, widget: string }
               - { name: lead, label: Текст под заголовком, widget: text }
+          - name: types
+            label: Какие виниры мы изготавливаем — тексты
+            widget: object
+            collapsed: true
+            hint: >-
+              Где на сайте: страницы винирных услуг, после «Наших работ». Карточки
+              (название, цена, текст) берутся из самих страниц услуг и прайса.
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - { name: lead, label: Текст под заголовком, widget: text }
+              - { name: more, label: Ссылка в карточке, widget: string }
+              - { name: current, label: Пометка у текущей страницы, widget: string }
           - name: banner
             label: Баннер «Запишитесь на бесплатный осмотр»
             widget: object

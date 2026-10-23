@@ -1,0 +1,162 @@
+---
+/**
+ * «Какие виниры мы изготавливаем и устанавливаем?»: карточки винирных
+ * услуг клиники, по одной на страницу. Набор — страницы услуг с заполненным
+ * `works` («Наши работы»), в порядке `order`; название, цена и текст берутся
+ * у самих страниц, цена — из прайса по названию строки (`matchTitle` или
+ * `title`). Текущая страница в списке помечена и не ссылается на себя.
+ */
+import { pageHref } from '../../lib/asset';
+import { priceRows } from '../../lib/price-rows';
+import { servicePage as copy } from '../../data/pages';
+import { cmsPage } from '../../lib/cms-ref';
+import SectionHeading from '../core/SectionHeading.astro';
+import Icon from '../core/Icon.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  /** Винирные страницы, включая текущую */
+  pages: CollectionEntry<'service-pages'>[];
+  current: string;
+}
+const { pages, current } = Astro.props;
+
+const priceOf = await priceRows(pages[0]?.data.category ?? 'protezirovanie', 'VinirTypes');
+/** «Винир …: керамическая накладка» → «Керамическая накладка»: название уже в заголовке карточки */
+const short = (title: string, lead: string) => {
+  const rest = lead.startsWith(`${title}:`) ? lead.slice(title.length + 1).trim() : lead;
+  return rest.charAt(0).toUpperCase() + rest.slice(1);
+};
+const cards = pages.map((p) => ({
+  id: p.id,
+  title: p.data.title,
+  price: priceOf(p.data.matchTitle ?? p.data.title).price,
+  text: short(p.data.title, p.data.lead),
+  duration: p.data.duration,
+}));
+---
+
+<div class="dc-vt" data-cms={cmsPage('service-page', 'types')}>
+  <SectionHeading class="dc-aside-heading" eyebrow={copy.types.eyebrow} title={copy.types.title} lead={copy.types.lead} />
+  <ul class="dc-vt__grid" role="list">
+    {
+      cards.map((c) => (
+        <li class:list={['dc-vt__card', c.id === current && 'dc-vt__card--current']} data-cms={`service-pages/${c.id}`}>
+          <h3 class="dc-vt__title">{c.title}</h3>
+          <b class="dc-vt__price">{c.price}</b>
+          <p class="dc-vt__text">{c.text}</p>
+          {c.duration && <p class="dc-vt__meta">{c.duration}</p>}
+          {c.id === current ? (
+            <span class="dc-vt__here" aria-current="page">{copy.types.current}</span>
+          ) : (
+            <a class="dc-vt__link" href={pageHref(`uslugi/${c.id}`)}>
+              {copy.types.more}<span class="dc-vt__sr"> {c.title}</span>
+              <Icon name="arrow-right" size={18} strokeWidth={2.2} />
+            </a>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .dc-vt {
+    display: grid;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+  .dc-vt__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 700px) {
+    .dc-vt__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .dc-vt__card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2) var(--space-4);
+    align-content: start;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  /* На узком экране цена под названием: название не ужимается в столбик */
+  @media (max-width: 459px) {
+    .dc-vt__card {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .dc-vt__card--current {
+    background: var(--surface-quiet);
+    border-color: var(--dc-turquoise-ink);
+    box-shadow: none;
+  }
+  .dc-vt__title {
+    margin: 0;
+    font-size: var(--type-h4);
+    color: var(--text-strong);
+  }
+  .dc-vt__price {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: var(--fw-black);
+    color: var(--text-strong);
+    white-space: nowrap;
+  }
+  .dc-vt__text,
+  .dc-vt__meta,
+  .dc-vt__link,
+  .dc-vt__here {
+    grid-column: 1 / -1;
+  }
+  .dc-vt__text {
+    margin: 0;
+    color: var(--text-body);
+    font-size: var(--type-small);
+  }
+  .dc-vt__meta {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--type-small);
+  }
+  .dc-vt__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-self: start;
+    min-height: 44px;
+    color: var(--text-accent);
+    font-weight: var(--fw-bold);
+    text-decoration: none;
+  }
+  .dc-vt__link:hover {
+    text-decoration: underline;
+  }
+  .dc-vt__here {
+    justify-self: start;
+    padding: 4px var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--surface-card);
+    color: var(--text-accent);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+  }
+  .dc-vt__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>

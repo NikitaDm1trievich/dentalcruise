@@ -216,6 +216,8 @@ export const servicePage: {
   about: { summary: string };
   /** Карусель «Наши работы» (до/после) */
   works: { eyebrow: string; title: string; lead: string };
+  /** Блок «Какие виниры мы изготавливаем»: заголовок, ссылка «Подробнее», пометка текущей страницы */
+  types: { eyebrow: string; title: string; lead: string; more: string; current: string };
   /** Баннер «Запишитесь на бесплатный осмотр» над контактами */
   banner: { title: string; text: string; book: string; phone: string };
   /** Услуга, на странице которой редактор показывает предпросмотр */

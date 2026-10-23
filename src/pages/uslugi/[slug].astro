@@ -18,6 +18,7 @@ import SectionHeading from '../../components/core/SectionHeading.astro';
 import ImplantProsthesis from '../../components/content/ImplantProsthesis.astro';
 import ImplantVariants from '../../components/content/ImplantVariants.astro';
 import AboutCarousel from '../../components/content/AboutCarousel.astro';
+import VinirTypes from '../../components/content/VinirTypes.astro';
 import WorksCarousel from '../../components/content/WorksCarousel.astro';
 import PriceTable from '../../components/content/PriceTable.astro';
 import FaqAccordion from '../../components/content/FaqAccordion.astro';
@@ -53,6 +54,11 @@ const trust = (await getCollection('trust')).sort((a, b) => a.data.order - b.dat
 const siblings = (await getCollection('service-pages'))
   .filter((p) => p.data.category === s.category && p.id !== page.id)
   .sort((a, b) => a.data.order - b.data.order);
+
+/** Винирные страницы (с «Нашими работами») — для блока «Какие виниры мы изготавливаем» */
+const vinirPages = s.works.length > 0
+  ? (await getCollection('service-pages')).filter((p) => p.data.works.length > 0).sort((a, b) => a.data.order - b.data.order)
+  : [];
 
 const pricelistHref = pageHref('pricelist');
 
@@ -337,6 +343,18 @@ if (amount) {
           </Reveal>
           <Reveal delay={90}>
             <WorksCarousel label={copy.works.title} works={s.works} entry={entry} />
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    vinirPages.length > 0 && (
+      <section class="dc-section dc-bg-cool" data-cms={cmsPage('service-page', 'types')}>
+        <div class="dc-container">
+          <Reveal>
+            <VinirTypes pages={vinirPages} current={page.id} />
           </Reveal>
         </div>
       </section>
