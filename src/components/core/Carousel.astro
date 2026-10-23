@@ -18,8 +18,13 @@ interface Props {
   dotStyle?: 'text' | 'number';
   /** Слайдов в ряду на экране шире 700 px */
   perView?: 1 | 2;
-  /** Подгонять высоту ленты под видимый слайд */
-  adaptHeight?: boolean;
+  /**
+   * Высота ленты: `max` — по самому высокому слайду (панель внизу не прыгает),
+   * `active` — по видимому слайду (панель над лентой), `false` — как есть
+   */
+  adaptHeight?: 'max' | 'active' | false;
+  /** Панель стрелок над лентой или под ней */
+  nav?: 'top' | 'bottom';
   prev?: string;
   next?: string;
   class?: string;
@@ -30,7 +35,8 @@ const {
   dots = [],
   dotStyle = 'text',
   perView = 1,
-  adaptHeight = true,
+  adaptHeight = 'max',
+  nav = 'bottom',
   prev = copy.prev,
   next = copy.next,
   class: className,
@@ -38,13 +44,13 @@ const {
 ---
 
 <div
-  class:list={['dc-car', className]}
+  class:list={['dc-car', nav === 'top' && 'dc-car--top', className]}
   role="group"
   aria-roledescription="carousel"
   aria-label={label}
   style={`--car-pv:${perView}`}
   data-carousel
-  data-adapt={adaptHeight ? '' : undefined}
+  data-adapt={adaptHeight || undefined}
 >
   <div class="dc-car__track" data-car-track>
     <slot />
@@ -99,10 +105,6 @@ const {
   .dc-car.is-carousel > .dc-car__track::-webkit-scrollbar {
     display: none;
   }
-  .dc-car.is-carousel > .dc-car__track:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-  }
   .dc-car.is-carousel > .dc-car__track > :global([data-slide]) {
     flex: 0 0 100%;
     box-sizing: border-box;
@@ -113,9 +115,14 @@ const {
     overflow-y: auto;
     overscroll-behavior-y: auto;
   }
+  /* Фокус клавиатуры у прокручиваемого слайда: тонкая рамка внутри, мышью не показывается */
+  .dc-car.is-carousel > .dc-car__track > :global([data-slide]:focus:not(:focus-visible)) {
+    outline: none;
+  }
   .dc-car.is-carousel > .dc-car__track > :global([data-slide]:focus-visible) {
     outline: 2px solid var(--focus-ring);
     outline-offset: -2px;
+    border-radius: var(--radius-sm);
   }
   /* Украшения между слайдами («+») нужны только в вертикальном ряду */
   .dc-car.is-carousel > .dc-car__track > :global(:not([data-slide])) {
@@ -131,6 +138,9 @@ const {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
+  }
+  .dc-car--top > .dc-car__nav {
+    order: -1;
   }
   .dc-car__nav[hidden] {
     display: none;

@@ -1,18 +1,17 @@
 ---
 /**
- * Описание материала («О циркониевых коронках») каруселью: первый слайд
- * «Коротко» (вводные абзацы, карточки, иллюстрации), дальше по слайду на
- * раздел. Подраздел и раздел без заголовка остаются в слайде своего раздела.
+ * Описание материала («О циркониевых коронках») каруселью: по слайду на
+ * раздел. Первый слайд «Коротко» есть, только если вводный текст длинный
+ * (короткий, фото и карточки стоят слева, см. AboutAside). Подраздел и раздел без заголовка остаются в слайде своего раздела.
  * Без JS всё идёт подряд, как обычная статья.
  *
  * `data-cms` у каждого куска ведёт в поле описания (service-descriptions) —
  * предпросмотр редактора по нему открывает нужное место. Слайд, которого
  * сейчас не видно, в предпросмотре выбирается кликом по точке.
  */
-import AboutPhotos from './AboutPhotos.astro';
 import Carousel from '../core/Carousel.astro';
-import Icon from '../core/Icon.astro';
 import { servicePage as copy } from '../../data/pages';
+import { isShortIntro } from '../../lib/about';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -37,12 +36,12 @@ about.sections.forEach((section, i) => {
   else groups[groups.length - 1].parts.push(i);
 });
 
-const hasSummary = about.intro.length > 0 || about.benefits.length > 0 || about.images.length > 0;
+const hasSummary = about.intro.length > 0 && !isShortIntro(about);
 const dots = [...(hasSummary ? [copy.about.summary] : []), ...groups.map((g) => g.label)];
 const slideLabel = (label: string, n: number) => `${n} из ${dots.length}: ${label}`;
 ---
 
-<Carousel label={about.title} dots={dots} dotStyle="number" class="dc-about-car">
+<Carousel label={about.title} dots={dots} dotStyle="number" nav="top" adaptHeight="active" class="dc-about-car">
   {
     hasSummary && (
       <div
@@ -57,29 +56,6 @@ const slideLabel = (label: string, n: number) => `${n} из ${dots.length}: ${la
             {about.intro.map((text) => (
               <p>{text}</p>
             ))}
-          </div>
-        )}
-
-        {about.images.length > 0 && <AboutPhotos images={about.images} entry={entry} place="inline" />}
-
-        {about.benefits.length > 0 && (
-          <div class="dc-about__benefits" data-cms={`${entry}:benefits`}>
-            {about.benefitsTitle && (
-              <h3 class="dc-about__subtitle" data-cms={`${entry}:benefitsTitle`}>
-                {about.benefitsTitle}
-              </h3>
-            )}
-            <ul class="dc-about__grid" role="list">
-              {about.benefits.map((benefit, i) => (
-                <li class="dc-about__card" data-cms={`${entry}:benefits.${i}`}>
-                  <span class="dc-about__icon">
-                    <Icon name={benefit.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
-                  </span>
-                  <h4>{benefit.title}</h4>
-                  <p>{(layered && benefit.layeredText) || benefit.text}</p>
-                </li>
-              ))}
-            </ul>
           </div>
         )}
       </div>
@@ -135,6 +111,7 @@ const slideLabel = (label: string, n: number) => `${n} из ${dots.length}: ${la
     gap: var(--space-6);
     align-content: start;
     min-width: 0;
+    padding-top: var(--space-2);
   }
   .dc-about__sections {
     max-width: 70ch;
@@ -146,56 +123,16 @@ const slideLabel = (label: string, n: number) => `${n} из ${dots.length}: ${la
     font-size: var(--type-body-lg);
     color: var(--text-body);
   }
-  .dc-about__benefits {
-    display: grid;
-    gap: var(--space-4);
-  }
-  .dc-about__subtitle {
-    font-size: var(--type-h3);
-  }
-  .dc-about__grid {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-4);
-  }
-  @media (min-width: 640px) {
-    .dc-about__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  .dc-about__card {
-    display: grid;
-    gap: var(--space-3);
-    align-content: start;
-    padding: var(--space-6);
-    border-radius: var(--radius-lg);
-    background: var(--surface-card);
-    border: 1px solid var(--line-hairline);
-    box-shadow: var(--shadow-sm);
-  }
-  .dc-about__icon {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-md);
-    background: var(--surface-quiet);
-    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
-  }
-  .dc-about__card h4 {
-    font-size: var(--type-h4);
-  }
-  .dc-about__card p {
-    margin: 0;
-    color: var(--text-body);
-    font-size: var(--type-small);
-  }
   .dc-about__section {
     display: grid;
     gap: var(--space-3);
     color: var(--text-body);
+  }
+  .dc-about__section p {
+    margin: 0;
+  }
+  .dc-about__subtitle {
+    font-size: var(--type-h3);
   }
   /* Подраздел (### в тексте) ближе к предыдущему блоку слайда */
   .dc-about__section--sub {

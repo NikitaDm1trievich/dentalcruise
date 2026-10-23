@@ -17,7 +17,7 @@ import Icon from '../../components/core/Icon.astro';
 import SectionHeading from '../../components/core/SectionHeading.astro';
 import ImplantProsthesis from '../../components/content/ImplantProsthesis.astro';
 import ImplantVariants from '../../components/content/ImplantVariants.astro';
-import AboutPhotos from '../../components/content/AboutPhotos.astro';
+import AboutAside from '../../components/content/AboutAside.astro';
 import AboutCarousel from '../../components/content/AboutCarousel.astro';
 import VinirTypes from '../../components/content/VinirTypes.astro';
 import WorksCarousel from '../../components/content/WorksCarousel.astro';
@@ -30,6 +30,7 @@ import { clinic } from '../../data/site';
 import { pricesPage, servicePage as copy } from '../../data/pages';
 import { pageHref, withBase } from '../../lib/asset';
 import { cmsItem, cmsList, cmsPage, cmsSite } from '../../lib/cms-ref';
+import { hasAside } from '../../lib/about';
 import { fill } from '../../lib/format';
 import { absolute, clampText, clinicRef, isFromPrice, priceValue } from '../../lib/seo';
 
@@ -182,32 +183,6 @@ if (amount) {
     </Button>
   </div>
 
-  {/* Операция и протез отдельно, переключатель 4 / 6 имплантов — только у страниц с полем implantVariants */}
-  {
-    s.implantVariants && (
-      <section class="dc-section dc-bg-warm" data-cms={entry}>
-        <div class="dc-container">
-          <Reveal>
-            <ImplantVariants active={s.implantVariants} category={s.category} />
-          </Reveal>
-        </div>
-      </section>
-    )
-  }
-
-  {/* Варианты протезов с ценами из прайса — на тех же страницах; на этот блок ссылается карусель выше */}
-  {
-    s.implantVariants && (
-      <section id="implant-prosthesis" class="dc-section dc-bg-white dc-service__anchor" data-cms={entry}>
-        <div class="dc-container">
-          <Reveal>
-            <ImplantProsthesis active={s.implantVariants} category={s.category} />
-          </Reveal>
-        </div>
-      </section>
-    )
-  }
-
   {/*
     Цена и предупреждение о противопоказаниях (ч. 7 ст. 24 38-ФЗ) — рядом,
     один раз на странице. Секция есть всегда: предупреждение нужно и
@@ -310,6 +285,32 @@ if (amount) {
     )
   }
 
+  {/* Операция и протез отдельно, переключатель 4 / 6 имплантов — только у страниц с полем implantVariants */}
+  {
+    s.implantVariants && (
+      <section class="dc-section dc-bg-white" data-cms={entry}>
+        <div class="dc-container">
+          <Reveal>
+            <ImplantVariants active={s.implantVariants} category={s.category} />
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+
+  {/* Варианты протезов с ценами из прайса — на тех же страницах; на этот блок ссылается карусель выше */}
+  {
+    s.implantVariants && (
+      <section id="implant-prosthesis" class="dc-section dc-bg-cool dc-service__anchor" data-cms={entry}>
+        <div class="dc-container">
+          <Reveal>
+            <ImplantProsthesis active={s.implantVariants} category={s.category} />
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+
   {/*
     Описание материала — после этапов: сначала что и как делают, затем
     подробно о самом материале, потом цены. Каруселью: «Коротко» и по слайду
@@ -319,10 +320,10 @@ if (amount) {
     about && (
       <section class="dc-section dc-bg-cool" data-cms={aboutEntry}>
         <div class="dc-container dc-container--aside">
-          <Reveal class:list={['dc-about__aside', about.images.length === 0 && 'dc-about__aside--sticky']}>
+          <Reveal class:list={['dc-about__aside', !hasAside(about) && 'dc-about__aside--sticky']}>
             <div class="dc-about__left">
               <SectionHeading class="dc-aside-heading" title={about.title} cms={`${aboutEntry}:title`} />
-              {about.images.length > 0 && <AboutPhotos images={about.images} entry={aboutEntry!} place="aside" />}
+              <AboutAside about={about} entry={aboutEntry!} layered={s.descriptionLayered} />
             </div>
           </Reveal>
           <Reveal delay={90}>

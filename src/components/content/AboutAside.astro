@@ -1,0 +1,108 @@
+---
+/**
+ * Левая колонка описания материала под заголовком: короткое вводное,
+ * иллюстрации и карточки преимуществ. На телефоне колонка стоит над
+ * каруселью. Длинное вводное остаётся слайдом «Коротко» (AboutCarousel).
+ */
+import Icon from '../core/Icon.astro';
+import AboutPhotos from './AboutPhotos.astro';
+import { isShortIntro } from '../../lib/about';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  about: CollectionEntry<'service-descriptions'>['data'];
+  entry: string;
+  layered?: boolean;
+}
+const { about, entry, layered = false } = Astro.props;
+---
+
+{
+  isShortIntro(about) && (
+    <div class="dc-about__lead" data-cms={`${entry}:intro`}>
+      {about.intro.map((text) => (
+        <p>{text}</p>
+      ))}
+    </div>
+  )
+}
+
+{about.images.length > 0 && <AboutPhotos images={about.images} entry={entry} />}
+
+{
+  about.benefits.length > 0 && (
+    <div class="dc-about__benefits" data-cms={`${entry}:benefits`}>
+      {about.benefitsTitle && (
+        <h3 class="dc-about__subtitle" data-cms={`${entry}:benefitsTitle`}>
+          {about.benefitsTitle}
+        </h3>
+      )}
+      <ul class="dc-about__grid" role="list">
+        {about.benefits.map((benefit, i) => (
+          <li class="dc-about__card" data-cms={`${entry}:benefits.${i}`}>
+            <span class="dc-about__icon">
+              <Icon name={benefit.icon} size={22} strokeWidth={1.9} color="var(--text-accent)" />
+            </span>
+            <h4>{benefit.title}</h4>
+            <p>{(layered && benefit.layeredText) || benefit.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  .dc-about__lead {
+    display: grid;
+    gap: var(--space-3);
+    color: var(--text-body);
+    font-size: var(--type-body);
+  }
+  .dc-about__lead p {
+    margin: 0;
+  }
+  .dc-about__benefits {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .dc-about__subtitle {
+    font-size: var(--type-h4);
+  }
+  .dc-about__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  }
+  .dc-about__card {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  .dc-about__icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-about__card h4 {
+    margin: 0;
+    font-size: var(--type-body);
+  }
+  .dc-about__card p {
+    margin: 0;
+    color: var(--text-body);
+    font-size: var(--type-small);
+  }
+</style>

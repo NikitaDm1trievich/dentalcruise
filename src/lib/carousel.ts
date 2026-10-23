@@ -4,9 +4,11 @@
  * другом: класс `is-carousel` и кнопки появляются только здесь.
  *
  * Слайд — прямой потомок ленты с атрибутом `data-slide`. Высота ленты
- * постоянна (`data-adapt`): равна самому высокому слайду, поэтому стрелки
- * и точки не прыгают при листании. Очень высокий слайд ограничен 85% высоты
- * окна и прокручивается внутри, текст не скрывается.
+ * (`data-adapt`): `max` — постоянная, по самому высокому слайду (панель
+ * внизу не прыгает); `active` — по видимому слайду (панель стоит над
+ * лентой, поэтому тоже на месте, а пустот под короткими слайдами нет).
+ * Очень высокий слайд ограничен долей высоты окна и прокручивается внутри,
+ * текст не скрывается.
  */
 export function initCarousels(scope: ParentNode = document): void {
   scope.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
@@ -21,11 +23,10 @@ export function initCarousels(scope: ParentNode = document): void {
     root.dataset.carInit = '1';
 
     const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-car-dot]'));
-    const adapt = root.hasAttribute('data-adapt');
+    const adapt = root.dataset.adapt === 'max' || root.dataset.adapt === 'active' ? root.dataset.adapt : '';
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     root.classList.add('is-carousel');
     nav.hidden = false;
-    track.tabIndex = 0;
 
     const pitch = () =>
       slides[1].offsetLeft - slides[0].offsetLeft > 0
@@ -39,14 +40,14 @@ export function initCarousels(scope: ParentNode = document): void {
     const fit = () => {
       if (!adapt) return;
       // scrollHeight без рамки слайда: прибавляем её, иначе слайд с границей получал бы лишнюю прокрутку на пару пикселей
-      const natural = Math.max(...slides.map((el) => el.scrollHeight + el.offsetHeight - el.clientHeight));
+      const full = (el: HTMLElement) => el.scrollHeight + el.offsetHeight - el.clientHeight;
+      const natural = adapt === 'max' ? Math.max(...slides.map(full)) : full(slides[current()]);
       if (natural <= 0) return;
-      const cap = Math.max(420, Math.round(window.innerHeight * 0.85));
+      const cap = Math.max(420, Math.round(window.innerHeight * (adapt === 'max' ? 0.85 : 0.8)));
       track.style.height = `${Math.min(natural, cap)}px`;
       // Слайд, в котором текст не помещается, прокручивается — и должен быть доступен с клавиатуры
       slides.forEach((el) => {
-        const scrolls = el.scrollHeight > el.clientHeight + 1;
-        if (scrolls) el.tabIndex = 0;
+        if (el.scrollHeight > el.clientHeight + 1) el.tabIndex = 0;
         else el.removeAttribute('tabindex');
       });
     };
@@ -65,7 +66,8 @@ export function initCarousels(scope: ParentNode = document): void {
     next.addEventListener('click', () => go(current() + 1));
     dots.forEach((d, n) => d.addEventListener('click', () => go(n)));
     track.addEventListener('scroll', sync, { passive: true });
-    track.addEventListener('keydown', (e) => {
+    root.addEventListener('keydown', (e) => {
+      if (e.target instanceof HTMLElement && e.target.closest('[data-slide]')) return; // внутри слайда стрелки листают его текст
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         go(current() + 1);
