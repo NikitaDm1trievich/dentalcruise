@@ -773,8 +773,11 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
       display: table-cell;
       text-align: right;
     }
+    /* Не display: table — у таблицы со сжатыми границами padding не работает,
+       и текст «Акция» вылезал за края плашки */
     .dc-pl-r__promo {
-      display: table;
+      display: block;
+      width: fit-content;
       margin: 0 0 6px auto;
     }
     .dc-pl-r__was {
