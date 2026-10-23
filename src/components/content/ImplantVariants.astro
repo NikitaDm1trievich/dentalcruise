@@ -1,0 +1,623 @@
+---
+/**
+ * «Операция и протез»: переключатель «4 импланта / 6 имплантов», схема
+ * челюсти, что входит в операцию и отдельная карточка протезирования —
+ * чтобы было видно «операция + протез = итог».
+ *
+ * Тексты — src/data/pages/implant-variants.json (в редакторе «Страницы
+ * сайта»). Цены в JSON не хранятся: берутся из прайса раздела
+ * «Имплантация» по точному названию строки (`priceTitle`). Нет такой
+ * строки — ошибка сборки, а не пустая цена.
+ *
+ * Оба варианта лежат в разметке (поисковик видит всё). Без JS показан
+ * только вариант страницы, переключатель скрыт; скрипт его показывает.
+ * Переключатель — вкладки: стрелки, Home/End, роли tablist/tab/tabpanel.
+ */
+import { priceRows } from '../../lib/price-rows';
+import SectionHeading from '../core/SectionHeading.astro';
+import Icon from '../core/Icon.astro';
+import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+import { implantVariantsPage as copy, pricesPage } from '../../data/pages';
+import { cmsPage } from '../../lib/cms-ref';
+import { withBase } from '../../lib/asset';
+
+interface Props {
+  /** Какой вариант открыт сразу */
+  active: '4' | '6';
+  /** Раздел прайса, где искать цены */
+  category: string;
+}
+
+const { active, category } = Astro.props;
+
+const priceOf = await priceRows(category, 'ImplantVariants');
+
+const variants = copy.variants.map((v) => ({
+  ...v,
+  operation: v.operationRows.map((r) => ({ ...r, ...priceOf(r.priceTitle) })),
+}));
+const uid = 'dc-iv';
+const cms = (path: string) => cmsPage('implant-variants', path);
+---
+
+<div class="dc-iv" data-implant-variants data-cms={cms('')}>
+  <SectionHeading
+    eyebrow={copy.eyebrow}
+    title={copy.title}
+    lead={copy.lead}
+    cms={cms('title')}
+  />
+
+  <div class="dc-iv__tabs" role="tablist" aria-label={copy.tabsLabel} hidden data-iv-tabs>
+    {
+      variants.map((v) => (
+        <button
+          type="button"
+          role="tab"
+          id={`${uid}-tab-${v.id}`}
+          aria-controls={`${uid}-panel-${v.id}`}
+          aria-selected={v.id === active ? 'true' : 'false'}
+          tabindex={v.id === active ? 0 : -1}
+          data-variant={v.id}
+          class="dc-iv__tab"
+        >
+          {v.tab}
+        </button>
+      ))
+    }
+  </div>
+
+  {
+    variants.map((v, index) => (
+      <div
+        role="tabpanel"
+        id={`${uid}-panel-${v.id}`}
+        aria-labelledby={`${uid}-tab-${v.id}`}
+        class="dc-iv__panel"
+        hidden={v.id !== active}
+        data-panel={v.id}
+        data-cms={cms(`variants.${index}`)}
+      >
+        <h3 class="dc-iv__variant-title" data-iv-title>
+          {v.tab}
+        </h3>
+
+        <figure class="dc-iv__figure">
+          {v.image ? (
+            <img
+              class="dc-iv__img"
+              src={withBase(v.image)}
+              alt={v.imageAlt}
+              style={`aspect-ratio:${v.imageRatio || '4 / 3'}`}
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <PhotoPlaceholder
+              label={v.imageLabel || copy.variants[index].imageLabel}
+              alt={v.imageAlt}
+              ratio={v.imageRatio || '4 / 3'}
+              radius="var(--radius-lg)"
+            />
+          )}
+        </figure>
+
+        <div
+          class="dc-iv__carousel"
+          role="group"
+          aria-roledescription="carousel"
+          aria-label={copy.carousel.label}
+          data-iv-carousel
+        >
+          <div class="dc-iv__steps" data-iv-track>
+          <article class="dc-iv__card dc-iv__slide" role="group" aria-roledescription="slide" aria-label={`${copy.operation.step}: ${copy.operation.title}`}>
+            <header class="dc-iv__card-head">
+              <span class="dc-iv__step">{copy.operation.step}</span>
+              <h4>{copy.operation.title}</h4>
+            </header>
+            <p class="dc-iv__sub">{copy.operation.includesTitle}</p>
+            <ul class="dc-iv__list" role="list">
+              {v.includes.map((item) => (
+                <li>
+                  <Icon name="check" size={18} strokeWidth={2.6} color="var(--text-accent)" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p class="dc-iv__sub">{copy.operation.priceLabel}</p>
+            <ul class="dc-iv__prices" role="list">
+              {v.operation.map((r) => (
+                <li>
+                  <span class="dc-iv__name">{r.label}</span>
+                  <span class="dc-iv__values">
+                    {r.promo && <span class="dc-iv__promo">{pricesPage.promoLabel}</span>}
+                    <b>{r.price}</b>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <span class="dc-iv__plus" aria-hidden="true">
+            <Icon name="plus" size={22} strokeWidth={2.4} />
+          </span>
+
+          <article class="dc-iv__card dc-iv__card--next dc-iv__slide" role="group" aria-roledescription="slide" aria-label={`${copy.prosthesis.step}: ${copy.prosthesis.title}`}>
+            <header class="dc-iv__card-head">
+              <span class="dc-iv__step">{copy.prosthesis.step}</span>
+              <h4>{copy.prosthesis.title}</h4>
+              <span class="dc-iv__badge">{copy.prosthesis.badge}</span>
+            </header>
+            <p class="dc-iv__text">{copy.prosthesis.text}</p>
+            <a class="dc-iv__link" href="#implant-prosthesis">
+              {copy.prosthesis.link}
+              <Icon name="arrow-down" size={18} strokeWidth={2.2} />
+            </a>
+          </article>
+        </div>
+          <div class="dc-iv__nav" hidden data-iv-nav>
+            <button type="button" class="dc-iv__arrow" aria-label={copy.carousel.prev} data-iv-prev>
+              <Icon name="chevron-left" size={20} strokeWidth={2.4} />
+            </button>
+            <div class="dc-iv__dots">
+              {[copy.operation, copy.prosthesis].map((st, i) => (
+                <button
+                  type="button"
+                  class="dc-iv__dot"
+                  aria-label={copy.carousel.dot.replace('{n}', String(i + 1))}
+                  data-iv-dot={i}
+                >
+                  <span>{st.step}</span>
+                </button>
+              ))}
+            </div>
+            <button type="button" class="dc-iv__arrow" aria-label={copy.carousel.next} data-iv-next>
+              <Icon name="chevron-right" size={20} strokeWidth={2.4} />
+            </button>
+          </div>
+        </div>
+        <p class="dc-iv__total">
+          <Icon name="info" size={20} strokeWidth={2} color="var(--text-accent)" />
+          <span><b>{copy.total.title}.</b> {copy.total.text}</span>
+        </p>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .dc-iv {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    min-width: 0;
+  }
+  .dc-iv__tabs {
+    display: inline-flex;
+    justify-self: start;
+    max-width: 100%;
+    padding: 4px;
+    gap: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-iv__tabs[hidden] {
+    display: none;
+  }
+  .dc-iv__tab {
+    min-height: var(--tap-min);
+    padding: 0 clamp(var(--space-3), 4vw, var(--space-6));
+    flex: 1 1 auto;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--text-strong);
+    font: inherit;
+    font-weight: var(--fw-bold);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .dc-iv__tab:hover {
+    background: var(--surface-card);
+  }
+  .dc-iv__tab[aria-selected='true'] {
+    background: var(--surface-card);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line-strong);
+    color: var(--text-accent);
+  }
+  .dc-iv__tab:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .dc-iv__panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    min-width: 0;
+  }
+  .dc-iv__panel[hidden] {
+    display: none;
+  }
+  /* Заголовок варианта нужен, когда переключатель скрыт (без JS) и читалке */
+  .dc-iv__variant-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .dc-iv__figure {
+    margin: 0;
+    min-width: 0;
+    width: min(100%, 340px);
+    justify-self: center;
+  }
+  /* Вырезанный рендер без фона: не обрезаем и не подкладываем плашку */
+  .dc-iv__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  .dc-iv__steps {
+    display: grid;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+  .dc-iv__card {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+    min-width: 0;
+    padding: clamp(var(--space-4), 2.4vw, var(--space-6));
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+    border: 1px solid var(--line-hairline);
+    box-shadow: var(--shadow-sm);
+  }
+  /* Протез: пунктир вместо сплошной рамки — отдельная позиция */
+  .dc-iv__card--next {
+    background: transparent;
+    border: 2px dashed var(--line-strong);
+    box-shadow: none;
+  }
+  .dc-iv__card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+  }
+  .dc-iv__card-head h4 {
+    font-size: var(--type-h3);
+    margin: 0;
+  }
+  .dc-iv__step {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+    color: var(--text-accent);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+  }
+  .dc-iv__badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line-strong);
+    color: var(--text-strong);
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-iv__sub {
+    margin: 0;
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+    color: var(--text-muted);
+  }
+  .dc-iv__text {
+    margin: 0;
+    color: var(--text-body);
+  }
+  .dc-iv__list,
+  .dc-iv__prices {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2) var(--space-5);
+  }
+  /* Список «входит» в две колонки, если слайд достаточно широкий */
+  .dc-iv__list {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+  .dc-iv__list li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    color: var(--text-body);
+  }
+  .dc-iv__list :global(svg) {
+    flex: 0 0 auto;
+    margin-top: 3px;
+  }
+  .dc-iv__prices li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-4);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--line-hairline);
+    color: var(--text-body);
+  }
+  .dc-iv__name {
+    display: grid;
+    min-width: 0;
+    flex: 1 1 12ch;
+    color: var(--text-strong);
+    font-weight: var(--fw-semibold);
+  }
+  .dc-iv__values {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin-left: auto;
+  }
+  .dc-iv__values b {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: var(--fw-black);
+    color: var(--text-strong);
+    white-space: nowrap;
+  }
+  .dc-iv__promo {
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-pill);
+    background: var(--dc-coral-soft);
+    color: var(--dc-coral-press);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+  }
+  .dc-iv__note {
+    margin: 0;
+    font-size: var(--type-small);
+    font-weight: var(--fw-regular);
+    color: var(--text-muted);
+  }
+  .dc-iv__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    color: var(--text-accent);
+    font-weight: var(--fw-bold);
+    text-decoration: none;
+  }
+  .dc-iv__link:hover {
+    text-decoration: underline;
+  }
+  .dc-iv__plus {
+    display: grid;
+    place-items: center;
+    justify-self: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+    color: var(--text-accent);
+  }
+  .dc-iv__total {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--surface-quiet);
+    color: var(--text-body);
+    font-size: var(--type-small);
+  }
+  .dc-iv__total :global(svg) {
+    flex: 0 0 auto;
+    margin-top: 2px;
+  }
+  .dc-iv__total b {
+    color: var(--text-strong);
+  }
+
+
+  /* ── Карусель этапов: включает скрипт (класс is-carousel), без него этапы друг под другом ── */
+  .dc-iv__carousel {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+  .is-carousel .dc-iv__steps {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    align-items: flex-start;
+    scrollbar-width: none;
+    border-radius: var(--radius-lg);
+  }
+  .is-carousel .dc-iv__steps::-webkit-scrollbar {
+    display: none;
+  }
+  .is-carousel .dc-iv__steps:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .is-carousel .dc-iv__slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    box-sizing: border-box;
+  }
+  .is-carousel .dc-iv__plus {
+    display: none;
+  }
+  .dc-iv__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .dc-iv__nav[hidden] {
+    display: none;
+  }
+  .dc-iv__dots {
+    display: flex;
+    gap: var(--space-2);
+  }
+  .dc-iv__dot {
+    min-height: 44px;
+    padding: 0 clamp(var(--space-3), 3vw, var(--space-4));
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--text-strong);
+    font: inherit;
+    font-size: var(--type-small);
+    font-weight: var(--fw-semibold);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+  .dc-iv__dot[aria-current='true'] {
+    background: var(--surface-card);
+    border-color: var(--dc-turquoise-ink);
+    color: var(--text-accent);
+    font-weight: var(--fw-bold);
+  }
+  .dc-iv__arrow {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--surface-card);
+    color: var(--text-strong);
+    cursor: pointer;
+  }
+  .dc-iv__arrow:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .dc-iv__dot:focus-visible,
+  .dc-iv__arrow:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 900px) {
+    .dc-iv__panel {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      align-items: start;
+    }
+    .dc-iv__figure {
+      width: 100%;
+      justify-self: stretch;
+      align-self: start;
+    }
+    .dc-iv__total {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dc-iv__tab,
+    .dc-iv__dot {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-implant-variants]').forEach((root) => {
+    const bar = root.querySelector<HTMLElement>('[data-iv-tabs]');
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-panel]'));
+    if (!bar || tabs.length === 0) return;
+    bar.hidden = false;
+
+    const select = (id: string, focus = false) => {
+      for (const tab of tabs) {
+        const on = tab.dataset.variant === id;
+        tab.setAttribute('aria-selected', String(on));
+        tab.tabIndex = on ? 0 : -1;
+        if (on && focus) tab.focus();
+      }
+      for (const panel of panels) panel.hidden = panel.dataset.panel !== id;
+    };
+
+
+    // Карусель этапов внутри каждой панели
+    panels.forEach((panel) => {
+      const car = panel.querySelector<HTMLElement>('[data-iv-carousel]');
+      const track = panel.querySelector<HTMLElement>('[data-iv-track]');
+      const nav = panel.querySelector<HTMLElement>('[data-iv-nav]');
+      const prev = panel.querySelector<HTMLButtonElement>('[data-iv-prev]');
+      const next = panel.querySelector<HTMLButtonElement>('[data-iv-next]');
+      const dots = Array.from(panel.querySelectorAll<HTMLButtonElement>('[data-iv-dot]'));
+      if (!car || !track || !nav || !prev || !next) return;
+      const slides = Array.from(track.querySelectorAll<HTMLElement>('.dc-iv__slide'));
+      car.classList.add('is-carousel');
+      nav.hidden = false;
+      track.tabIndex = 0;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      const current = () => Math.min(slides.length - 1, Math.round(track.scrollLeft / Math.max(1, slides[0].offsetWidth)));
+      const sync = () => {
+        const i = current();
+        prev.disabled = i === 0;
+        next.disabled = i === slides.length - 1;
+        dots.forEach((d, n) => (n === i ? d.setAttribute('aria-current', 'true') : d.removeAttribute('aria-current')));
+      };
+      const go = (i: number) => {
+        const k = Math.max(0, Math.min(slides.length - 1, i));
+        track.scrollTo({ left: slides[k].offsetLeft - slides[0].offsetLeft, behavior: reduce.matches ? 'auto' : 'smooth' });
+      };
+      prev.addEventListener('click', () => go(current() - 1));
+      next.addEventListener('click', () => go(current() + 1));
+      dots.forEach((d, n) => d.addEventListener('click', () => go(n)));
+      track.addEventListener('scroll', sync, { passive: true });
+      track.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') { e.preventDefault(); go(current() + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); go(current() - 1); }
+      });
+      sync();
+    });
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(tab.dataset.variant!));
+      tab.addEventListener('keydown', (e) => {
+        const last = tabs.length - 1;
+        const to =
+          e.key === 'ArrowRight' || e.key === 'ArrowDown'
+            ? (i + 1) % tabs.length
+            : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+              ? (i - 1 + tabs.length) % tabs.length
+              : e.key === 'Home'
+                ? 0
+                : e.key === 'End'
+                  ? last
+                  : -1;
+        if (to < 0) return;
+        e.preventDefault();
+        select(tabs[to].dataset.variant!, true);
+      });
+    });
+  });
+</script>

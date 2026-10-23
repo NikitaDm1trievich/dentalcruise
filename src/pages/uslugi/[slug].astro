@@ -15,6 +15,8 @@ import Reveal from '../../components/core/Reveal.astro';
 import Button from '../../components/core/Button.astro';
 import Icon from '../../components/core/Icon.astro';
 import SectionHeading from '../../components/core/SectionHeading.astro';
+import ImplantProsthesis from '../../components/content/ImplantProsthesis.astro';
+import ImplantVariants from '../../components/content/ImplantVariants.astro';
 import PriceTable from '../../components/content/PriceTable.astro';
 import FaqAccordion from '../../components/content/FaqAccordion.astro';
 import TrustBar from '../../components/content/TrustBar.astro';
@@ -171,6 +173,32 @@ if (amount) {
   </div>
 
   {/*
+  {/* Операция и протез отдельно, переключатель 4 / 6 имплантов — только у страниц с полем implantVariants */}
+  {
+    s.implantVariants && (
+      <section class="dc-section dc-bg-warm" data-cms={entry}>
+        <div class="dc-container">
+          <Reveal>
+            <ImplantVariants active={s.implantVariants} category={s.category} />
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+
+  {/* Варианты протезов с ценами из прайса — на тех же страницах; на этот блок ссылается карусель выше */}
+  {
+    s.implantVariants && (
+      <section id="implant-prosthesis" class="dc-section dc-bg-white dc-service__anchor" data-cms={entry}>
+        <div class="dc-container">
+          <Reveal>
+            <ImplantProsthesis active={s.implantVariants} category={s.category} />
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
+
     Цена и предупреждение о противопоказаниях (ч. 7 ст. 24 38-ФЗ) — рядом,
     один раз на странице. Секция есть всегда: предупреждение нужно и
     услуге без заполненных фактов.
@@ -521,6 +549,10 @@ if (amount) {
     flex-wrap: wrap;
     gap: var(--space-4);
   }
+  .dc-service__anchor {
+    scroll-margin-top: calc(var(--header-h) + var(--space-4));
+  }
+
 
   .dc-facts-row {
     list-style: none;

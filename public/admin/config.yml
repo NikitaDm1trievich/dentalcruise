@@ -1316,6 +1316,123 @@ collections:
             fields:
               - { name: more, label: Развернуть, widget: string }
               - { name: less, label: Свернуть, widget: string }
+      - name: implant-variants
+        label: 'Блок: операция и протез (4 / 6 имплантов)'
+        file: src/data/pages/implant-variants.json
+        fields:
+          - { name: eyebrow, label: Надпись над заголовком, widget: string }
+          - { name: title, label: Заголовок блока, widget: string }
+          - { name: lead, label: Текст под заголовком, widget: text }
+          - { name: tabsLabel, label: 'Подпись переключателя (для чтения с экрана)', widget: string }
+          - name: operation
+            label: Карточка «Операция»
+            widget: object
+            collapsed: true
+            fields:
+              - { name: step, label: Метка этапа, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - { name: includesTitle, label: 'Заголовок списка «В операцию входит»', widget: string }
+              - { name: priceLabel, label: Подпись над ценами, widget: string }
+          - name: prosthesis
+            label: Карточка «Протезирование»
+            widget: object
+            collapsed: true
+            fields:
+              - { name: step, label: Метка этапа, widget: string }
+              - { name: title, label: Заголовок, widget: string }
+              - { name: badge, label: Метка «оплачивается отдельно», widget: string }
+              - { name: text, label: Пояснение, widget: text }
+              - { name: link, label: 'Ссылка на блок «Варианты протезирования»', widget: string }
+          - name: total
+            label: Итоговая строка
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Заголовок, widget: string }
+              - { name: text, label: Текст, widget: text }
+          - name: carousel
+            label: Подписи карусели этапов
+            widget: object
+            collapsed: true
+            fields:
+              - { name: label, label: Название карусели (для чтения с экрана), widget: string }
+              - { name: prev, label: Кнопка «назад», widget: string }
+              - { name: next, label: Кнопка «вперёд», widget: string }
+              - { name: dot, label: 'Точка этапа ({n} — номер этапа, не удалять)', widget: string }
+          - name: variants
+            label: Варианты (4 и 6 имплантов)
+            label_singular: вариант
+            widget: list
+            summary: '{{fields.tab}}'
+            collapsed: true
+            hint: >-
+              Два варианта: id «4» и «6» не менять. Цены не вписываются сюда:
+              сайт берёт их из прайса по «Названию в прайсе» (должно совпадать
+              с названием строки раздела «Имплантация» буква в букву, иначе
+              сборка сайта остановится с понятной ошибкой).
+            fields:
+              - { name: id, label: 'Служебное: номер варианта', widget: string }
+              - { name: tab, label: Подпись на переключателе, widget: string }
+              - { name: image, label: Схема челюсти, widget: image, required: false, hint: 'Картинка с 4 или 6 имплантами. Пока не загружена, на сайте серая заглушка.' }
+              - { name: imageAlt, label: Описание схемы для чтения с экрана, widget: text }
+              - { name: imageRatio, label: 'Пропорции кадра', widget: string, required: false, hint: 'Ширина / высота картинки, например «4 / 3» или «1 / 1». Чтобы картинка не обрезалась.' }
+              - { name: imageLabel, label: Надпись на заглушке, widget: string, required: false }
+              - name: includes
+                label: В операцию входит
+                label_singular: пункт
+                widget: list
+                field: { name: item, label: Пункт, widget: string }
+              - name: operationRows
+                label: Цены операции
+                label_singular: строка
+                widget: list
+                summary: '{{fields.label}}'
+                fields:
+                  - { name: label, label: Подпись (например, Osstem), widget: string }
+                  - { name: priceTitle, label: Название в прайсе, widget: string }
+
+      - name: implant-prosthesis
+        label: 'Блок: варианты протезирования на имплантах'
+        file: src/data/pages/implant-prosthesis.json
+        fields:
+          - { name: eyebrow, label: Надпись над заголовком, widget: string }
+          - { name: title, label: Заголовок блока, widget: string }
+          - { name: lead, label: Текст под заголовком, widget: text }
+          - { name: tabsLabel, label: 'Подпись переключателя (для чтения с экрана)', widget: string }
+          - { name: includesLabel, label: 'Слово перед описанием из прайса («Входит»)', widget: string }
+          - { name: book, label: Кнопка записи, widget: string }
+          - name: variants
+            label: Вкладки (на 4 и на 6 имплантов)
+            label_singular: вкладка
+            widget: list
+            summary: '{{fields.tab}}'
+            collapsed: true
+            hint: >-
+              Цены и описания «Входит» сайт берёт из прайса по «Названию в
+              прайсе» (буква в букву со строкой раздела «Имплантация», группа
+              «Протезы на имплантах»), иначе сборка остановится.
+            fields:
+              - { name: id, label: 'Служебное: номер вкладки (4 или 6)', widget: string }
+              - { name: tab, label: Подпись на переключателе, widget: string }
+              - { name: image, label: Картинка, widget: image, required: false }
+              - { name: imageAlt, label: Описание картинки для чтения с экрана, widget: text }
+              - { name: imageRatio, label: 'Пропорции кадра', widget: string, required: false, hint: 'Например, «4 / 3».' }
+              - name: rows
+                label: Протезы
+                label_singular: протез
+                widget: list
+                summary: '{{fields.label}}'
+                fields:
+                  - { name: label, label: Название, widget: string }
+                  - { name: tag, label: 'Метка («Временный», «Постоянный»)', widget: string, required: false }
+                  - { name: note, label: Мелкий текст под названием, widget: string, required: false }
+                  - { name: priceTitle, label: Название в прайсе, widget: string }
+                  - name: explain
+                    label: Пояснение
+                    widget: text
+                    required: false
+                    hint: Необязательно. Пока пусто, под строкой только описание из прайса. Не пишите свойства материала, которых нет в договоре и прайсе.
+
           - name: preview
             label: 'Служебное: услуга для предпросмотра'
             widget: relation
@@ -1923,6 +2040,20 @@ collections:
         search_fields: [title]
         display_fields: [title]
         required: false
+      - name: implantVariants
+        label: Блок «Операция и протез» и «Варианты протезирования» (4 / 6 имплантов)
+        widget: select
+        required: false
+        default: ''
+        options:
+          - { label: 'Нет блока', value: '' }
+          - { label: 'Есть, по умолчанию открыто «4 импланта»', value: '4' }
+          - { label: 'Есть, по умолчанию открыто «6 имплантов»', value: '6' }
+        hint: >-
+          Только для страниц «Все на 4 / Все на 6 имплантах». Включает два блока:
+          «Операция и протез» (сразу после заголовка) и ниже «Варианты
+          протезирования на имплантах». Тексты блока — в
+          «Страницы сайта» → «Блок: операция и протез», цены берутся из прайса.
         hint: >-
           Необязательно. Общий подробный текст из раздела «Описания для страниц
           услуг» — блок после этапов работы. Если пусто, блока нет.

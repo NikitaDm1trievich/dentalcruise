@@ -1,0 +1,356 @@
+---
+/**
+ * «Варианты протезирования на имплантах»: вкладки «на 4 / на 6», картинка
+ * и строки «название ···· цена» с раскрытием.
+ *
+ * Тексты — src/data/pages/implant-prosthesis.json (в редакторе «Страницы
+ * сайта»). Цены и описания «Входит» берутся из прайса по точному названию
+ * строки (`priceTitle`), здесь они не хранятся. Поле `explain` у строки —
+ * пояснение владельца, пока пусто. Строки раскрываются штатным <details>:
+ * работает без JS. Переключатель вкладок — как в ImplantVariants.
+ */
+import Button from '../core/Button.astro';
+import Icon from '../core/Icon.astro';
+import SectionHeading from '../core/SectionHeading.astro';
+import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+import { implantProsthesisPage as copy } from '../../data/pages';
+import { cmsPage } from '../../lib/cms-ref';
+import { priceRows } from '../../lib/price-rows';
+
+interface Props {
+  active: '4' | '6';
+  category: string;
+}
+const { active, category } = Astro.props;
+
+const priceOf = await priceRows(category, 'ImplantProsthesis');
+const variants = copy.variants.map((v) => ({
+  ...v,
+  rows: v.rows.map((r) => ({ ...r, ...priceOf(r.priceTitle) })),
+}));
+const uid = 'dc-ip';
+const cms = (path: string) => cmsPage('implant-prosthesis', path);
+---
+
+<div class="dc-ip" data-implant-prosthesis data-cms={cms('')}>
+  <SectionHeading eyebrow={copy.eyebrow} title={copy.title} lead={copy.lead} cms={cms('title')} />
+
+  <div class="dc-ip__tabs" role="tablist" aria-label={copy.tabsLabel} hidden data-ip-tabs>
+    {
+      variants.map((v) => (
+        <button
+          type="button"
+          role="tab"
+          id={`${uid}-tab-${v.id}`}
+          aria-controls={`${uid}-panel-${v.id}`}
+          aria-selected={v.id === active ? 'true' : 'false'}
+          tabindex={v.id === active ? 0 : -1}
+          data-variant={v.id}
+          class="dc-ip__tab"
+        >
+          {v.tab}
+        </button>
+      ))
+    }
+  </div>
+
+  {
+    variants.map((v, index) => (
+      <div
+        role="tabpanel"
+        id={`${uid}-panel-${v.id}`}
+        aria-labelledby={`${uid}-tab-${v.id}`}
+        class:list={['dc-ip__panel', !v.image && 'dc-ip__panel--solo']}
+        hidden={v.id !== active}
+        data-panel={v.id}
+        data-cms={cms(`variants.${index}`)}
+      >
+        <h3 class="dc-ip__variant-title">{v.tab}</h3>
+        {v.image && (
+          <figure class="dc-ip__figure">
+            <PhotoPlaceholder
+              src={v.image}
+              alt={v.imageAlt}
+              ratio={v.imageRatio || '4 / 3'}
+              radius="var(--radius-lg)"
+            />
+          </figure>
+        )}
+        <ul class="dc-ip__list" role="list">
+          {v.rows.map((r) => (
+            <li>
+              <details class="dc-ip__row">
+                <summary>
+                  <span class="dc-ip__name">
+                    <span class="dc-ip__head">
+                      <span class="dc-ip__title">{r.label}</span>
+                      {r.tag && <span class="dc-ip__tag">{r.tag}</span>}
+                    </span>
+                    {r.note && <span class="dc-ip__note">{r.note}</span>}
+                  </span>
+                  <span class="dc-ip__leader" aria-hidden="true" />
+                  <b class="dc-ip__price">{r.price}</b>
+                  <Icon name="chevron-down" size={20} strokeWidth={2.2} class="dc-ip__chev" />
+                </summary>
+                <div class="dc-ip__body">
+                  {r.desc && (
+                    <p>
+                      <b>{copy.includesLabel}:</b> {r.desc.charAt(0).toLowerCase() + r.desc.slice(1)}
+                    </p>
+                  )}
+                  {r.explain && <p>{r.explain}</p>}
+                </div>
+              </details>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+
+  <div class="dc-ip__actions">
+    <Button variant="primary" size="md" data-open="dc-book" data-cms={cms('book')}>
+      <Icon slot="icon" name="calendar" size={20} />
+      {copy.book}
+    </Button>
+  </div>
+</div>
+
+<style>
+  .dc-ip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    min-width: 0;
+  }
+  .dc-ip__tabs {
+    display: flex;
+    width: fit-content;
+    justify-self: start;
+    max-width: 100%;
+    padding: 4px;
+    gap: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+  }
+  .dc-ip__tabs[hidden] {
+    display: none;
+  }
+  .dc-ip__tab {
+    flex: 1 1 auto;
+    min-height: var(--tap-min);
+    padding: 0 clamp(var(--space-2), 3vw, var(--space-6));
+    line-height: 1.2;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--text-strong);
+    font: inherit;
+    font-weight: var(--fw-bold);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+  .dc-ip__tab:hover {
+    background: var(--surface-card);
+  }
+  .dc-ip__tab[aria-selected='true'] {
+    background: var(--surface-card);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line-strong);
+    color: var(--text-accent);
+  }
+  .dc-ip__tab:focus-visible,
+  .dc-ip__row summary:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .dc-ip__panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    min-width: 0;
+  }
+  .dc-ip__panel[hidden] {
+    display: none;
+  }
+  .dc-ip__variant-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .dc-ip__figure {
+    margin: 0;
+    width: min(100%, 300px);
+    justify-self: center;
+  }
+  .dc-ip__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    align-content: start;
+    min-width: 0;
+  }
+  .dc-ip__list li {
+    border-bottom: 1px solid var(--line-hairline);
+  }
+  .dc-ip__list li:first-child {
+    border-top: 1px solid var(--line-hairline);
+  }
+  .dc-ip__row summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    min-height: var(--tap-min);
+    padding: var(--space-4) 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  .dc-ip__row summary::-webkit-details-marker {
+    display: none;
+  }
+  .dc-ip__name {
+    display: grid;
+    gap: var(--space-1);
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+  .dc-ip__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+  }
+  .dc-ip__title {
+    font-weight: var(--fw-semibold);
+    color: var(--text-strong);
+  }
+  .dc-ip__tag {
+    padding: 2px var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--surface-quiet);
+    box-shadow: inset 0 0 0 1px var(--dc-turquoise-soft);
+    color: var(--text-accent);
+    font-size: var(--type-small);
+    font-weight: var(--fw-bold);
+  }
+  .dc-ip__note {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  /* Пунктирная линия между названием и ценой */
+  .dc-ip__leader {
+    grid-column: 1;
+    align-self: end;
+    margin-bottom: 0.45em;
+    height: 0;
+    border-bottom: 2px dotted var(--line-strong);
+  }
+  .dc-ip__price {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: var(--fw-black);
+    color: var(--text-strong);
+    white-space: nowrap;
+  }
+  .dc-ip__row summary :global(.dc-ip__chev) {
+    color: var(--text-accent);
+    transition: transform var(--dur-mid) var(--ease-out);
+  }
+  .dc-ip__row[open] summary :global(.dc-ip__chev) {
+    transform: rotate(180deg);
+  }
+  .dc-ip__body {
+    display: grid;
+    gap: var(--space-2);
+    padding: 0 0 var(--space-4);
+    color: var(--text-body);
+    font-size: var(--type-small);
+  }
+  .dc-ip__body p {
+    margin: 0;
+    max-width: min(var(--measure), 100%);
+  }
+  .dc-ip__body b {
+    color: var(--text-strong);
+  }
+  .dc-ip__actions {
+    display: flex;
+  }
+
+  @media (min-width: 900px) {
+    .dc-ip__panel {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      align-items: center;
+      gap: var(--space-8);
+    }
+    .dc-ip__panel--solo {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .dc-ip__figure {
+      width: 100%;
+    }
+    /* Название слева, пунктир и цена справа в одной строке */
+    .dc-ip__row summary {
+      grid-template-columns: auto minmax(24px, 1fr) auto auto;
+    }
+    .dc-ip__name {
+      grid-column: 1;
+    }
+    .dc-ip__leader {
+      grid-column: 2;
+      align-self: center;
+      margin-bottom: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-ip__tab,
+    .dc-ip__row summary :global(.dc-ip__chev) {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-implant-prosthesis]').forEach((root) => {
+    const bar = root.querySelector<HTMLElement>('[data-ip-tabs]');
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-panel]'));
+    if (!bar || tabs.length === 0) return;
+    bar.hidden = false;
+
+    const select = (id: string, focus = false) => {
+      tabs.forEach((tab) => {
+        const on = tab.dataset.variant === id;
+        tab.setAttribute('aria-selected', String(on));
+        tab.tabIndex = on ? 0 : -1;
+        if (on && focus) tab.focus();
+      });
+      panels.forEach((panel) => (panel.hidden = panel.dataset.panel !== id));
+    };
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(tab.dataset.variant!));
+      tab.addEventListener('keydown', (e) => {
+        const to =
+          e.key === 'ArrowRight' || e.key === 'ArrowDown'
+            ? (i + 1) % tabs.length
+            : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+              ? (i - 1 + tabs.length) % tabs.length
+              : e.key === 'Home'
+                ? 0
+                : e.key === 'End'
+                  ? tabs.length - 1
+                  : -1;
+        if (to < 0) return;
+        e.preventDefault();
+        select(tabs[to].dataset.variant!, true);
+      });
+    });
+  });
+</script>

@@ -338,6 +338,15 @@ const servicePages = defineCollection({
     description: text(),
     /** Коронка с керамической облицовкой: в карточках описания — `layeredText` */
     descriptionLayered: flag(),
+    /**
+     * Блок «Операция и протез» с переключателем 4 / 6 имплантов после шапки.
+     * Значение — какой вариант открыт по умолчанию; пусто — блока нет.
+     * Тексты блока — src/data/pages/implant-variants.json, цены из прайса.
+     */
+    implantVariants: z
+      .enum(['4', '6', ''])
+      .nullish()
+      .transform((value) => value || undefined),
     seoTitle: text(),
     seoDescription: text(),
     ...orderable,

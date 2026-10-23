@@ -20,6 +20,8 @@ import team from './pages/team.json';
 import doctor from './pages/doctor-page.json';
 import service from './pages/service-page.json';
 import prices from './pages/prices.json';
+import implantVariants from './pages/implant-variants.json';
+import implantProsthesis from './pages/implant-prosthesis.json';
 
 /** Заголовок и описание страницы для поисковиков */
 type Seo = { title: string; description: string };
@@ -238,6 +240,50 @@ export const pricesPage: {
   promoLabel: string;
   foot: string;
   book: string;
+
+/** Блок «Операция и протез» на страницах «Все на 4 / Все на 6 имплантах» */
+export const implantVariantsPage: {
+  eyebrow: string;
+  title: string;
+  lead: string;
+  tabsLabel: string;
+  operation: { step: string; title: string; includesTitle: string; priceLabel: string };
+  prosthesis: { step: string; title: string; badge: string; text: string; link: string };
+  total: { title: string; text: string };
+  /** Подписи карусели этапов; в `dot` {n} заменяется номером этапа */
+  carousel: { label: string; prev: string; next: string; dot: string };
+  /** Цены берутся из прайса по `priceTitle` — точное название строки раздела «Имплантация» */
+  variants: {
+    id: '4' | '6';
+    tab: string;
+    /** Путь к схеме челюсти; пусто — серая заглушка */
+    image: string;
+    imageAlt: string;
+    /** Пропорции кадра под картинку, например «4 / 3» */
+    imageRatio: string;
+    imageLabel: string;
+    includes: string[];
+    operationRows: { label: string; priceTitle: string }[];
+  }[];
+} = implantVariants as never;
+
+/** Блок «Варианты протезирования на имплантах»: цены и описания из прайса по `priceTitle` */
+export const implantProsthesisPage: {
+  eyebrow: string;
+  title: string;
+  lead: string;
+  tabsLabel: string;
+  includesLabel: string;
+  book: string;
+  variants: {
+    id: '4' | '6';
+    tab: string;
+    image: string;
+    imageAlt: string;
+    imageRatio: string;
+    rows: { label: string; tag: string; note?: string; priceTitle: string; explain?: string }[];
+  }[];
+} = implantProsthesis as never;
   breadcrumb: string;
   seo: Seo;
 } = prices;

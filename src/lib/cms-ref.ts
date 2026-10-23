@@ -71,7 +71,9 @@ type PageFile =
   | 'documents'
   | 'not-found'
   | 'doctor-page'
-  | 'service-page';
+  | 'service-page'
+  | 'implant-variants'
+  | 'implant-prosthesis';
 
 /** `cmsPage('contacts', 'way.title')` → `pages/contacts:way.title`. */
 export function cmsPage(file: PageFile, path = ''): string {
