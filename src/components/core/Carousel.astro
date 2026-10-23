@@ -108,6 +108,14 @@ const {
     box-sizing: border-box;
     scroll-snap-align: start;
     min-width: 0;
+    /* Высоту ленты задаёт скрипт; слишком высокий слайд прокручивается внутри */
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior-y: auto;
+  }
+  .dc-car.is-carousel > .dc-car__track > :global([data-slide]:focus-visible) {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
   }
   /* Украшения между слайдами («+») нужны только в вертикальном ряду */
   .dc-car.is-carousel > .dc-car__track > :global(:not([data-slide])) {

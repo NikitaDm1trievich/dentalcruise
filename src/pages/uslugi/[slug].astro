@@ -17,6 +17,7 @@ import Icon from '../../components/core/Icon.astro';
 import SectionHeading from '../../components/core/SectionHeading.astro';
 import ImplantProsthesis from '../../components/content/ImplantProsthesis.astro';
 import ImplantVariants from '../../components/content/ImplantVariants.astro';
+import AboutPhotos from '../../components/content/AboutPhotos.astro';
 import AboutCarousel from '../../components/content/AboutCarousel.astro';
 import VinirTypes from '../../components/content/VinirTypes.astro';
 import WorksCarousel from '../../components/content/WorksCarousel.astro';
@@ -318,8 +319,11 @@ if (amount) {
     about && (
       <section class="dc-section dc-bg-cool" data-cms={aboutEntry}>
         <div class="dc-container dc-container--aside">
-          <Reveal class="dc-about__aside">
-            <SectionHeading class="dc-aside-heading" title={about.title} cms={`${aboutEntry}:title`} />
+          <Reveal class:list={['dc-about__aside', about.images.length === 0 && 'dc-about__aside--sticky']}>
+            <div class="dc-about__left">
+              <SectionHeading class="dc-aside-heading" title={about.title} cms={`${aboutEntry}:title`} />
+              {about.images.length > 0 && <AboutPhotos images={about.images} entry={aboutEntry!} place="aside" />}
+            </div>
           </Reveal>
           <Reveal delay={90}>
             <AboutCarousel about={about} entry={aboutEntry!} layered={s.descriptionLayered} />
@@ -750,9 +754,13 @@ if (amount) {
     color: var(--text-accent);
   }
 
-  /* Заголовок описания слева едет вместе с текстом, а не оставляет пустую колонку */
+  .dc-about__left {
+    display: grid;
+    gap: var(--space-6);
+  }
+  /* Заголовок описания слева едет вместе с текстом (если слева нет картинок, они бы не поместились в экран) */
   @media (min-width: 900px) {
-    :global(.dc-about__aside) {
+    :global(.dc-about__aside--sticky) {
       position: sticky;
       top: calc(var(--header-h) + var(--space-6));
     }

@@ -1,0 +1,57 @@
+---
+/**
+ * Иллюстрации описания материала (поле `images`). Рисуются дважды: на
+ * телефоне внутри первого слайда («inline»), на ПК в левой колонке под
+ * заголовком («aside»), где не листаются вместе со слайдами. Лишняя копия
+ * скрыта через display:none: ни читалка, ни загрузка картинок её не видят.
+ */
+import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
+
+interface Props {
+  images: { image: string; alt: string; caption?: string; ratio?: string }[];
+  entry: string;
+  place: 'inline' | 'aside';
+}
+const { images, entry, place } = Astro.props;
+---
+
+<div class:list={['dc-about__photos', `dc-about__photos--${place}`]} data-cms={`${entry}:images`}>
+  {
+    images.map((img, i) => (
+      <figure data-cms={`${entry}:images.${i}`}>
+        <PhotoPlaceholder src={img.image} alt={img.alt} ratio={img.ratio || '4 / 3'} radius="var(--radius-lg)" />
+        {img.caption && <figcaption>{img.caption}</figcaption>}
+      </figure>
+    ))
+  }
+</div>
+
+<style>
+  .dc-about__photos {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .dc-about__photos figure {
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+    max-width: 560px;
+  }
+  .dc-about__photos figcaption {
+    font-size: var(--type-small);
+    color: var(--text-muted);
+  }
+  .dc-about__photos--aside {
+    display: none;
+  }
+  @media (min-width: 900px) {
+    .dc-about__photos--aside {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .dc-about__photos--inline {
+      display: none;
+    }
+  }
+</style>

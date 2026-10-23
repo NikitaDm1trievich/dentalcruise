@@ -9,9 +9,9 @@
  * предпросмотр редактора по нему открывает нужное место. Слайд, которого
  * сейчас не видно, в предпросмотре выбирается кликом по точке.
  */
+import AboutPhotos from './AboutPhotos.astro';
 import Carousel from '../core/Carousel.astro';
 import Icon from '../core/Icon.astro';
-import PhotoPlaceholder from '../media/PhotoPlaceholder.astro';
 import { servicePage as copy } from '../../data/pages';
 import type { CollectionEntry } from 'astro:content';
 
@@ -60,21 +60,7 @@ const slideLabel = (label: string, n: number) => `${n} из ${dots.length}: ${la
           </div>
         )}
 
-        {about.images.length > 0 && (
-          <div class="dc-about__photos" data-cms={`${entry}:images`}>
-            {about.images.map((img, i) => (
-              <figure data-cms={`${entry}:images.${i}`}>
-                <PhotoPlaceholder
-                  src={img.image}
-                  alt={img.alt}
-                  ratio={img.ratio || '4 / 3'}
-                  radius="var(--radius-lg)"
-                />
-                {img.caption && <figcaption>{img.caption}</figcaption>}
-              </figure>
-            ))}
-          </div>
-        )}
+        {about.images.length > 0 && <AboutPhotos images={about.images} entry={entry} place="inline" />}
 
         {about.benefits.length > 0 && (
           <div class="dc-about__benefits" data-cms={`${entry}:benefits`}>
@@ -159,21 +145,6 @@ const slideLabel = (label: string, n: number) => `${n} из ${dots.length}: ${la
     max-width: 70ch;
     font-size: var(--type-body-lg);
     color: var(--text-body);
-  }
-  .dc-about__photos {
-    display: grid;
-    gap: var(--space-4);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  }
-  .dc-about__photos figure {
-    margin: 0;
-    max-width: 560px;
-    display: grid;
-    gap: var(--space-2);
-  }
-  .dc-about__photos figcaption {
-    font-size: var(--type-small);
-    color: var(--text-muted);
   }
   .dc-about__benefits {
     display: grid;
