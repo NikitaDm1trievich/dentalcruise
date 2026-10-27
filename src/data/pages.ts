@@ -189,6 +189,8 @@ export const doctorPage: {
   experience: string;
   book: string;
   about: string;
+  /** Заголовок того же блока у сотрудников, которые не врачи */
+  aboutStaff: string;
   skills: string;
   education: { eyebrow: string; title: string; courses: string };
   services: { eyebrow: string; title: string; lead: string };

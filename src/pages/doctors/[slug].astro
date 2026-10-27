@@ -164,7 +164,7 @@ if (years) {
           {
             d.about.length > 0 && (
               <div class="dc-doc-page__about">
-                <h2 data-cms={cmsPage('doctor-page', 'about')}>{copy.about}</h2>
+                <h2 data-cms={cmsPage('doctor-page', d.staff ? 'aboutStaff' : 'about')}>{d.staff ? copy.aboutStaff : copy.about}</h2>
                 {d.about.map((paragraph) => (
                   <p>{paragraph}</p>
                 ))}

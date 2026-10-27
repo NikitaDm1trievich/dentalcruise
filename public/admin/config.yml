@@ -1091,6 +1091,7 @@ collections:
               тексты о враче — в разделе «Врачи».
           - { name: book, label: Кнопка записи под именем, widget: string }
           - { name: about, label: 'Заголовок «О враче»', widget: string }
+          - { name: aboutStaff, label: 'Заголовок «О специалисте» (зубной техник, ассистент)', widget: string }
           - { name: skills, label: 'Заголовок «Что делает»', widget: string }
           - name: education
             label: Образование и курсы
@@ -2291,7 +2292,7 @@ collections:
         label: Ещё один факт на обороте карточки
         widget: text
         required: false
-        hint: Необязательно. Показывается только на главной.
+        hint: Необязательно. Одна короткая строка (до ~60 знаков), показывается на главной. Длинный текст о враче — в поле «О враче» ниже.
       - { name: photo, label: Фото, widget: image, required: false }
       - name: photoY
         label: Положение фото по вертикали, %
