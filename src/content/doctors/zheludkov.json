@@ -1,15 +1,21 @@
 {
   "name": "Желудков Александр Юрьевич",
   "speciality": "Зубной техник высшей категории",
-  "experience": "",
+  "experience": "25 лет",
   "note": "Изготавливает коронки, виниры и протезы в зуботехнической лаборатории клиники.",
   "extra": "",
   "photo": "/images/doctors/zheludkov.jpg",
+  "photoY": null,
   "photoLabel": "Здесь фото зубного техника",
   "featured": true,
   "staff": true,
   "about": [],
-  "education": [],
+  "education": [
+    {
+      "year": "Московское медицинский колледж № 1 (имени Павлова)",
+      "text": "Выпуск 2001 года"
+    }
+  ],
   "skills": [],
   "services": [],
   "servicesMore": "",
