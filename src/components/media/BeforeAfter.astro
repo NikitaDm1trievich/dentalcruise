@@ -12,7 +12,8 @@
  * clip-path снимка «до» и сдвиг ручки (transform в единицах cqw контейнера),
  * поэтому движение не трогает раскладку страницы. Когда слайдер впервые
  * появляется на экране, полоска сама проезжает в стороны и возвращается —
- * показывает, что её можно двигать. При prefers-reduced-motion проезда нет.
+ * показывает, что её можно двигать. Проезд — только у первого слайдера на
+ * странице (в ленте работ — у верхней карточки), остальные без анимации. При prefers-reduced-motion проезда нет.
  *
  * Без JS (класс .no-js на <html>) снимки стоят рядом, каждый со своей меткой.
  *
@@ -360,7 +361,7 @@ const loading = compact ? 'lazy' : undefined;
     [50, 650],
   ];
 
-  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((root) => {
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((root, index) => {
     const stage = root.querySelector<HTMLElement>('[data-ba-stage]');
     const handle = root.querySelector<HTMLElement>('[data-ba-handle]');
     if (!stage || !handle) return;
@@ -470,8 +471,11 @@ const loading = compact ? 'lazy' : undefined;
       jump(keys[event.key]);
     });
 
-    /* ── Проезд при первом показе ── */
-    if (reduced.matches || !('IntersectionObserver' in window)) return;
+    /* ── Проезд при первом показе ──
+       Только у самого верхнего слайдера на странице: он подсказывает, что
+       полоску можно двигать. Остальные стоят на середине без анимации и
+       двигаются только рукой посетителя. */
+    if (index > 0 || reduced.matches || !('IntersectionObserver' in window)) return;
     const ease = (t: number) => 0.5 - Math.cos(Math.PI * t) / 2;
     const playIntro = () => {
       let leg = 0;
