@@ -18,6 +18,8 @@
  */
 
 const KEY = 'dc_consent';
+/** Событие на window после выбора в уведомлении: detail.analytics — true («Принять») или false */
+export const CONSENT_EVENT = 'dc:consent';
 /** 12 месяцев — срок из политики cookie */
 const TTL_MS = 365 * 24 * 60 * 60 * 1000;
 const TAG = 'https://mc.yandex.ru/metrika/tag.js';
@@ -55,6 +57,8 @@ export function saveConsent(analytics: boolean): void {
   } catch {
     /* не запомнили — уведомление спросит снова на следующей странице */
   }
+  // Согласие покрывает и виджеты Яндекс Карт (карта, отзывы): им — сигнал сразу, без перезагрузки
+  window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: { analytics } }));
 }
 
 /** Вставить счётчик. Повторный вызов с тем же номером ничего не делает. */

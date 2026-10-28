@@ -2,13 +2,16 @@
 /**
  * Виджет Яндекс Карт (карта организации или лента отзывов).
  *
- * До нажатия кнопки «Показать карту» / «Показать отзывы» на месте виджета
- * заглушка: iframe Яндекса при загрузке передаёт Яндексу IP и данные
- * браузера и может поставить его cookie, а политика и политика cookie
- * обещают, что это происходит только по действию посетителя. Поэтому iframe
- * создаётся только по нажатию — не при прокрутке и не по «Принять» в
- * уведомлении о cookie (оно — про Метрику, о картах в нём ни слова).
- * Обычная ссылка на Яндекс Карты под виджетом работает и без него.
+ * Пока посетитель не нажал «Принять» в уведомлении о cookie, на месте
+ * виджета заглушка: iframe Яндекса при загрузке передаёт Яндексу IP и данные
+ * браузера и может поставить его cookie. После «Принять» (согласие
+ * охватывает Метрику и виджеты Яндекс Карт — так сказано в уведомлении и в
+ * политике cookie) виджеты загружаются сами, без второго нажатия — и на
+ * следующих страницах, пока согласие действует. «Отказаться» убирает уже
+ * загруженные виджеты. Тому, кто не принимал cookie, остаётся кнопка
+ * «Показать карту» / «Показать отзывы»: по ней iframe создаётся по
+ * действию посетителя. Обычная ссылка на Яндекс Карты под виджетом
+ * работает и без него.
  */
 import Button from '../core/Button.astro';
 import Icon from '../core/Icon.astro';
@@ -108,6 +111,9 @@ const { embed } = blocks;
     padding: var(--space-6);
     text-align: center;
   }
+  .dc-embed__stub[hidden] {
+    display: none;
+  }
   .dc-embed__stub p {
     max-width: 34ch;
     margin: 0;
@@ -131,8 +137,12 @@ const { embed } = blocks;
 </style>
 
 <script>
-  /* iframe — только по кнопке: до нажатия к Яндексу не уходит ни одного запроса */
-  const mount = (host: HTMLElement) => {
+  import { CONSENT_EVENT, readConsent } from '../../lib/analytics';
+
+  const hosts = Array.from(document.querySelectorAll<HTMLElement>('[data-embed]'));
+
+  /* iframe создаём только по согласию или по кнопке: до этого к Яндексу не уходит ни одного запроса */
+  const mount = (host: HTMLElement, moveFocus: boolean) => {
     const frame = host.querySelector<HTMLElement>('.dc-embed__frame');
     if (!frame || frame.querySelector('iframe')) return;
 
@@ -143,13 +153,29 @@ const { embed } = blocks;
     iframe.addEventListener('load', () => host.querySelector('.dc-embed__skeleton')?.remove(), {
       once: true,
     });
-    host.querySelector('[data-embed-stub]')?.remove();
+    const stub = host.querySelector<HTMLElement>('[data-embed-stub]');
+    if (stub) stub.hidden = true;
     frame.appendChild(iframe);
     // Кнопка исчезла вместе с заглушкой — фокус переходит на сам виджет
-    iframe.focus();
+    // (только когда виджет открыли кнопкой, не сам по согласию)
+    if (moveFocus) iframe.focus();
   };
 
-  document.querySelectorAll<HTMLElement>('[data-embed]').forEach((host) => {
-    host.querySelector('[data-embed-show]')?.addEventListener('click', () => mount(host));
+  /* Отказ: убрать загруженный виджет и вернуть заглушку с кнопкой */
+  const unmount = (host: HTMLElement) => {
+    host.querySelector('iframe')?.remove();
+    const stub = host.querySelector<HTMLElement>('[data-embed-stub]');
+    if (stub) stub.hidden = false;
+  };
+
+  hosts.forEach((host) => {
+    host.querySelector('[data-embed-show]')?.addEventListener('click', () => mount(host, true));
+  });
+
+  if (readConsent() === true) hosts.forEach((host) => mount(host, false));
+
+  window.addEventListener(CONSENT_EVENT, (event) => {
+    const accepted = (event as CustomEvent<{ analytics: boolean }>).detail?.analytics === true;
+    hosts.forEach((host) => (accepted ? mount(host, false) : unmount(host)));
   });
 </script>

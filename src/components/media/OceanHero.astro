@@ -4,11 +4,13 @@
  * Перенесено из Ds2_2d9e23.OceanHero.
  *
  * Видео не грузится, пока скрипт не убедится, что это уместно:
- * при экономии трафика, медленном соединении, prefers-reduced-motion или
- * на экране уже 1024px остаётся только poster-кадр (требование брифа —
- * mobile-first аудитория; ролик весит 2,1–2,5 МБ и на телефоне только
- * тормозил первый экран). Poster на телефоне — кандидат в LCP, поэтому
- * его просим предзагрузить с высоким приоритетом.
+ * при экономии трафика, медленном соединении или prefers-reduced-motion
+ * остаётся только poster-кадр. На телефоне ролик тоже играет (решение
+ * владельца 2026-10-28), но стартует после загрузки страницы, а не вместе
+ * с ней: ролик весит 2,1–2,5 МБ и не должен тормозить первый экран.
+ * Poster — кандидат в LCP, поэтому его просим предзагрузить с высоким
+ * приоритетом. Если браузер запретил автозапуск (режим энергосбережения
+ * iOS), остаётся тот же poster.
  */
 import WaveField from './WaveField.astro';
 import { cmsText } from '../../lib/cms-ref';
@@ -72,8 +74,8 @@ const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, post
     height: 100%;
     object-fit: cover;
   }
-  /* На телефонах виден только poster: на вертикальном экране cover режет кадр
-     по центру и обрезал бы лицо (оно правее середины), поэтому смещаем фокус. */
+  /* На вертикальном экране cover режет кадр по центру и обрезал бы лицо
+     (оно правее середины), поэтому на телефонах и планшетах смещаем фокус. */
   @media (max-width: 1023px) {
     .dc-hero__video {
       object-position: 59% 50%;
@@ -191,11 +193,9 @@ const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, post
       .connection;
     const slow = conn?.saveData === true || /^(slow-2g|2g|3g)$/.test(conn?.effectiveType ?? '');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // Телефоны и планшеты обходятся poster-кадром: ролик там ни разу не
-    // окупал свои мегабайты (аудит: грузился и на мобильных).
     const wide = window.matchMedia('(min-width: 1024px)').matches;
 
-    if (!slow && !reduced && wide) {
+    const start = () => {
       const add = (src: string | null, type: string) => {
         if (!src) return;
         const s = document.createElement('source');
@@ -210,6 +210,15 @@ const { eyebrow = 'Центр стоматологии', slogan, webm, mp4, post
       video.load();
       // play() отклоняется, если браузер всё же запретил автозапуск — poster остаётся.
       video.play().catch(() => {});
+    };
+
+    if (!slow && !reduced) {
+      if (wide || document.readyState === 'complete') {
+        start();
+      } else {
+        // Телефон: сначала страница, потом ролик
+        window.addEventListener('load', () => setTimeout(start, 300), { once: true });
+      }
     }
   }
 </script>
