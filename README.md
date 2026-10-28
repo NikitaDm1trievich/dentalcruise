@@ -99,7 +99,25 @@ Postbox. Вся обработка — в России: так требует л
 2. **Settings → Secrets and variables → Actions → Variables** добавить
    `PUBLIC_BOOKING_ENDPOINT` с адресом обработчика формы.
 
-### Потом: хостинг клиники
+### Боевой сайт dentalcruise.ru (с 28 октября 2026)
+
+Сайт — статическая сборка на сервере клиники, перенесённая с Битрикса. GitHub Pages
+остаётся тестовой копией (noindex), правки руководителя из редактора попадают в `main`
+и на Pages сразу, **на боевой сайт их нужно выложить отдельно**:
+
+```bash
+export DEPLOY_HOST=… DEPLOY_USER=… DEPLOY_KEY=… DEPLOY_PATH=…   # значения — в памяти проекта, в git их нет
+git pull
+DRY_RUN=1 ./scripts/deploy-prod.sh   # посмотреть, что изменится
+./scripts/deploy-prod.sh             # собрать с SITE=https://dentalcruise.ru и залить
+```
+
+Скрипт собирает сайт, кладёт рядом `robots-site.txt`, проверяет, что сборка боевая
+(canonical на dentalcruise.ru, без noindex), и заливает через rsync. Устройство сервера,
+редиректы, откат и ловушки описаны в памяти проекта (`dentalcruise-production-runbook`);
+адреса и аккаунты в публичный репозиторий не пишем.
+
+### Хостинг клиники: общие сведения
 
 Домен и базовый путь читаются из окружения, в коде их нет:
 
