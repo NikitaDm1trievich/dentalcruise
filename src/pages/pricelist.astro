@@ -295,7 +295,7 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
                               </td>
                               {includes && (
                                 <td class="dc-pl-r__inc" id={descId}>
-                                  {item.desc}
+                                  <div class="dc-pl-r__inc-in">{item.desc}</div>
                                 </td>
                               )}
                               <td class="dc-pl-r__price">
@@ -623,22 +623,58 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
     font: var(--fw-semibold) 13px / 1.3 var(--font-body);
     cursor: pointer;
   }
+  /* Плюс поворачивается в крестик, пока раскрываются подробности */
   .dc-pl-r__more :global(svg) {
-    transition: transform var(--dur-fast) var(--ease-out);
+    transition: transform var(--dur-mid) var(--ease-out);
   }
   .dc-pl-r__more[aria-expanded='true'] :global(svg) {
     transform: rotate(45deg);
   }
+  /* Подробности на телефоне раскрываются плавно: высота 0fr → 1fr и
+     проявление. Закрытый блок скрыт и от экранных дикторов (visibility
+     выключается в конце закрытия, включается сразу при открытии). */
   .dc-pl-r__inc {
     grid-area: inc;
-    display: none;
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
     font-size: var(--type-small);
     line-height: 1.5;
     color: var(--text-muted);
+    transition:
+      grid-template-rows var(--dur-mid) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out),
+      visibility 0s linear var(--dur-mid);
+  }
+  /* Текст всплывает снизу при открытии и уходит вниз при закрытии */
+  .dc-pl-r__inc-in {
+    min-height: 0;
+    overflow: hidden;
+    transform: translateY(14px);
+    transition: transform var(--dur-mid) var(--ease-out);
+  }
+  .dc-pl-r.is-open .dc-pl-r__inc-in,
+  :global(.no-js) .dc-pl-r__inc-in {
+    transform: none;
   }
   .dc-pl-r.is-open .dc-pl-r__inc,
   :global(.no-js) .dc-pl-r__inc {
-    display: block;
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition:
+      grid-template-rows var(--dur-mid) var(--ease-out),
+      opacity var(--dur-mid) var(--ease-out) 60ms,
+      visibility 0s;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-pl-r__inc,
+    .dc-pl-r.is-open .dc-pl-r__inc,
+    .dc-pl-r__inc-in,
+    .dc-pl-r__more :global(svg) {
+      transition: none;
+    }
   }
   :global(.no-js) .dc-pl-r__more {
     display: none;
@@ -765,8 +801,17 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
       width: 170px;
       text-align: right !important;
     }
+    /* В таблице колонка «Что входит» видна всегда, без раскрытия */
     .dc-pl-r__inc {
       display: table-cell;
+      opacity: 1;
+      visibility: visible;
+      transition: none;
+    }
+    .dc-pl-r__inc-in {
+      overflow: visible;
+      transform: none;
+      transition: none;
     }
     /* Селектор с td: общее правило ячеек выше выравнивает их по левому краю */
     .dc-pl-r td.dc-pl-r__price {
@@ -898,6 +943,7 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
   });
 
   /* ── «Что входит» у строки на телефоне ── */
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   document.addEventListener('click', (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-price-more]');
     if (!button) return;
@@ -905,7 +951,38 @@ const positions = (n: number) => `${n} ${plural(n, ['позиция', 'пози�
     button.setAttribute('aria-expanded', String(open));
     button.closest('tr')?.classList.toggle('is-open', open);
     const label = button.querySelector('span');
-    if (label) label.textContent = (open ? button.dataset.less : button.dataset.more) ?? '';
+    if (!label) return;
+    const next = (open ? button.dataset.less : button.dataset.more) ?? '';
+    // Подпись уходит (при открытии — вверх, при закрытии — вниз), меняется
+    // на «Скрыть» / «Что входит» и въезжает с противоположной стороны
+    if (reducedMotion.matches || typeof label.animate !== 'function') {
+      label.textContent = next;
+      return;
+    }
+    label.getAnimations().forEach((animation) => animation.cancel());
+    const shift = open ? 6 : -6;
+    const out = label.animate(
+      [
+        { opacity: 1, transform: 'translateY(0)' },
+        { opacity: 0, transform: `translateY(${-shift}px)` },
+      ],
+      { duration: 130, easing: 'ease-in', fill: 'forwards' },
+    );
+    out.finished
+      .then(() => {
+        label.textContent = next;
+        out.cancel();
+        label.animate(
+          [
+            { opacity: 0, transform: `translateY(${shift}px)` },
+            { opacity: 1, transform: 'translateY(0)' },
+          ],
+          { duration: 190, easing: 'cubic-bezier(.22,.61,.36,1)' },
+        );
+      })
+      .catch(() => {
+        label.textContent = next;
+      });
   });
 
   /* ── Поиск по названию и составу услуги ── */
