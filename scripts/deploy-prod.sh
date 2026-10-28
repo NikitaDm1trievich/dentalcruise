@@ -5,6 +5,7 @@
 #   DEPLOY_USER  пользователь для заливки (только папка сайта)
 #   DEPLOY_KEY   путь к закрытому ключу
 #   DEPLOY_PATH  папка сайта на сервере
+# Папка /stats/ на сервере служебная (статистика ISPConfig), rsync её не трогает.
 # DRY_RUN=1 — показать, что изменится, ничего не заливая.
 # Значения для этой машины записаны в памяти проекта (dentalcruise-production-runbook).
 set -euo pipefail
@@ -38,7 +39,7 @@ cp dist/robots.txt dist/robots-site.txt
 grep -q 'rel="canonical" href="https://dentalcruise.ru/"' dist/index.html
 ! grep -q 'name="robots" content="noindex' dist/index.html
 
-opts=(-rlt --delete --chmod=D755,F644 -e "ssh -i $DEPLOY_KEY -o IdentitiesOnly=yes -o ProxyCommand=none -o ConnectTimeout=15")
+opts=(-rlt --delete --exclude=/stats/ --chmod=D755,F644 -e "ssh -i $DEPLOY_KEY -o IdentitiesOnly=yes -o ProxyCommand=none -o ConnectTimeout=15")
 [ "${DRY_RUN:-}" = "1" ] && opts+=(-n -i)
 rsync "${opts[@]}" dist/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
 
