@@ -194,6 +194,8 @@ export const doctorPage: {
   skills: string;
   education: { eyebrow: string; title: string; courses: string };
   services: { eyebrow: string; title: string; lead: string };
+  /** Блок с роликом о враче */
+  video: { eyebrow: string; title: string; book: string };
   foot: { text: string; book: string; all: string };
   /** Врач, на странице которого редактор показывает предпросмотр */
   preview: string;

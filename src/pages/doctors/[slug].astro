@@ -19,7 +19,7 @@ import PhotoPlaceholder from '../../components/media/PhotoPlaceholder.astro';
 import ServiceCatalogCard from '../../components/content/ServiceCatalogCard.astro';
 import { clinic } from '../../data/site';
 import { doctorPage as copy, teamPage } from '../../data/pages';
-import { pageHref } from '../../lib/asset';
+import { pageHref, withBase } from '../../lib/asset';
 import { cmsPage, cmsSite } from '../../lib/cms-ref';
 import { absolute, clampText, clinicRef, experienceYears } from '../../lib/seo';
 
@@ -193,6 +193,54 @@ if (years) {
       </Reveal>
     </div>
   </section>
+
+  {/* Ролик со звуком (врач рассказывает), поэтому без автозапуска: только
+      по нажатию, с обычными кнопками плеера. До нажатия файл не грузится —
+      видна обложка. */}
+  {
+    d.video && (
+      <section class="dc-section dc-bg-deep" data-cms={`doctors/${doctor.id}:video`}>
+        <div class="dc-container dc-doc-video">
+          <Reveal>
+            <div class="dc-doc-video__frame">
+              <video
+                class="dc-doc-video__player"
+                src={withBase(d.video)}
+                poster={d.videoPoster ? withBase(d.videoPoster) : undefined}
+                controls
+                playsinline
+                preload="none"
+                width="720"
+                height="1280"
+                aria-label={`${copy.video.title}: ${d.name}`}
+              />
+            </div>
+          </Reveal>
+          <Reveal delay={90}>
+            <div class="dc-doc-video__body">
+              <SectionHeading
+                eyebrow={copy.video.eyebrow}
+                title={copy.video.title}
+                lead={d.videoText || undefined}
+                onDark
+                cms={cmsPage('doctor-page', 'video')}
+              />
+              <div class="dc-actions">
+                <Button variant="primary" size="md" data-open="dc-book">
+                  <Icon slot="icon" name="calendar" size={20} />
+                  {copy.video.book}
+                </Button>
+                <Button variant="onDark" size="md" href={clinic.phoneHref}>
+                  <Icon slot="icon" name="phone" size={20} />
+                  {clinic.phone}
+                </Button>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    )
+  }
 
   {
     d.education.length > 0 && (
@@ -393,6 +441,49 @@ if (years) {
     margin-top: 3px;
   }
 
+  /* Ролик вертикальный (9:16): на ПК — узкая колонка рядом с текстом,
+     на телефоне — над текстом, не шире 360px, чтобы весь кадр помещался
+     в экран вместе с кнопками плеера. */
+  .dc-doc-video {
+    align-items: center;
+    justify-items: center;
+    gap: var(--space-8);
+  }
+  /* В одну колонку сначала заголовок, потом ролик: иначе непонятно, что
+     за видео, пока не долистаешь под него */
+  @media (max-width: 899px) {
+    .dc-doc-video > :global(:first-child) {
+      order: 1;
+    }
+  }
+  @media (min-width: 900px) {
+    .dc-doc-video {
+      grid-template-columns: minmax(0, 360px) 1fr;
+      justify-items: start;
+      gap: var(--space-10);
+    }
+  }
+  .dc-doc-video__frame {
+    width: min(360px, 100%);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--surface-dark);
+    box-shadow: var(--shadow-lg);
+  }
+  .dc-doc-video__player {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 9 / 16;
+    object-fit: cover;
+    background: var(--surface-dark);
+  }
+  .dc-doc-video__body {
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
+  }
+
   .dc-edu {
     display: grid;
     gap: var(--space-6);
@@ -503,5 +594,8 @@ if (years) {
   }
   .dc-bg-aqua {
     background: var(--grad-aqua);
+  }
+  .dc-bg-deep {
+    background: var(--grad-deep);
   }
 </style>

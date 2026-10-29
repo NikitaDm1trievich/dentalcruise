@@ -1112,6 +1112,15 @@ collections:
               - { name: eyebrow, label: Надпись над заголовком, widget: string }
               - { name: title, label: Заголовок блока, widget: string }
               - { name: lead, label: Текст под заголовком, widget: text }
+          - name: video
+            label: Видео о враче
+            widget: object
+            collapsed: true
+            hint: Блок виден только у врачей, которым загружен ролик (раздел «Врачи»).
+            fields:
+              - { name: eyebrow, label: Надпись над заголовком, widget: string }
+              - { name: title, label: Заголовок блока, widget: string }
+              - { name: book, label: Кнопка записи, widget: string }
           - name: foot
             label: Низ страницы
             widget: object
@@ -2367,6 +2376,28 @@ collections:
           Где на сайте: крупно под карточками услуг на странице врача. Чтобы
           пациент не решил, что врач делает только перечисленное, например
           «И другие виды протезирования». Пусто — надписи нет.
+      - name: video
+        label: Видео о враче
+        widget: file
+        required: false
+        media_folder: /public/video/doctors
+        public_folder: /video/doctors
+        hint: >-
+          Вертикальный ролик MP4 (H.264), заранее сжатый: до ~5 МБ, 720×1280.
+          Ролик с телефона в 50+ МБ страница будет грузить долго. Пусто —
+          блока «Видео» на странице врача нет.
+      - name: videoPoster
+        label: Обложка видео
+        widget: image
+        required: false
+        media_folder: /public/video/doctors
+        public_folder: /video/doctors
+        hint: Кадр из ролика (JPG), виден до нажатия «Играть».
+      - name: videoText
+        label: Текст рядом с видео
+        widget: text
+        required: false
+        hint: Одна-две фразы, о чём ролик.
       - name: seoTitle
         label: Заголовок для поиска
         widget: string
