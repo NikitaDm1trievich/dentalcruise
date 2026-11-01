@@ -83,6 +83,7 @@
   "reviews": {
     "eyebrow": "Отзывы",
     "title": "Настоящие отзывы, а не наши слова",
+    "goodPlaceBadge": "/images/yandex-good-place.webp",
     "rating": {
       "value": 4.8,
       "caption": "Средняя оценка на Яндекс Картах"

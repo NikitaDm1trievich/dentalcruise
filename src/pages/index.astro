@@ -23,7 +23,6 @@ import ComparisonColumns from '../components/content/ComparisonColumns.astro';
 import DoctorList from '../components/content/DoctorList.astro';
 import FaqAccordion from '../components/content/FaqAccordion.astro';
 import ReviewsCard from '../components/content/ReviewsCard.astro';
-import TrustBar from '../components/content/TrustBar.astro';
 import YandexEmbed from '../components/content/YandexEmbed.astro';
 
 import { clinic } from '../data/site';
@@ -44,7 +43,6 @@ const brands = (await getCollection('brands')).sort(byOrder);
 const comparison = (await getCollection('comparison')).sort(byOrder);
 const doctors = (await getCollection('doctors')).filter((d) => d.data.featured).sort(byOrder);
 const faq = (await getCollection('faq')).sort(byOrder);
-const trust = (await getCollection('trust')).sort(byOrder);
 
 /**
  * Позиции каталога ведут на страницы услуг, когда такая страница есть:
@@ -322,23 +320,6 @@ const clinicPhotos = Object.keys(import.meta.glob('/public/images/clinic/*.{jpg,
       </Reveal>
       {/* На телефоне текст под заголовком переезжает под таблицу (см. стили .dc-why) */}
       <p class="dc-why__lead-after">{copy.why.lead}</p>
-    </div>
-  </section>
-
-  {/* Волновая перебивка «Прилив»: тёплый фон «Почему мы» переходит в холодный доверия */}
-  <WaveField
-    height={56}
-    scrollDrift
-    background="var(--surface-warm)"
-    colors={['rgba(143,162,172,.42)', 'var(--dc-breeze)', 'var(--surface-cool)']}
-  />
-
-  <!-- Полоса доверия: полублок между аргументом о цене и рассказом о клинике -->
-  <section id="trust" class="dc-section--tight dc-bg-cool" data-cms={cmsList('trust')}>
-    <div class="dc-container">
-      <Reveal>
-        <TrustBar items={trust.map((t) => t.data)} />
-      </Reveal>
     </div>
   </section>
 

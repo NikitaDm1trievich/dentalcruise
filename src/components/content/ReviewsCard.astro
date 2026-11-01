@@ -4,6 +4,7 @@ import Icon from '../core/Icon.astro';
 import Button from '../core/Button.astro';
 import CountUp from '../core/CountUp.astro';
 import { clinic } from '../../data/site';
+import { withBase } from '../../lib/asset';
 import { cmsText } from '../../lib/cms-ref';
 import { reviewsWord, yandexRating } from '../../lib/yandex-rating';
 /* Рейтинг и число отзывов сайт берёт с Яндекс Карт при сборке
@@ -23,24 +24,40 @@ const filled = Math.round(value);
 ---
 
 <div class="dc-reviews" data-cms={cmsText('reviews.rating')}>
-  <div class="dc-reviews__head">
-    <span class="dc-reviews__value"><CountUp value={value} decimals={1} /></span>
-    {/* role="img": без роли aria-label на span скринридер игнорирует,
-        и пять декоративных звёзд остаются без названия. */}
-    <span class="dc-reviews__stars" role="img" aria-label={`Рейтинг ${value} из 5`}>
-      {
-        [0, 1, 2, 3, 4].map((i) => (
-          <Icon
-            name="star"
-            size={24}
-            strokeWidth={1.5}
-            color={i < filled ? 'var(--dc-turquoise)' : 'var(--dc-white-caps)'}
-            fill={i < filled ? 'var(--dc-turquoise)' : 'none'}
-          />
-        ))
-      }
-    </span>
-    <span class="dc-reviews__count" data-cms={cmsText('reviews.count')}><CountUp value={count} /> {reviewsWord(count)}</span>
+  <div class="dc-reviews__summary">
+    <div class="dc-reviews__head">
+      <span class="dc-reviews__value"><CountUp value={value} decimals={1} /></span>
+      {/* role="img": без роли aria-label на span скринридер игнорирует,
+          и пять декоративных звёзд остаются без названия. */}
+      <span class="dc-reviews__stars" role="img" aria-label={`Рейтинг ${value} из 5`}>
+        {
+          [0, 1, 2, 3, 4].map((i) => (
+            <Icon
+              name="star"
+              size={24}
+              strokeWidth={1.5}
+              color={i < filled ? 'var(--dc-turquoise)' : 'var(--dc-white-caps)'}
+              fill={i < filled ? 'var(--dc-turquoise)' : 'none'}
+            />
+          ))
+        }
+      </span>
+      <span class="dc-reviews__count" data-cms={cmsText('reviews.count')}><CountUp value={count} /> {reviewsWord(count)}</span>
+    </div>
+    {
+      copy.reviews.goodPlaceBadge && (
+        <img
+          class="dc-reviews__badge"
+          src={withBase(copy.reviews.goodPlaceBadge)}
+          alt="Награда Яндекс Карт «Хорошее место»"
+          width="80"
+          height="114"
+          loading="lazy"
+          decoding="async"
+          data-cms={cmsText('reviews.goodPlaceBadge')}
+        />
+      )
+    }
   </div>
 
   <p class="dc-reviews__note" data-cms={cmsText('reviews.cardNote')}>{note}</p>
@@ -68,10 +85,24 @@ const filled = Math.round(value);
     box-shadow: var(--shadow-md);
   }
   .dc-reviews__head {
+    flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: var(--space-4);
     flex-wrap: wrap;
+  }
+  .dc-reviews__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    width: 100%;
+  }
+  .dc-reviews__badge {
+    flex: 0 0 auto;
+    width: clamp(64px, 12vw, 80px);
+    height: auto;
   }
   .dc-reviews__value {
     font-family: var(--font-display);

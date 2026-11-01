@@ -66,7 +66,7 @@ const names = doctors.map((d) => d.data.name).join(', ');
     </div>
   </section>
 
-  <section class="dc-section--tight dc-bg-cool" data-cms={cmsList('trust')}>
+  <section id="trust" class="dc-section--tight dc-bg-cool" data-cms={cmsList('trust')}>
     <div class="dc-container">
       <Reveal>
         <TrustBar items={trust.map((t) => t.data)} />

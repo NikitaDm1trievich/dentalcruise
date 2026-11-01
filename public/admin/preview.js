@@ -55,7 +55,6 @@
     catalog: 'services',
     brands: 'brands',
     comparison: 'why',
-    trust: 'trust',
     faq: 'faq',
   };
 
@@ -89,6 +88,7 @@
   function pageFor(collection, slug, data) {
     switch (collection) {
       case 'home':
+        if (slug === 'trust') return 'doctors/#trust';
         return HOME_ANCHORS[slug] ? '#' + HOME_ANCHORS[slug] : '';
       case 'pages':
         if (slug === 'doctor-page') return data && data.preview ? 'doctors/' + data.preview + '/' : 'doctors/';
