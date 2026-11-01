@@ -30,6 +30,7 @@ if [ "$(git rev-parse HEAD)" != "$(git rev-parse '@{u}')" ]; then
 fi
 
 SITE=https://dentalcruise.ru BASE=/ npm run build
+python3 scripts/check-seo.py dist
 
 # На сервере /robots.txt перехватывается конфигом основного сайта, поэтому
 # рядом лежит копия robots-site.txt: nginx подменяет адрес (см. runbook).

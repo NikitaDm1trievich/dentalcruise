@@ -149,6 +149,7 @@ const cases = defineCollection({
     description: text(),
     /** «Что сделано» — этапы по порядку */
     steps: list(z.string()),
+    seoTitle: text(),
     seoDescription: text(),
     ...orderable,
   }),

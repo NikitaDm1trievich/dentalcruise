@@ -58,6 +58,10 @@ const indexable = isIndexable(site) && !noindex;
 const OG_FALLBACK = 'og-cover.jpg';
 const image = absolute(ogImage ?? OG_FALLBACK, site);
 const imageSize = ogImage ? null : { width: 1200, height: 630 };
+const dayNames: Record<string, string> = {
+  Mo: 'Monday', Tu: 'Tuesday', We: 'Wednesday', Th: 'Thursday',
+  Fr: 'Friday', Sa: 'Saturday', Su: 'Sunday',
+};
 
 const address: Record<string, string> = {
   '@type': 'PostalAddress',
@@ -68,9 +72,8 @@ const address: Record<string, string> = {
 };
 if (clinic.address.postalCode) address.postalCode = clinic.address.postalCode;
 
-/* sameAs связывает сайт с карточками в справочниках. Для локального
-   поиска это главный сигнал «сайт и организация на картах — одно и то
-   же»: по нему Яндекс и Google подтягивают отзывы и рейтинг. */
+/* Проверенные профили той же организации. sameAs помогает описать связь,
+   но не гарантирует перенос рейтинга или позицию в локальной выдаче. */
 const sameAs = [
   clinic.links.yandexOrg,
   clinic.links.vk,
@@ -103,7 +106,7 @@ const business: Record<string, unknown> = {
   hasMap: clinic.links.yandexPin,
   openingHoursSpecification: clinic.openingHours.map((h) => ({
     '@type': 'OpeningHoursSpecification',
-    dayOfWeek: h.days,
+    dayOfWeek: h.days.map((day) => `https://schema.org/${dayNames[day] ?? day}`),
     opens: h.opens,
     closes: h.closes,
   })),
@@ -111,16 +114,11 @@ const business: Record<string, unknown> = {
   currenciesAccepted: 'RUB',
   paymentAccepted: clinic.paymentAccepted,
   medicalSpecialty: 'Dentistry',
-  /* Ближайшее метро — сильный локальный запрос: «стоматология
-     Полежаевская» ищут чаще, чем по улице. */
+  /* Доступность клиники для посетителей и обслуживаемые локации. */
   publicAccess: true,
-  areaServed: [
-    { '@type': 'City', name: clinic.address.locality },
-    ...clinic.metroStations.map((s) => ({ '@type': 'Place', name: `м. ${s.name}` })),
-  ],
-  /* aggregateRating намеренно не отдаём: рейтинг, проставленный самой
-     организацией, Google и Яндекс считают самооценкой и могут наказать
-     за разметку; реальный рейтинг они берут из карточки на Картах. */
+  areaServed: clinic.areaServed,
+  /* Собственный рейтинг LocalBusiness не даёт права на review stars Google,
+     в том числе при встраивании отзывов сторонней площадки. */
 };
 if (sameAs.length > 0) business.sameAs = sameAs;
 
@@ -174,9 +172,8 @@ const faqSchema =
 const crumbSchema =
   breadcrumbs && breadcrumbs.length > 0 ? breadcrumbSchema(breadcrumbs, site, menu.crumbsHome) : null;
 
-/* Организацию и сайт описываем только на главной. На внутренних страницах
-   хватает ссылки по `@id` из блоков врача и услуги: дубль полной карточки
-   на каждой странице поисковику ничего не добавляет, а вес размывает. */
+/* Полная организация и WebSite — на главной, внутренние сущности ссылаются
+   на тот же @id. Повторение корректной разметки само по себе «вес» не размывает. */
 const isHome = path === '/' || path === '';
 const blocks = [
   isHome ? business : null,
@@ -191,9 +188,8 @@ const blocks = [
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
 
-{/* Открытой странице — права на индексацию для конкретных роботов: без
-    них Яндекс по умолчанию сокращает сниппет и не показывает быстрые
-    ссылки. Закрытой (и всему staging) — noindex без исключений. */}
+{/* Разрешения на размер сниппета; поисковик сам выбирает его вид.
+    Закрытой странице и всему staging — noindex без исключений. */}
 <meta
   name="robots"
   content={indexable ? 'index, follow, max-snippet:-1, max-image-preview:large' : 'noindex, nofollow'}
@@ -228,5 +224,5 @@ const blocks = [
 <meta name="twitter:image" content={image} />
 
 {blocks.map((block) => (
-  <script type="application/ld+json" is:inline set:html={JSON.stringify(block)} />
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(block).replace(/</g, '\\u003c')} />
 ))}

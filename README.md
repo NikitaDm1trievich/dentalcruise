@@ -18,6 +18,7 @@ npm run dev
 | `npm run build` | Статическая сборка в `dist/` |
 | `npm run preview` | Локальный просмотр собранного `dist/` |
 | `npm run check` | Проверка типов и шаблонов Astro |
+| `npm run check:seo` | Проверка готовой сборки: индексация, метатеги, ссылки, ресурсы и цены в JSON-LD (Python 3) |
 
 Нужен Node 24 (версия зафиксирована в `.nvmrc`).
 

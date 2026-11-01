@@ -105,7 +105,6 @@ const catalogSchema = {
         name: item.title,
         ...(item.desc ? { description: item.desc } : {}),
         priceCurrency: 'RUB',
-        availability: 'https://schema.org/InStock',
         ...(item.href ? { url: absolute(item.href, Astro.site) } : {}),
         ...(isFromPrice(item.price)
           ? {

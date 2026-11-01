@@ -1291,6 +1291,9 @@ collections:
               - { name: title, label: Заголовок, widget: string }
               - { name: text, label: Текст, widget: text }
               - { name: book, label: Кнопка записи, widget: string }
+              - { name: doctor, label: Подпись перед именем врача, widget: string }
+              - { name: works, label: Ссылка на работы клиники, widget: string }
+              - { name: route, label: Ссылка на контакты, widget: string }
           - name: faq
             label: Вопросы
             widget: object
@@ -2577,6 +2580,11 @@ collections:
         required: false
         hint: 'Необязательно. Этапы по порядку, на сайте они пронумерованы: «Диагностика», «Установка имплантов»…'
         field: { name: item, label: Этап, widget: string }
+      - name: seoTitle
+        label: Заголовок для поиска
+        widget: string
+        required: false
+        hint: 'Необязательно. Позволяет различить в поиске работы с одинаковыми названиями, не меняя заголовок на странице.'
       - name: seoDescription
         label: Описание для поиска
         widget: text
@@ -3365,15 +3373,15 @@ collections:
             label: Регион работы
             widget: object
             hint: >-
-              По этим словам поисковик понимает, где вас искать. Меняйте,
-              только если клиника переехала.
+              Город и район обслуживания для описания клиники. Район используется
+              в микроразметке, ориентиры — рабочая заметка для редактора.
             fields:
               - { name: city, label: Город, widget: string }
               - { name: district, label: Район, widget: string }
               - name: landmarks
                 label: Ориентиры рядом
                 widget: text
-                hint: Метро и районы через запятую — по ним ищут «стоматология рядом».
+                hint: 'Заметка для редактора: сама по себе не выводится на страницы и не повышает позиции.'
           - name: indexNowKey
             label: 'Служебное: ключ быстрой индексации'
             widget: string

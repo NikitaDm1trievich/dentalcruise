@@ -10,6 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "check:seo": "python3 scripts/check-seo.py",
     "astro": "astro"
   },
   "dependencies": {

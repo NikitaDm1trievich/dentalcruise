@@ -122,7 +122,8 @@ if (years) {
   description={
     d.seoDescription ||
     clampText(
-      `${d.name} — ${d.speciality.toLowerCase()} клиники «Дентал Круиз»${stazh}. ${d.note} Запись по телефону ${clinic.phone}.`,
+      `${d.name} — ${d.speciality.toLowerCase()}${stazh}. ${clinic.metroLabel}. Клиника «${clinic.name}», ${clinic.address.locality}. ${d.note}`,
+      190,
     )
   }
   path={`/doctors/${doctor.id}`}

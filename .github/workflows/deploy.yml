@@ -76,6 +76,9 @@ jobs:
           PUBLIC_BOOKING_ENDPOINT: ${{ vars.PUBLIC_BOOKING_ENDPOINT }}
         run: npm run build
 
+      - name: Проверка SEO тестовой сборки
+        run: npm run check:seo -- --site "$SITE$BASE" --staging
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

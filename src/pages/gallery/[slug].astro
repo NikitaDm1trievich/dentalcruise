@@ -52,7 +52,7 @@ const galleryHref = pageHref('gallery');
 const category = (page.filter as Record<string, string | undefined>)[d.category];
 
 /* Запасные значения через `||`: пустое поле редактор пишет как "" */
-const title = page.case.seoTitle.replace('{работа}', d.title);
+const title = d.seoTitle || page.case.seoTitle.replace('{работа}', d.title);
 /* Части склеиваются точкой; своя точка в конце части не удваивается */
 const description =
   d.seoDescription ||

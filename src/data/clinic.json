@@ -53,7 +53,7 @@
     "yandexMapWidget": "https://yandex.ru/map-widget/v1/?ll=37.520284%2C55.774426&z=16&pt=37.520284%2C55.774426%2Cpm2rdl",
     "yandexReviewsWidget": "https://yandex.ru/maps-reviews-widget/154025048590?comments",
     "twoGis": "",
-    "googleMaps": "",
+    "googleMaps": "https://www.google.com/maps?cid=1121418313476795834",
     "prodoctorov": "",
     "zoon": ""
   },

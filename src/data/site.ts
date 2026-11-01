@@ -12,7 +12,7 @@
  *   • станции метро — один пересадочный узел: Полежаевская и Хорошёвская
  *     связаны переходом; цвета — официальные цвета линий на схеме;
  *   • ссылки на справочники (2ГИС, Google, ПроДокторов, Zoon) уходят в
- *     sameAs микроразметки — основной сигнал локального поиска. Пустое поле
+ *     sameAs микроразметки — ссылки на профили той же организации. Пустое поле
  *     никуда не выводится, выдуманных адресов здесь быть не должно;
  *   • Instagram принадлежит Meta, признанной в России экстремистской; с
  *     01.09.2025 размещение рекламы на её площадках запрещено. Ссылку с
@@ -36,6 +36,7 @@
  */
 import raw from './clinic.json';
 import menuRaw from './menu.json';
+import seoSettings from './seo.json';
 type Link = { label: string; href: string };
 
 /**
@@ -168,6 +169,14 @@ const phoneE164 = phoneToTel(data.phone);
 
 export const clinic = {
   ...data,
+  /** Обе станции из CMS: одна строка для описаний страниц в поиске. */
+  metroLabel: data.metroStations.map((station) => `м. ${station.name}`).join(', '),
+  /** Одна клиника обслуживает район; это не перечень дополнительных филиалов. */
+  areaServed: [
+    { '@type': 'City', name: data.address.locality },
+    ...(seoSettings.region.district ? [{ '@type': 'AdministrativeArea', name: seoSettings.region.district }] : []),
+    ...data.metroStations.map((station) => ({ '@type': 'Place', name: `м. ${station.name}` })),
+  ],
   /** E.164 — для JSON-LD и микроразметки */
   phoneE164,
   phoneHref: `tel:${phoneE164}`,

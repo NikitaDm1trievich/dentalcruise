@@ -78,8 +78,8 @@ export function absolute(path: string, site: URL | undefined): string {
 }
 
 /**
- * Текст для сниппета выдачи. Поисковик показывает около 155 символов
- * описания и режет дальше посреди слова — обрезаем сами, по границе слова.
+ * Ограничение редакторского описания по границе слова. Фактический сниппет
+ * и его длину поисковик выбирает сам; для длинных названий можно задать max.
  */
 export function clampText(text: string, max = 155): string {
   const clean = text.replace(/\s+/g, ' ').trim();
@@ -137,7 +137,8 @@ export function priceValue(price: string | undefined): number | null {
 
 /** «от 25 000 ₽» — цена не точная, а нижняя граница. */
 export function isFromPrice(price: string | undefined): boolean {
-  return /^\s*от\b/i.test(price ?? '');
+  // \b в JavaScript не распознаёт границу кириллического слова «от».
+  return /^\s*от\s+/iu.test(price ?? '');
 }
 
 /** Стаж из контента — «27 лет», «3 года». В фид уходит числом. */

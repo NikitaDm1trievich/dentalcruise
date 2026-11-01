@@ -210,7 +210,7 @@ export const servicePage: {
   indications: string;
   steps: { eyebrow: string; title: string };
   prices: { eyebrow: string; title: string; lead: string; all: string };
-  why: { title: string; text: string; book: string };
+  why: { title: string; text: string; book: string; doctor: string; works: string; route: string };
   /** В заголовке `{услуга}` заменяется названием услуги строчными буквами */
   faq: { eyebrow: string; title: string; lead: string };
   related: { title: string; all: string };
