@@ -75,10 +75,12 @@ export function startMetrika(id: string): void {
     ym.l = Date.now();
     w.ym = ym;
   }
-  if (!Array.from(document.scripts).some((script) => script.src === TAG)) {
+  // Для режима ssr Яндекс отдаёт скрипт, привязанный к номеру счётчика.
+  const tagUrl = `${TAG}?id=${id}`;
+  if (!Array.from(document.scripts).some((script) => script.src === tagUrl)) {
     const script = document.createElement('script');
     script.async = true;
-    script.src = TAG;
+    script.src = tagUrl;
     document.head.appendChild(script);
   }
 
